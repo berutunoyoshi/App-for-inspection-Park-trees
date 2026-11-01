@@ -231,6 +231,9 @@ details.attrs summary::-webkit-details-marker { display: none; }
 .attrs tr + tr { border-top: 1px solid var(--line); }
 .card { background: var(--surface-2); border-radius: var(--r-md); padding: 12px 14px; margin-bottom: 8px; font-size: 13.5px; }
 .card-head { display: flex; gap: 8px; align-items: center; font-weight: 700; }
+.card.warnbox { background: #fff4e5; color: #7a4100; box-shadow: inset 4px 0 0 #ef6c00; }
+.card.warnbox .muted { color: #8a5a20; }
+@media (prefers-color-scheme: dark) { .card.warnbox { background: #3a2a14; color: #ffd8a8; } .card.warnbox .muted { color: #e0b47a; } }
 .pre { white-space: pre-wrap; margin: 6px 0; }
 .thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; display: block; }
@@ -566,6 +569,7 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
     <div class="pane" id="pane-worklog"></div>
     <div class="pane" id="pane-report"></div>
     <div class="pane" id="pane-inspmenu"></div>
+    <div class="pane" id="pane-archive"></div>
     <div class="pane" id="pane-detail"></div>
   </div>
 </section>
@@ -1016,8 +1020,11 @@ window.APP_CONFIG = {
   center: [139.6949, 35.6716],
   zoom: 16,
   basemap: "photo",                  // 初期の背景地図：pale（淡色）／std（標準）／photo（航空写真）／osm
-  // 共有の樹木データ（上から順に探します）
-  treesUrls: ["data/trees.json", "trees.json"],
+  // 樹木データの取得先（通常は空）。実際の樹木データは公開せず、各端末で「設定・データ → 樹木データを読み込む」から読み込みます。
+  // 公開してよいデータ（サンプルなど）を同じ場所に置く場合だけ ["data/trees.json"] のように指定します。
+  treesUrls: [],
+  // バックアップ：最後の全データ書き出しからこの時間（時間）を過ぎ、未書き出しの記録があれば起動時に案内
+  backup: { warnHours: 24 },
   // 3D表示で立体にする最大本数（画面中央に近い順）
   tree3d: { maxTrees: 2500 },
   // 3Dの樹形（樹種名。末尾 * は前方一致）。ここにない樹種は、ヤシ類→ヤシ形、中木→株立ち形、針葉樹→円錐形、その他→卵形
@@ -1088,8 +1095,8 @@ window.NoteStore = (function () {
     if (p) return p;
     p = new Promise((res) => {
       try {
-        const r = indexedDB.open(DB, 1);
-        r.onupgradeneeded = () => { for (const st of ["inspections", "workrecords", "kv", "localtrees"]) if (!r.result.objectStoreNames.contains(st)) r.result.createObjectStore(st, { keyPath: "id" }); };
+        const r = indexedDB.open(DB, 2);  // 2：保管庫（archive）を追加
+        r.onupgradeneeded = () => { for (const st of ["inspections", "workrecords", "kv", "localtrees", "archive"]) if (!r.result.objectStoreNames.contains(st)) r.result.createObjectStore(st, { keyPath: "id" }); };
         r.onsuccess = () => res(r.result);
         r.onerror = () => { useMem = true; res(null); };
       } catch (e) { useMem = true; res(null); }
@@ -1117,8 +1124,12 @@ window.NoteStore = (function () {
     inspections: coll("inspections"),
     work: coll("workrecords"),
     kv: { async get(k) { return (await kvc.all()).find((x) => x.id === k)?.v ?? null; }, put: (k, v) => kvc.put({ id: k, v }) },
-    // この端末で Excel から追加した樹木（共有データ data/trees.json とは別に保存）
+    // この端末で Excel から追加した樹木（台帳とは別に保存）
     local: { async get() { return (await ltc.all()).find((x) => x.id === "main")?.trees || []; }, put: (trees) => ltc.put({ id: "main", trees }) },
+    // 樹木データ（台帳）：各端末に読み込む。GitHub には置かない
+    ledger: { async get() { return (await ltc.all()).find((x) => x.id === "ledger") || null; }, put: (doc) => ltc.put({ ...doc, id: "ledger" }) },
+    // 保管庫：削除・変更・置き換えの前の内容。ここからは削除しない（復元のみ）
+    archive: coll("archive"),
   };
 })();
 window.InspStore = window.NoteStore.inspections;
@@ -1173,7 +1184,7 @@ window.WorkStore = window.NoteStore.work;
   const ic = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ""}</svg>`;
   const paintIcons = (root = document) => root.querySelectorAll("i[data-ic]").forEach((el) => { el.outerHTML = ic(el.dataset.ic); });
   const PALETTE = ["#2e7d32", "#f9a825", "#c2185b", "#1565c0", "#ef6c00", "#6a1b9a", "#00897b", "#8d6e63", "#d84315", "#5e35b1"];
-  const TITLES = { filter: "絞り込み", detail: "点検入力", insplist: "点検一覧", worklog: "作業記録", report: "速報の提出", inspmenu: "設定・データ" };
+  const TITLES = { filter: "絞り込み", detail: "点検入力", insplist: "点検一覧", worklog: "作業記録", report: "速報の提出", inspmenu: "設定・データ", archive: "保管庫" };
 
   // ---------- 状態 ----------
   // T：樹木の一覧（{ tno, sp, std, cat, h, g, w, lat, lon, area, zone, place, memo, src }）。src は "base"（共有データ）か "local"（この端末で追加）
@@ -1221,9 +1232,13 @@ window.WorkStore = window.NoteStore.work;
   }
   async function loadTrees() {
     let base = [];
-    for (const u of CFG.treesUrls) {
-      try { const r = await fetch(u, { cache: "no-cache" }); if (r.ok) { const j = await r.json(); base = j.trees || []; dataInfo = { title: j.title || "", generated: j.generated || "", count: base.length }; break; } } catch { }
+    dataInfo = {};
+    for (const u of CFG.treesUrls || []) {
+      try { const r = await fetch(u, { cache: "no-cache" }); if (r.ok) { const j = await r.json(); base = j.trees || []; dataInfo = { title: j.title || "", generated: j.generated || "", count: base.length, src: u }; break; } } catch { }
     }
+    // 端末に読み込んだ樹木データ（台帳）
+    const led = await NoteStore.ledger.get();
+    if (led && (led.trees || []).length) { base = base.concat(led.trees); dataInfo = { title: led.title || "", generated: led.generated || "", count: led.trees.length, loadedAt: led.loadedAt, srcFile: led.srcFile }; }
     const local = await NoteStore.local.get();
     T = []; TIDX = new Map();
     for (const [list, src] of [[base, "base"], [local, "local"]]) for (const raw of list) {
@@ -1375,6 +1390,7 @@ window.WorkStore = window.NoteStore.work;
     if (name === "worklog") renderWorklog();
     if (name === "report") renderReport();
     if (name === "inspmenu") { renderInspMenu(); refreshOffUI(); }
+    if (name === "archive") renderArchive();
     if (name !== "detail") clearSelection();
   }
   function closeSheet() {
@@ -1575,7 +1591,7 @@ window.WorkStore = window.NoteStore.work;
     for (const r of INSP.recs.values()) linkRec(r);
     refreshTreesSource(); fillFilterForm(); applyInspStates(); applyFilters(); updateInspHead();
   }
-  // 共有用の樹木データ（data/trees.json）の形式で書き出す
+  // 配布用の樹木データ（tree-list 形式の JSON）で書き出す
   function treesJsonBlob(list, title) {
     const trees = list.map((t) => { const o = { tno: t.tno, sp: t.sp, cat: t.cat, h: t.h, g: t.g, w: t.w, lat: +(+t.lat).toFixed(7), lon: +(+t.lon).toFixed(7), area: t.area, zone: t.zone, place: t.place, memo: t.memo }; for (const k of Object.keys(o)) if (o[k] == null || o[k] === "") delete o[k]; return o; });
     return new Blob([JSON.stringify({ type: "tree-list", version: 2, title: title || CFG.appTitle, generated: localDate(), count: trees.length, trees }, null, 0)], { type: "application/json" });
@@ -1585,7 +1601,7 @@ window.WorkStore = window.NoteStore.work;
   // 点検モード
   // =====================================================================
   const IC = CFG.inspect;
-  const INSP = { on: false, name: "", recs: new Map(), work: [], dirty: false, cur: null, stateIds: [], voice: null, color: "status" };
+  const INSP = { on: false, name: "", device: "", recs: new Map(), work: [], dirty: false, cur: null, stateIds: [], voice: null, color: "status" };
   const SKEY = { name: (CFG.storageKey || "tree-inspection") + "-inspector" };
   const ss = { get: (k) => { try { return sessionStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch { } } };
   const LSP = (CFG.storageKey || "tree-inspection") + "-";
@@ -1611,6 +1627,43 @@ window.WorkStore = window.NoteStore.work;
   const recColor = (r) => { const c = recCode(r); return c === 0 ? "#7d8f84" : c === 1 ? "#ffffff" : c === 2 + IC.judges.length ? NOJ.color : IC.judges[c - 2].color; };
   const XMIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   const placeOf = (r) => `${r.area || ""}${r.place || r.zone ? " " + (r.place || r.zone) : ""}`.trim();
+
+  // ---------- 端末ID（統合時にどの端末の記録か分かるように） ----------
+  async function ensureDevice() {
+    let d = ls.get("device", null) || (await NoteStore.kv.get("device"));
+    if (!d) d = Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b % 32]).join("") + Math.random().toString(36).slice(2, 4).toUpperCase();
+    ls.set("device", d); await NoteStore.kv.put("device", d);
+    return d;
+  }
+
+  // ---------- 保管庫：削除・変更・置き換えの前の内容を残す（ここからは削除しない） ----------
+  const ARC_KIND = { rec: "削除した点検記録", photo: "削除した写真", work: "削除した作業記録", rev: "変更前の点検内容", conflict: "取り込みで置き換わった記録", replaced: "復元で置き換わった記録", round: "点検回の切り替えで保管", ledger: "置き換え前の樹木データ", local: "削除した追加樹木" };
+  // 変更前の内容は写真の画像を除いて残す（写真の削除は別に「削除した写真」として画像ごと残す）
+  const slimRec = (r) => { const c = JSON.parse(JSON.stringify(r)); c.photos = (c.photos || []).map(({ data, orig, ...m }) => m); return c; };
+  const phKey = (ph) => ph.at || ph.name;
+  async function archive(kind, item, extra = {}) {
+    const a = { id: extra.id || "a-" + uid(), kind, type: extra.type || (kind === "photo" ? "photo" : kind === "ledger" || kind === "local" ? "trees" : "rec"), at: new Date().toISOString(), by: INSP.name, device: INSP.device, key: item && item.id != null ? item.id : null, ...extra, item: JSON.parse(JSON.stringify(item)) };
+    delete a.item.tree; await NoteStore.archive.put(a); return a;
+  }
+
+  // ---------- バックアップの状況 ----------
+  const lastBackup = () => ls.get("last-backup", null);
+  function unbackedItems() {
+    const lb = lastBackup() || "";
+    const recs = [...INSP.recs.values()].filter((r) => r.status !== "new" && (r.updated || "") > lb);
+    const work = INSP.work.filter((w) => (w.updated || w.takenAt || "") > lb);
+    return { recs, work, n: recs.length + work.length };
+  }
+  function markBackup() { const now = new Date().toISOString(); ls.set("last-backup", now); NoteStore.kv.put("last-backup", now); updateInspHead(); }
+  async function backupReminder() {
+    const u = unbackedItems(); if (!u.n) return;
+    const lb = lastBackup(), hours = (Date.now() - new Date(lb || 0).getTime()) / 3600000;
+    const oldest = [...u.recs.map((r) => r.updated), ...u.work.map((w) => w.updated || w.takenAt)].sort()[0];
+    if (hours < ((CFG.backup && CFG.backup.warnHours) || 24) && lb) return;
+    if (oldest && localDate(new Date(oldest)) === localDate()) return;  // 今日の分だけなら案内しない
+    const go = await dialog({ tone: "warn", icon: "warn", title: "バックアップされていない点検データがあります", body: `<p>点検 ${u.recs.length}本・作業記録 ${u.work.length}件が、まだ端末の外に保存されていません（最後のバックアップ：${lb ? dtOf(lb) : "なし"}）。</p><p class="small">ブラウザのデータが消えると復元できません。「設定・データ → バックアップ」で保存してください。</p>`, ok: "バックアップへ", cancel: "あとで" });
+    if (go) openSheet("inspmenu");
+  }
 
   // ---------- 起動画面：点検員の名前 ----------
   function askInspector() {
@@ -1644,7 +1697,7 @@ window.WorkStore = window.NoteStore.work;
   const ijExpr = ["coalesce", ["feature-state", "ij"], 0];
   function inspColorExpr() { const m = ["match", ijExpr, 1, "#ffffff"]; IC.judges.forEach((j, k) => m.push(k + 2, j.color)); m.push(2 + IC.judges.length, NOJ.color, "#7d8f84"); return m; }
   async function enterInsp(name) {
-    INSP.on = true; INSP.name = name;
+    INSP.on = true; INSP.name = name; INSP.device = await ensureDevice();
     try { navigator.storage?.persist?.(); } catch { }  // 点検データが自動で消されないように
     for (const r of await InspStore.all()) INSP.recs.set(r.id, linkRec(normRec(r)));
     INSP.work = (await WorkStore.all()).map(normWork);
@@ -1655,7 +1708,9 @@ window.WorkStore = window.NoteStore.work;
       "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 3, 15, 8, 18, 14], "circle-color": ["get", "c"],
       "circle-stroke-width": 2.5, "circle-stroke-color": ["case", ["==", ["get", "d"], 1], "#263238", "#ef6c00"] } }, "trees-sel-core");
     applyInspStates(); renderLegend(); updateInspHead(); applyFilters();
-    toast(N ? `${name} さん、点検を開始します。木をタップすると点検を入力できます` : "樹木データがありません。「設定・データ」の「樹木の追加（Excel）」から読み込んでください", 5000);
+    toast(N ? `${name} さん、点検を開始します。木をタップすると点検を入力できます` : "樹木データがありません。「設定・データ」から読み込んでください", 5000);
+    if (!N) setTimeout(() => { if (!pane) openSheet("inspmenu"); }, 600);  // 最初は樹木データの読み込み画面を開く
+    setTimeout(backupReminder, 1200);
   }
   // 点の色分け：status＝点検状況（未点検・下書き・判定）／sp＝樹種（点検状況は輪の色で表示）
   function inspRingExpr() { const m = ["match", ijExpr, 1, "#ef6c00"]; IC.judges.forEach((j, k) => m.push(k + 2, j.color)); m.push(2 + IC.judges.length, NOJ.color, "#ffffff"); return m; }
@@ -1937,7 +1992,7 @@ window.WorkStore = window.NoteStore.work;
         box.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === v)); setAns(id, v); return; }
       const jb = t.closest("[data-jv]"); if (jb) { await setJudge(INSP.cur.ans.judge === jb.dataset.jv ? "" : jb.dataset.jv); return; }
       const mic = t.closest("[data-mic]"); if (mic) { startVoice(body.querySelector(`[data-text="${mic.dataset.mic}"]`), mic); return; }
-      const pd = t.closest("[data-pdel]"); if (pd) { if (confirm("この写真を削除しますか？")) { INSP.cur.photos.splice(+pd.dataset.pdel, 1); markDirty(); renderIPhotos(); refreshFormState(); } return; }
+      const pd = t.closest("[data-pdel]"); if (pd) { if (confirm("この写真を外しますか？（保存すると保管庫に残ります）")) { INSP.cur.photos.splice(+pd.dataset.pdel, 1); markDirty(); renderIPhotos(); refreshFormState(); } return; }
       const pv = t.closest("[data-pview]"); if (pv) { openPhoto(+pv.dataset.pview); return; }
       const b = t.closest("[data-ia]"); if (!b) return;
       const a = b.dataset.ia;
@@ -1956,6 +2011,14 @@ window.WorkStore = window.NoteStore.work;
     if (r.sp) { const used = new Set(r.photos.map((x) => x.name)); for (const ph of r.photos) if (/_樹種未入力_\d+\.jpg$/.test(ph.name)) { used.delete(ph.name); ph.name = photoName(r, ph.date, used); used.add(ph.name); } }
     r.judge = r.ans.judge || ""; r.markReq = !!markRule(r);
     r.updated = new Date().toISOString(); if (!r.created) r.created = r.updated; if (!r.inspector) r.inspector = INSP.name;
+    if (!r.device) r.device = INSP.device; r.lastDevice = INSP.device;
+    // 保存前の内容を保管庫へ：外した写真は画像ごと、完了済みの記録を直したときは変更前の内容
+    const prev = INSP.recs.get(r.id);
+    if (prev && prev !== r && prev.status !== "new") {
+      const keep = new Set((r.photos || []).map(phKey));
+      for (const ph of prev.photos || []) if (!keep.has(phKey(ph))) await archive("photo", ph, { key: r.id, rec: slimRec(prev) });
+      if (prev.status === "done") await archive("rev", slimRec(prev), { key: r.id });
+    }
     await InspStore.put(r, true); INSP.recs.set(r.id, r);
     applyInspStates(); updateInspHead();
     applyFilters();
@@ -1984,7 +2047,8 @@ window.WorkStore = window.NoteStore.work;
   }
   async function deleteRec() {
     const r = INSP.cur;
-    if (!(await dialog({ tone: "danger", icon: "warn", title: "点検記録を削除しますか？", body: `<p>${esc(r.sp || "")}・${esc(placeOf(r))} の点検結果と写真を削除します。元に戻せません。</p>`, ok: "削除する", cancel: "やめる" }))) return;
+    if (!(await dialog({ tone: "danger", icon: "warn", title: "点検記録を削除しますか？", body: `<p>${esc(r.sp || "")}・${esc(placeOf(r))} の点検結果と写真を一覧から外します。</p><p class="small muted">削除した記録は写真も含めて「設定・データ → 保管庫」に残り、いつでも元に戻せます。</p>`, ok: "削除する", cancel: "やめる" }))) return;
+    const saved = INSP.recs.get(r.id); if (saved) await archive("rec", saved);
     await InspStore.remove(r.id); INSP.recs.delete(r.id);
     if (r.tree != null) map.removeFeatureState({ source: "trees", id: r.tree }, "ij");
     applyInspStates(); updateInspHead(); applyFilters(); INSP.dirty = false; toast("点検記録を削除しました");
@@ -2026,7 +2090,7 @@ window.WorkStore = window.NoteStore.work;
     let photo; try { photo = await stampPhoto(file, lines); } catch { toast("画像を読み込めませんでした"); return; }
     const w = { id: "w-" + uid(), inspector: cp.inspector, takenBy: INSP.name, date: cp.date, seq: cp.seq || null, every: +setting("every"),
       key: r.id || null, tree: r.tree ?? null, sp: r.sp || "", cat: r.cat || "", area: r.area || "", zone: r.zone || "", place: r.place || "",
-      tno: r.tno || "", lon: r.lon ?? userLoc?.[0] ?? null, lat: r.lat ?? userLoc?.[1] ?? null, gps: userLoc ? [...userLoc] : null, takenAt: now, updated: now };
+      tno: r.tno || "", lon: r.lon ?? userLoc?.[0] ?? null, lat: r.lat ?? userLoc?.[1] ?? null, gps: userLoc ? [...userLoc] : null, takenAt: now, updated: now, device: INSP.device };
     w.ph = { data: photo, cap: "", date: w.date, at: now }; w.ph.name = workName(w);
     await photoViewer(w.ph, { path: workPath(w), noDelete: true });
     await WorkStore.put(w, true); INSP.work.push(w); updateInspHead();
@@ -2309,10 +2373,40 @@ window.WorkStore = window.NoteStore.work;
   }
 
   // ---------- 設定・データ（集約） ----------
+  function backupHTML() {
+    const lb = lastBackup(), u = unbackedItems();
+    return `<div class="card${u.n ? " warnbox" : ""}" id="imBackup">
+      <div style="display:flex;align-items:center;gap:8px">${ic(u.n ? "warn" : "check")}<b style="flex:1">バックアップ</b></div>
+      <p class="small" style="margin:6px 0">最後のバックアップ：<b>${lb ? esc(dtOf(lb)) : "まだありません"}</b><br>${u.n ? `未バックアップ：<b>点検 ${u.recs.length}本・作業記録 ${u.work.length}件</b>` : lb ? "すべてバックアップ済みです" : "まだ点検記録はありません"}</p>
+      <div class="btnrow"><button class="btn${u.n ? "" : " sub"}" data-im="backup">${ic("check")}全データをファイルに保存</button>${navigator.share ? `<button class="btn sub" data-im="backupshare">${ic("share")}共有で保存</button>` : ""}</div>
+      <p class="small muted" style="margin-bottom:0">点検記録・写真・作業記録・保管庫をまとめた1つのファイル（JSON）です。端末の「ファイル」やパソコンに保存しておくと、別の端末に「取り込み」で戻せます。<br><span id="imStorage"></span></p></div>`;
+  }
+  async function fillStorageInfo() {
+    const el = $("#imStorage"); if (!el || !navigator.storage) return;
+    try {
+      const [est, per] = await Promise.all([navigator.storage.estimate?.(), navigator.storage.persisted?.()]);
+      const mb = (b) => (b / 1048576).toFixed(b < 10485760 ? 1 : 0);
+      el.innerHTML = `端末内の使用量：${est ? `${mb(est.usage || 0)}MB／上限の目安 ${mb(est.quota || 0)}MB` : "不明"}・自動削除の保護：${per ? "有効" : "<b>無効</b>（ホーム画面に追加して使うと有効になりやすくなります）"}`;
+    } catch { }
+  }
+  function ledgerHTML() {
+    const nl = N - baseCount;
+    const info = baseCount ? `<b>${esc(dataInfo.title || "樹木データ")}</b>：${fmt(baseCount)}本${dataInfo.loadedAt ? `（${esc(dtOf(dataInfo.loadedAt))} 読込${dataInfo.srcFile ? "・" + esc(dataInfo.srcFile) : ""}）` : dataInfo.src ? `（${esc(dataInfo.src)}）` : ""}` : "<b>樹木データが読み込まれていません</b>";
+    return `<p class="small" style="margin-top:0">${info}${nl ? `<br>この端末で追加：${fmt(nl)}本` : ""}</p>
+      <label class="btn${baseCount ? " sub" : ""} block file-btn">${ic("tree")}樹木データを読み込む（Excel・JSON）<input id="imLedger" type="file" accept=".xlsx,.xls,.json,application/json,${XMIME}"></label>
+      <p class="small muted">配布された樹木データを、この端末に読み込みます（読み込み直すと置き換え）。樹木データはインターネット上に公開されず、この端末の中だけに保存されます。点検記録は樹木番号で結び付くため、置き換えても消えません。</p>
+      <div class="btnrow"><button class="btn sub" data-im="tpl">テンプレートをダウンロード</button><label class="btn sub file-btn">Excelから樹木を追加<input id="imTrees" type="file" accept=".xlsx,.xls,${XMIME}"></label></div>
+      <details class="attrs"><summary>管理者向け：配布用の樹木データ</summary>
+        <p class="small muted">Excel（テンプレート）から配布用の樹木データ（JSON）を作成できます。作成したファイルは GitHub には置かず、メール・共有フォルダなどで各点検員に渡し、各端末で「樹木データを読み込む」から読み込みます。樹木番号が空欄の木には T-0001… を付けるため、全員に同じファイルを配ってください。</p>
+        <div class="btnrow"><label class="btn sub file-btn">Excelから配布用データを作成<input id="imTreesJson" type="file" accept=".xlsx,.xls,${XMIME}"></label><button class="btn sub" data-im="treesout">この端末の樹木を書き出し</button></div>
+        <button class="btn line block" data-im="clearlocal"${nl ? "" : " disabled"}>この端末で追加した樹木を外す（保管庫へ）</button></details>`;
+  }
   function renderInspMenu() {
     const recs = [...INSP.recs.values()], done = recs.filter(isDone).length, drafts = recs.filter((r) => r.status === "draft").length, whos = new Set(recs.map((r) => r.inspector).filter(Boolean));
     $("#pane-inspmenu").innerHTML = `
-      <div class="card" style="display:flex;align-items:center;gap:10px">${ic("user")}<span style="flex:1">点検員：<b>${esc(INSP.name)}</b></span><button class="btn line minibtn" data-im="rename">変更</button></div>
+      <div class="card" style="display:flex;align-items:center;gap:10px">${ic("user")}<span style="flex:1">点検員：<b>${esc(INSP.name)}</b><br><small class="muted">端末ID ${esc(INSP.device)}</small></span><button class="btn line minibtn" data-im="rename">変更</button></div>
+      ${N ? "" : `<div class="sec-title">樹木データ</div>${ledgerHTML()}`}
+      ${backupHTML()}
       <div class="sec-title">点検の設定</div>
       <label class="field"><span class="lbl">作業記録の撮影間隔（◯本ごと・0で案内なし）</span><input id="imEvery" class="inp" type="number" inputmode="numeric" min="0" max="200" value="${+setting("every")}"></label>
       <label class="field"><span class="lbl">速報の送信先メールアドレス</span><input id="imMail" class="inp" type="email" inputmode="email" value="${esc(setting("mailTo") || "")}" placeholder="例：kanri@example.jp"></label>
@@ -2327,15 +2421,9 @@ window.WorkStore = window.NoteStore.work;
         : `<div class="btnrow"><button class="btn" data-im="saveshare">${ic("share")}保存先を選んで保存</button><button class="btn sub" data-im="savezip">ダウンロード</button></div>`}
       <div class="notebox" style="margin-top:6px"><b>保存されるフォルダ</b><br>・点検データ／ … 点検結果一覧（Excel）・取り込み用データ（JSON）<br>・写真／日付／ … 日付_点検場所_樹木ナンバー_樹種名_連番.jpg<br>・作業記録／日付／ … 作業記録の写真<br>
         ${canPickDir() ? "選んだフォルダの中に、上のフォルダを作って保存します（同じ名前のファイルは上書き）。" : "スマートフォンでは、フォルダ構成をまとめたZIPファイルで保存します。「保存先を選んで保存」でiPhoneは「“ファイル”に保存」、Androidはドライブやファイル管理アプリを選ぶと、所定のフォルダに保存できます。ZIPを開くとフォルダに分かれています。"}</div>
-      <div class="sec-title">樹木データ</div>
-      <p class="small muted" style="margin-top:0">共有データ ${fmt(baseCount)}本${dataInfo.title ? `（${esc(dataInfo.title)}${dataInfo.generated ? "・" + esc(dataInfo.generated) : ""}）` : ""}／この端末で追加 ${fmt(N - baseCount)}本</p>
-      <div class="btnrow"><button class="btn sub" data-im="tpl">テンプレートをダウンロード</button><label class="btn sub file-btn">Excelから樹木を追加<input id="imTrees" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label></div>
-      <details class="attrs"><summary>管理者向け：共有用の樹木データ（trees.json）</summary>
-        <p class="small muted">全員の端末に同じ樹木を表示するには、樹木データを <code>data/trees.json</code> として公開します。Excel から作成するか、この端末の樹木（共有データ＋追加分）を書き出して、GitHub の <code>data/trees.json</code> を置き換えてください。</p>
-        <div class="btnrow"><label class="btn sub file-btn">Excelから trees.json を作成<input id="imTreesJson" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label><button class="btn sub" data-im="treesout">この端末の樹木を書き出し</button></div>
-        <button class="btn danger block" data-im="clearlocal"${N - baseCount ? "" : " disabled"}>この端末で追加した樹木を削除</button></details>
+      ${N ? `<div class="sec-title">樹木データ</div>${ledgerHTML()}` : ""}
       <div class="sec-title">データの集約 <span class="muted small">複数の点検員の結果をまとめる</span></div>
-      <p class="small muted" style="margin-top:0">点検データはこの端末のブラウザ内に保存されています。各点検員が「書き出し」たファイルを、取りまとめ担当者が「取り込み」で統合します（同じ木は新しい記録を採用）。ブラウザのデータを消去すると点検データも消えるため、こまめに書き出してください。</p>
+      <p class="small muted" style="margin-top:0">点検データはこの端末のブラウザ内に保存されています。各点検員が「書き出し」たファイルを、取りまとめ担当者が「取り込み」で統合します。同じ木に別の記録があるときは更新日時の新しい方を表示し、もう一方は保管庫に残します（保管庫から入れ替え可）。</p>
       <p class="small muted">書き出す範囲は上の「保存する範囲」と同じです。</p>
       <div class="btnrow"><button class="btn sub" data-im="exp">ファイルに保存</button><button class="btn sub" data-im="expshare">${ic("share")}共有で送る</button></div>
       <label class="btn line block file-btn">取り込み（複数ファイル可）<input id="imImp" type="file" accept=".json,application/json" multiple></label>
@@ -2343,7 +2431,11 @@ window.WorkStore = window.NoteStore.work;
       <p class="small muted">この端末のデータ：点検 ${recs.filter((r) => r.status !== "new").length}本（完了 ${done}・下書き ${drafts}）・作業記録 ${INSP.work.length}件・点検員 ${whos.size}名</p>
       <div class="sec-title">その他</div>
       <button class="btn line block" data-im="mode">点検員を交代する</button>
-      <button class="btn danger block" data-im="wipe" style="margin-top:8px">この端末の点検データをすべて削除</button>`;
+      <div class="sec-title">保管庫 <span class="muted small">削除・変更・置き換えの前の内容</span></div>
+      <p class="small muted" style="margin-top:0">点検データは削除されず、ここに残ります。内容の確認と元に戻すことができます。</p>
+      <button class="btn sub block" data-im="archive">保管庫を開く</button>
+      <button class="btn line block" data-im="round" style="margin-top:8px">新しい点検回を始める（今の記録を保管庫へ）</button>`;
+    fillStorageInfo();
   }
   function exportScope(scope) {
     const today = localDate();
@@ -2351,12 +2443,15 @@ window.WorkStore = window.NoteStore.work;
     const work = INSP.work.filter((w) => scope === "all" || (w.inspector === INSP.name && (scope === "mine" || w.date === today)));
     return { recs, work };
   }
-  async function exportInsp(how) {
-    const scope = $("#imScope .on")?.dataset.v || "today", { recs, work } = exportScope(scope);
-    if (!recs.length && !work.length) { toast("書き出す点検データがありません"); return; }
-    const doc = { type: "tree-inspection", version: 1, exportedAt: new Date().toISOString(), exportedBy: INSP.name, scope, records: recs, work };
-    const name = `点検データ_${safeName(INSP.name)}_${localDate()}${scope === "today" ? "" : "_" + scope}.json`;
+  async function exportInsp(how, forceScope) {
+    const scope = forceScope || $("#imScope .on")?.dataset.v || "today", { recs, work } = exportScope(scope);
+    const arc = scope === "all" ? await NoteStore.archive.all() : [];
+    if (!recs.length && !work.length && !arc.length) { toast("書き出す点検データがありません"); return; }
+    const doc = { type: "tree-inspection", version: 3, exportedAt: new Date().toISOString(), exportedBy: INSP.name, device: INSP.device, scope, records: recs, work, archive: arc };
+    const name = forceScope ? `バックアップ_${safeName(INSP.name)}_${INSP.device}_${localDate()}_${pad2(new Date().getHours())}${pad2(new Date().getMinutes())}.json` : `点検データ_${safeName(INSP.name)}_${localDate()}${scope === "today" ? "" : "_" + scope}.json`;
+    if (scope === "all") markBackup();
     const file = new File([JSON.stringify(doc)], name, { type: "application/json" });
+    if (scope === "all" && pane === "inspmenu") renderInspMenu();
     if (how === "share") { const r = await sendFiles([file], `点検データ（${INSP.name}・${dateJ(localDate())}）`, `点検データ（${recs.length}本・作業記録${work.length}件）を送付します。`, setting("mailTo")); if (r !== "cancel") toast("点検データを書き出しました"); }
     else { saveBlob(file, name); toast(`点検 ${recs.length}本・作業記録 ${work.length}件を書き出しました`); }
   }
@@ -2366,24 +2461,33 @@ window.WorkStore = window.NoteStore.work;
     linkRec(r);
   }
   async function importInsp(files) {
-    let add = 0, upd = 0, same = 0, conflict = 0, wadd = 0, bad = 0;
+    files = [...files];  // 呼び出し側で入力欄を空にしても読めるよう、先に控える
+    let add = 0, upd = 0, same = 0, kept = 0, wadd = 0, aadd = 0, bad = 0; const conflicts = [];
+    const arcIds = new Set((await NoteStore.archive.all()).map((a) => a.id));
     for (const f of [...files]) {
       let doc; try { doc = JSON.parse(await f.text()); } catch { bad++; continue; }
       if (!doc || !/^(tree-inspection|street-tree-inspection)$/.test(doc.type)) { bad++; continue; }
+      const src = `${doc.exportedBy || ""}${doc.device ? "・端末" + doc.device : ""}（${f.name}）`;
       for (const r of doc.records || []) {
         if (!r || !r.ans || !isFinite(r.lon)) continue;
         normRec(r);
         resolveTree(r);
         const cur = INSP.recs.get(r.id);
-        if (cur && isDone(cur) && isDone(r) && cur.inspector !== r.inspector && cur.updated !== r.updated) conflict++;
-        if (!cur) { await InspStore.put(r, true); INSP.recs.set(r.id, r); add++; }
-        else if ((r.updated || "") > (cur.updated || "")) { await InspStore.put(r, true); INSP.recs.set(r.id, r); upd++; }
-        else same++;
+        if (!cur || cur.status === "new") { await InspStore.put(r, true); INSP.recs.set(r.id, r); add++; continue; }
+        if ((r.updated || "") === (cur.updated || "")) { same++; continue; }
+        // 同じ木に別の記録：更新日時の新しい方を表示し、もう一方は保管庫に残す（消さない）
+        const newer = (r.updated || "") > (cur.updated || ""), loser = newer ? cur : r;
+        const aid = `c:${r.id}:${loser.updated || ""}:${loser.inspector || ""}`;
+        if (!arcIds.has(aid)) { await archive("conflict", loser, { id: aid, key: r.id, src: newer ? "この端末の記録" : src }); arcIds.add(aid); }
+        if (newer) { await InspStore.put(r, true); INSP.recs.set(r.id, r); upd++; } else kept++;
+        if (isDone(cur) && isDone(r) && cur.inspector !== r.inspector) conflicts.push(`${r.tno || "台帳外"} ${r.sp || ""}（${cur.inspector}／${r.inspector}）`);
       }
       for (const w of doc.work || []) if (w && w.id && !INSP.work.some((x) => x.id === w.id)) { normWork(w); await WorkStore.put(w, true); INSP.work.push(w); wadd++; }
+      for (const a of doc.archive || []) if (a && a.id && !arcIds.has(a.id)) { await NoteStore.archive.put(a); arcIds.add(a.id); aadd++; }
     }
     applyInspStates(); updateInspHead(); applyFilters(); if (pane === "inspmenu") renderInspMenu();
-    dialog({ icon: "check", title: "取り込みが完了しました", body: `<ul><li>点検記録：追加 ${add}本・更新 ${upd}本・変更なし ${same}本</li><li>作業記録：追加 ${wadd}件</li>${conflict ? `<li><b>同じ木を別の点検員が点検：${conflict}本</b>（更新日時の新しい記録を採用）</li>` : ""}${bad ? `<li>読み込めなかったファイル：${bad}件</li>` : ""}</ul>` });
+    dialog({ icon: "check", title: "取り込みが完了しました", body: `<ul><li>点検記録：追加 ${add}本・更新 ${upd}本・変更なし ${same}本${kept ? `・この端末の方が新しい ${kept}本` : ""}</li><li>作業記録：追加 ${wadd}件</li>${aadd ? `<li>保管庫：追加 ${aadd}件</li>` : ""}${upd + kept ? `<li>同じ木の別の記録 ${upd + kept}件は保管庫に残しました</li>` : ""}${bad ? `<li>読み込めなかったファイル：${bad}件</li>` : ""}</ul>
+      ${conflicts.length ? `<p><b>同じ木を別の点検員が点検：${conflicts.length}本</b>（新しい方を表示中。保管庫で入れ替えできます）</p><ul class="misslist small" style="max-height:24vh;overflow:auto">${conflicts.slice(0, 50).map((c) => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}` });
   }
   async function inspMenuAction(a) {
     if (a === "rename") {
@@ -2398,6 +2502,9 @@ window.WorkStore = window.NoteStore.work;
     if (a === "savezip") saveFolders("zip");
     if (a === "tpl") downloadTreeTemplate();
     if (a === "exp") exportInsp("save");
+    if (a === "backup") exportInsp("save", "all");
+    if (a === "backupshare") exportInsp("share", "all");
+    if (a === "archive") openSheet("archive");
     if (a === "expshare") exportInsp("share");
     if (a === "xlsxall") {
       const list = [...INSP.recs.values()].filter((r) => r.status !== "new").sort((a, b) => (a.doneAt || a.updated || "").localeCompare(b.doneAt || b.updated || ""));
@@ -2408,16 +2515,78 @@ window.WorkStore = window.NoteStore.work;
     if (a === "mode") changeInspector();
     if (a === "treesout") { if (!N) { toast("樹木データがありません"); return; } saveBlob(treesJsonBlob(T, dataInfo.title), "trees.json"); toast(`${fmt(N)}本を trees.json に書き出しました`); }
     if (a === "clearlocal") {
-      if (!(await dialog({ tone: "danger", icon: "warn", title: "追加した樹木を削除しますか？", body: `<p>この端末で Excel から追加した樹木 ${fmt(N - baseCount)}本を削除します（共有データの樹木と点検記録は残ります）。</p>`, ok: "削除する", cancel: "やめる" }))) return;
-      await NoteStore.local.put([]); await reloadTrees(); renderInspMenu(); refreshOffUI(); toast("追加した樹木を削除しました");
+      if (!(await dialog({ tone: "warn", icon: "warn", title: "追加した樹木を外しますか？", body: `<p>この端末で Excel から追加した樹木 ${fmt(N - baseCount)}本を地図から外します。点検記録はそのまま残り、外した樹木は保管庫から戻せます。</p>`, ok: "外す", cancel: "やめる" }))) return;
+      await archive("local", { id: "local", trees: await NoteStore.local.get() });
+      await NoteStore.local.put([]); await reloadTrees(); renderInspMenu(); refreshOffUI(); toast("追加した樹木を外しました（保管庫に残っています）");
     }
-    if (a === "wipe") {
-      if (!(await dialog({ tone: "danger", icon: "warn", title: "点検データをすべて削除しますか？", body: "<p>この端末に保存されている点検記録・写真・作業記録をすべて削除します。<b>元に戻せません。</b>先に「書き出し」で保存してください。</p>", ok: "削除する", cancel: "やめる" }))) return;
-      if (!confirm("本当に削除しますか？")) return;
-      for (const r of INSP.recs.values()) await InspStore.remove(r.id);
-      for (const w of INSP.work) await WorkStore.remove(w.id);
-      INSP.recs.clear(); INSP.work = []; applyInspStates(); updateInspHead(); applyFilters(); renderInspMenu(); toast("点検データを削除しました");
+    if (a === "round") {
+      const recs = [...INSP.recs.values()].filter((r) => r.status !== "new");
+      if (!recs.length && !INSP.work.length) { toast("点検データがありません"); return; }
+      if (unbackedItems().n) { dialog({ tone: "warn", icon: "warn", title: "先にバックアップしてください", body: "<p>まだバックアップしていない記録があります。上の「バックアップ」で全データを保存してから、新しい点検回を始めてください。</p>" }); return; }
+      const label = `〜${dateJ(localDate())}の点検`;
+      if (!(await dialog({ tone: "warn", icon: "warn", title: "新しい点検回を始めますか？", body: `<p>今の点検記録 ${recs.length}本・作業記録 ${INSP.work.length}件を「${esc(label)}」として保管庫に移し、すべての木を未点検に戻します。</p><p class="small muted">記録は削除されず、保管庫でいつでも確認・復元できます。</p>`, ok: "始める", cancel: "やめる" }))) return;
+      for (const r of recs) { await archive("round", r, { round: label }); await InspStore.remove(r.id); }
+      for (const w of INSP.work) { await archive("round", w, { round: label, type: "work" }); await WorkStore.remove(w.id); }
+      INSP.recs.clear(); INSP.work = []; applyInspStates(); updateInspHead(); applyFilters(); renderInspMenu(); toast("新しい点検回を始めました（前回分は保管庫にあります）", 4000);
     }
+  }
+  // ---------- 保管庫の画面 ----------
+  const AR = { kind: "", list: [] };
+  async function renderArchive() {
+    const el = $("#pane-archive"); el.innerHTML = `<p class="muted small">読み込み中…</p>`;
+    AR.list = (await NoteStore.archive.all()).sort((a, b) => (b.at || "").localeCompare(a.at || ""));
+    const kinds = [...new Set(AR.list.map((a) => a.kind))];
+    const list = AR.list.filter((a) => !AR.kind || a.kind === AR.kind);
+    const desc = (a) => {
+      const it = a.item || {};
+      if (a.type === "trees") return a.kind === "ledger" ? `${esc(it.title || "樹木データ")}・${fmt((it.trees || []).length)}本` : `${fmt((it.trees || []).length)}本`;
+      if (a.type === "photo") { const r = a.rec || {}; return `${esc(it.name || "写真")}<br>${esc(r.sp || "")} ${esc(placeOf(r))}${r.tno ? "・" + esc(r.tno) : ""}`; }
+      if (a.type === "work") return `作業記録 ${esc(it.date || "")}${it.seq ? "・" + it.seq + "本目" : ""}・${esc(it.inspector || "")}${it.tno ? "・" + esc(it.tno) : ""}`;
+      const j = judgeOf(it.judge);
+      return `${esc(it.sp || "")} ${esc(placeOf(it))}${it.tno ? "・" + esc(it.tno) : ""}<br>${it.status === "done" ? `判定 ${esc(j ? j.v : it.judge || "-")}` : it.status === "draft" ? "下書き" : ""}・${esc(it.inspector || "")}・${esc(dtOf(it.updated))}${(it.photos || []).length ? `・写真${it.photos.length}` : ""}`;
+    };
+    const thumb = (a) => { const d = a.type === "photo" ? a.item.data : a.type === "work" ? a.item.ph?.data : (a.item.photos || []).find((p) => p.data)?.data; return d ? `<img src="${d}" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex:none" data-arview="${esc(a.id)}">` : ""; };
+    el.innerHTML = `<p class="small muted" style="margin-top:0">削除・変更・置き換えの前の内容です。ここから消えることはありません。「元に戻す」で今の記録と入れ替えると、今の記録も保管庫に残ります。</p>
+      <label class="field"><span class="lbl">種類</span><select id="arKind" class="inp"><option value="">すべて（${AR.list.length}件）</option>${kinds.map((k) => `<option value="${k}"${k === AR.kind ? " selected" : ""}>${ARC_KIND[k] || k}（${AR.list.filter((a) => a.kind === k).length}件）</option>`).join("")}</select></label>
+      ${list.length ? `<div class="arlist">${list.slice(0, 300).map((a) => `<div class="card" style="display:flex;gap:10px;align-items:center;padding:10px">${thumb(a)}<div style="flex:1;min-width:0" class="small"><b>${ARC_KIND[a.kind] || a.kind}</b>${a.round ? `（${esc(a.round)}）` : ""}${a.restoredAt ? ' <span class="tag">復元済</span>' : ""}<br>${desc(a)}<br><span class="muted">${esc(dtOf(a.at))}・${esc(a.by || "")}${a.src ? "・" + esc(a.src) : ""}</span></div>${a.type === "trees" && !(a.item.trees || []).length ? "" : `<button class="btn line minibtn" data-arres="${esc(a.id)}">元に戻す</button>`}</div>`).join("")}</div>${list.length > 300 ? `<p class="small muted">新しい300件を表示しています</p>` : ""}` : `<p class="muted">保管庫は空です。</p>`}`;
+  }
+  async function restoreArchive(id) {
+    const a = AR.list.find((x) => x.id === id); if (!a) return;
+    const now = new Date().toISOString(), it = JSON.parse(JSON.stringify(a.item));
+    if (a.type === "rec") {
+      const cur = INSP.recs.get(it.id);
+      if (!(await dialog({ icon: "info", title: "この記録を元に戻しますか？", body: `<p>${esc(it.sp || "")} ${esc(placeOf(it))}${it.tno ? "・" + esc(it.tno) : ""} の記録（${esc(it.inspector || "")}・${esc(dtOf(it.updated))}）を今の記録にします。</p>${cur && cur.status !== "new" ? `<p class="small muted">今の記録（${esc(cur.inspector || "")}・${esc(dtOf(cur.updated))}）は保管庫に移します。</p>` : ""}`, ok: "元に戻す", cancel: "やめる" }))) return;
+      if (cur && cur.status !== "new") await archive("replaced", cur);
+      if (a.kind === "rev") it.photos = cur ? JSON.parse(JSON.stringify(cur.photos || [])) : [];  // 変更前の内容は写真の画像を持たないため、今の写真を引き継ぐ
+      it.updated = now; it.restoredAt = now; normRec(it); linkRec(it);
+      await InspStore.put(it, true); INSP.recs.set(it.id, it);
+    } else if (a.type === "photo") {
+      const r = INSP.recs.get(a.key); if (!r || r.status === "new") { toast("元の点検記録が今はありません。先にその記録を元に戻してください", 4500); return; }
+      if ((r.photos || []).some((p) => phKey(p) === phKey(it))) { toast("この写真はすでに記録に入っています"); return; }
+      it.name = photoName(r, it.date || localDate(), new Set(r.photos.map((p) => p.name)));
+      r.photos.push(it); r.updated = now; await InspStore.put(r, true);
+    } else if (a.type === "work") {
+      if (INSP.work.some((w) => w.id === it.id)) { toast("この作業記録はすでにあります"); return; }
+      it.updated = now; await WorkStore.put(it, true); INSP.work.push(normWork(it));
+    } else if (a.kind === "ledger") {
+      if (!(await dialog({ icon: "info", title: "この樹木データに戻しますか？", body: `<p>${esc(it.title || "")}（${fmt((it.trees || []).length)}本）に戻します。今の樹木データは保管庫に移します。</p>`, ok: "戻す", cancel: "やめる" }))) return;
+      const prev = await NoteStore.ledger.get(); if (prev) await archive("ledger", prev);
+      await NoteStore.ledger.put({ ...it, loadedAt: now }); await reloadTrees();
+    } else if (a.kind === "local") {
+      const cur = new Set(T.map((t) => t.tno)), add = (it.trees || []).filter((t) => !cur.has(t.tno));
+      if (!add.length) { toast("戻す樹木はありません（すでに表示されています）"); return; }
+      await addLocalTrees(add);
+    }
+    a.restoredAt = now; await NoteStore.archive.put(a);
+    applyInspStates(); updateInspHead(); applyFilters(); renderArchive(); toast("元に戻しました");
+  }
+  function initArchivePane() {
+    const el = $("#pane-archive");
+    el.onchange = (e) => { if (e.target.id === "arKind") { AR.kind = e.target.value; renderArchive(); } };
+    el.onclick = (e) => {
+      const r = e.target.closest("[data-arres]"); if (r) { restoreArchive(r.dataset.arres); return; }
+      const v = e.target.closest("[data-arview]"); if (v) lightbox(v.getAttribute("src"));
+    };
   }
   // 台帳にない木：画面中央の十字で位置を指定
   function startInspAdd() { closeSheet(); document.body.classList.add("adding"); $("#inspAddBar").hidden = false; $("#crosshair").removeAttribute("hidden"); }
@@ -2457,7 +2626,7 @@ window.WorkStore = window.NoteStore.work;
     wl.onclick = async (e) => {
       const v = e.target.closest("[data-wview]"); if (v) { const w = INSP.work.find((x) => x.id === v.dataset.wview); if (w) { await photoViewer(w.ph, { path: workPath(w), noDelete: true }); w.updated = new Date().toISOString(); await WorkStore.put(w); renderWorklog(); } return; }
       const d = e.target.closest("[data-wdel]");
-      if (d) { if (!confirm("この作業記録を削除しますか？")) return; await WorkStore.remove(d.dataset.wdel); INSP.work = INSP.work.filter((x) => x.id !== d.dataset.wdel); updateInspHead(); renderWorklog(); return; }
+      if (d) { if (!confirm("この作業記録を削除しますか？（写真は保管庫に残ります）")) return; const w0 = INSP.work.find((x) => x.id === d.dataset.wdel); if (w0) await archive("work", w0, { type: "work" }); await WorkStore.remove(d.dataset.wdel); INSP.work = INSP.work.filter((x) => x.id !== d.dataset.wdel); updateInspHead(); renderWorklog(); return; }
       const b = e.target.closest("[data-wl]"); if (!b) return;
       const today = localDate(), dd = WL.date === "today" ? today : WL.date, match = (who, date) => (WL.date === "all" || date === dd) && (!WL.who || who === WL.who);
       const ws = INSP.work.filter((w) => match(w.inspector, w.date)).sort((a, c) => (a.takenAt || "").localeCompare(c.takenAt || ""));
@@ -2479,6 +2648,7 @@ window.WorkStore = window.NoteStore.work;
       const a = e.target.closest("#rpAtt button"); if (a) { setSetting("attach", a.dataset.v); $$("#rpAtt button").forEach((x) => x.classList.toggle("on", x === a)); return; }
       const b = e.target.closest("[data-rp]"); if (b) reportAction(b.dataset.rp);
     };
+    initArchivePane();
     const im = $("#pane-inspmenu");
     im.onchange = (e) => {
       const t = e.target;
@@ -2486,6 +2656,7 @@ window.WorkStore = window.NoteStore.work;
       if (t.id === "imMail") setSetting("mailTo", t.value.trim());
       if (t.id === "imImp" && t.files.length) { importInsp(t.files); t.value = ""; }
       if (t.id === "imTrees" && t.files[0]) { importTreesXlsx(t.files[0], "add"); t.value = ""; }
+      if (t.id === "imLedger" && t.files[0]) { importLedger(t.files[0]); t.value = ""; }
       if (t.id === "imTreesJson" && t.files[0]) { importTreesXlsx(t.files[0], "json"); t.value = ""; }
     };
     im.onclick = (e) => {
@@ -2716,6 +2887,7 @@ window.WorkStore = window.NoteStore.work;
       try {
         const root = await getRootDir(how === "pick"); INSP.dirName = root.name;
         for (const f of set.files) await writeToDir(root, f.path, f.blob);
+        if (scope === "all") markBackup();
         renderInspMenu();
         dialog({ icon: "check", title: "フォルダに保存しました", body: `<p>保存先：<b>${esc(root.name)}</b></p><ul class="small"><li>点検データ：点検結果一覧（Excel）・取り込み用データ</li><li>写真：${nPh}枚（写真/日付/）</li><li>作業記録：${nW}枚（作業記録/日付/）</li></ul>` });
       } catch (e) { if (e && e.name === "AbortError") return; toast((e && e.message) || "保存できませんでした", 4500); }
@@ -2726,11 +2898,11 @@ window.WorkStore = window.NoteStore.work;
     const name = `${CFG.filePrefix}_${fsName(set.who)}_${localDate()}.zip`, file = new File([zip], name, { type: "application/zip" });
     if (how === "share" && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
       const ok = await dialog({ icon: "share", title: "保存の準備ができました", body: `<p class="small">「保存先を選ぶ」→ 共有メニューで <b>「ファイル」に保存</b>（iPhone）や <b>ドライブ</b> などを選び、所定のフォルダを指定してください。ZIPを開くと「点検データ」「写真」「作業記録」のフォルダに分かれています。</p>`, ok: "保存先を選ぶ", cancel: "やめる",
-        onOk: () => { navigator.share({ files: [file], title: name }).catch(() => { }); } });
+        onOk: () => { navigator.share({ files: [file], title: name }).then(() => { if (scope === "all") { markBackup(); renderInspMenu(); } }).catch(() => { }); } });
       if (ok) toast("保存先を選んでください", 2500);
       return;
     }
-    saveBlob(file, name);
+    saveBlob(file, name); if (scope === "all") { markBackup(); renderInspMenu(); }
     toast(`${name} を保存しました（写真${nPh}枚・作業記録${nW}枚）`, 4500);
   }
   async function folderZip(files) {
@@ -2787,7 +2959,38 @@ window.WorkStore = window.NoteStore.work;
     return map;
   }
   const numCell = (v) => { if (v == null || v === "") return null; const n = +String(v).replace(/[,，]/g, "").replace(/[０-９．－]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)); return isFinite(n) ? n : NaN; };
-  // mode："add"＝この端末に追加 ／ "json"＝共有用の trees.json を作成（端末には追加しない）
+  // 樹木データ（台帳）を読み込む：Excel（テンプレート）または配布用 JSON
+  async function importLedger(file) {
+    if (!/\.json$/i.test(file.name) && file.type !== "application/json") { await importTreesXlsx(file, "ledger"); return; }
+    let j; try { j = JSON.parse(await file.text()); } catch { toast("樹木データ（JSON）を読み込めませんでした", 4000); return; }
+    if (!j || !Array.isArray(j.trees)) { toast("樹木データの形式ではありません（配布用の樹木データを選んでください）", 4500); return; }
+    const ok = [], errs = [], seen = new Set();
+    j.trees.forEach((t, k) => {
+      const e = [], tno = String(t.tno ?? "").trim();
+      if (!tno) e.push("樹木番号が空欄"); else if (seen.has(tno)) e.push(`樹木番号「${tno}」が重複`);
+      if (!t.sp) e.push("樹種が空欄");
+      if (!(isFinite(t.lat) && isFinite(t.lon) && t.lat > 20 && t.lat < 46 && t.lon > 122 && t.lon < 154)) e.push("位置が不正");
+      if (e.length) errs.push([k + 1, tno || t.sp || "", e.join("・")]); else { seen.add(tno); ok.push({ ...t, tno }); }
+    });
+    await setLedger(ok, { title: j.title || file.name.replace(/\.json$/i, ""), generated: j.generated || "", srcFile: file.name }, errs, "件目");
+  }
+  async function setLedger(trees, meta, errs = [], unit = "行目") {
+    const prev = await NoteStore.ledger.get(), nos = new Set(trees.map((t) => t.tno)), local = new Set((await NoteStore.local.get()).map((t) => t.tno));
+    const lost = [...INSP.recs.values()].filter((r) => String(r.id).startsWith("t:") && r.status !== "new" && !nos.has(r.tno) && !local.has(r.tno)).length;
+    const go = await dialog({ icon: trees.length ? "tree" : "warn", tone: trees.length ? "" : "warn", title: "樹木データを読み込む",
+      body: `<p>読み込める木：<b>${trees.length}本</b>${errs.length ? `／読み込めない${unit === "行目" ? "行" : "木"}：<b style="color:#c62828">${errs.length}</b>` : ""}</p>
+        ${errs.length ? `<ul class="misslist small" style="max-height:30vh;overflow:auto">${errs.slice(0, 100).map(([l, n, m]) => `<li>${l}${unit} ${esc(n)}：${esc(m)}</li>`).join("")}</ul>` : ""}
+        ${trees.length ? `<p class="small muted">${prev ? `今の樹木データ（${fmt((prev.trees || []).length)}本）と置き換えます。前のデータは保管庫に残ります。` : "この端末に保存します。"}点検記録は消えません。</p>${lost ? `<p class="small"><b>${lost}本</b>の点検記録は、新しいデータに同じ樹木番号がないため「台帳にない木」として表示されます。</p>` : ""}` : ""}`,
+      ok: trees.length ? `${trees.length}本を読み込む` : "閉じる", cancel: trees.length ? "やめる" : null });
+    if (!go || !trees.length) return;
+    if (prev) await archive("ledger", prev);
+    await NoteStore.ledger.put({ ...meta, trees, loadedAt: new Date().toISOString(), loadedBy: INSP.name });
+    await reloadTrees(); if (pane === "inspmenu") renderInspMenu();
+    const bb = new maplibregl.LngLatBounds(); trees.forEach((t) => bb.extend([t.lon, t.lat]));
+    if (pane) peekMap(); map.fitBounds(bb, { padding: 80, maxZoom: 18 });
+    toast(`樹木データ ${trees.length}本を読み込みました`, 3500);
+  }
+  // mode："add"＝この端末に追加 ／ "ledger"＝この端末の樹木データ（台帳）として置き換え ／ "json"＝配布用の樹木データを作成（端末には追加しない）
   async function importTreesXlsx(file, mode = "add") {
     try { await loadXLSX(); } catch (e) { toast(e.message, 4000); return; }
     let wb; try { wb = XLSX.read(await file.arrayBuffer(), { type: "array" }); } catch { toast("Excelファイルを読み込めませんでした", 4000); return; }
@@ -2797,8 +3000,9 @@ window.WorkStore = window.NoteStore.work;
     if (hr < 0) { toast("「樹種」の列が見つかりません。テンプレートの形式で作成してください", 4500); return; }
     const hm = mapHeaders(aoa[hr]);
     if (hm.lat == null && hm.x == null) { toast("位置の列（緯度・経度 または X座標・Y座標）が見つかりません", 4500); return; }
-    const existNo = new Set(mode === "json" ? [] : TIDX.keys()), seen = new Set(), ok = [], errs = [];
-    let auto = 0; const autoNo = () => { let n; do { n = `${mode === "json" ? "T" : "L"}-${String(++auto).padStart(4, "0")}`; } while (existNo.has(n) || seen.has(n)); return n; };
+    const existNo = new Set(mode === "add" ? TIDX.keys() : []), seen = new Set(), ok = [], errs = [];
+    // 空欄の樹木番号：台帳・配布用は T-0001…（同じExcelなら全端末で同じ番号）、端末での追加は端末IDを入れて他の端末と重ならないようにする
+    let auto = 0; const autoNo = () => { let n; do { n = mode === "add" ? `L-${INSP.device}-${String(++auto).padStart(3, "0")}` : `T-${String(++auto).padStart(4, "0")}`; } while (existNo.has(n) || seen.has(n)); return n; };
     for (let k = hr + 1; k < aoa.length; k++) {
       const row = aoa[k], get = (f) => hm[f] == null ? "" : row[hm[f]];
       if (row.every((c) => c === "" || c == null)) continue;
@@ -2824,13 +3028,14 @@ window.WorkStore = window.NoteStore.work;
       let cat = String(get("cat") ?? "").trim(); cat = /中/.test(cat) ? "中木" : /低/.test(cat) ? "低木" : "高木";
       ok.push({ tno, sp, cat, h, g, w, lat: +lat.toFixed(7), lon: +lon.toFixed(7), area: String(get("area") ?? "").trim(), zone: String(get("zone") ?? "").trim(), place: String(get("place") ?? "").trim(), memo: String(get("memo") ?? "").trim() });
     }
-    const go = await dialog({ icon: ok.length ? "tree" : "warn", tone: ok.length ? "" : "warn", title: mode === "json" ? "共有用の樹木データ（trees.json）を作成" : "Excelから樹木を追加",
+    if (mode === "ledger") { await setLedger(ok, { title: file.name.replace(/\.xlsx?$/i, ""), generated: localDate(), srcFile: file.name }, errs); return; }
+    const go = await dialog({ icon: ok.length ? "tree" : "warn", tone: ok.length ? "" : "warn", title: mode === "json" ? "配布用の樹木データを作成" : "Excelから樹木を追加",
       body: `<p>追加できる木：<b>${ok.length}本</b>${errs.length ? `／追加できない行：<b style="color:#c62828">${errs.length}行</b>` : ""}</p>
         ${errs.length ? `<ul class="misslist small" style="max-height:30vh;overflow:auto">${errs.slice(0, 100).map(([l, n, m]) => `<li>${l}行目 ${esc(n)}：${esc(m)}</li>`).join("")}</ul>` : ""}
-        ${ok.length ? (mode === "json" ? `<p class="small muted">作成した trees.json を GitHub の <code>data/trees.json</code> と置き換えると、全員の端末にこの樹木が表示されます（この端末には追加しません）。</p>` : `<p class="small muted">追加した木はこの端末に保存され、地図・点検に表示されます。</p>`) : ""}`,
+        ${ok.length ? (mode === "json" ? `<p class="small muted">作成したファイルを各点検員に渡し、各端末の「樹木データを読み込む」で読み込んでもらいます（GitHub には置かないでください。この端末には追加しません）。</p>` : `<p class="small muted">追加した木はこの端末に保存され、地図・点検に表示されます。</p>`) : ""}`,
       ok: ok.length ? (mode === "json" ? `${ok.length}本で作成` : `${ok.length}本を追加`) : "閉じる", cancel: ok.length ? "やめる" : null });
     if (!go || !ok.length) return;
-    if (mode === "json") { saveBlob(treesJsonBlob(ok, file.name.replace(/\.xlsx?$/i, "")), "trees.json"); toast(`${ok.length}本の trees.json を作成しました`, 3500); return; }
+    if (mode === "json") { const ttl = file.name.replace(/\.xlsx?$/i, ""); saveBlob(treesJsonBlob(ok, ttl), `樹木データ_${fsName(ttl)}_${localDate()}.json`); toast(`${ok.length}本の配布用データを作成しました`, 3500); return; }
     await addLocalTrees(ok.map((t) => ({ ...t, added: new Date().toISOString(), srcFile: file.name })));
     const bb = new maplibregl.LngLatBounds(); ok.forEach((t) => bb.extend([t.lon, t.lat]));
     if (pane) peekMap(); map.fitBounds(bb, { padding: 80, maxZoom: 18 });
@@ -2903,8 +3108,8 @@ window.WorkStore = window.NoteStore.work;
   }
   function offStatusHTML() {
     if (!OFF.supported) return `${ic("warn")}<span>この表示方法ではオフライン用の保存ができません（GitHub Pages など <b>https</b> で公開したページを開くと使えます）</span>`;
-    if (!OFF.ready) return `${ic("info")}<span>オフライン用にアプリと樹木データを保存しています…（通信のある場所で1度開くと完了します）</span>`;
-    return `${ic("check")}<span><b>アプリ・樹木データ・Excel出力の機能は保存済み</b>です。通信がなくても起動できます。</span>`;
+    if (!OFF.ready) return `${ic("info")}<span>オフライン用にアプリを保存しています…（通信のある場所で1度開くと完了します）</span>`;
+    return `${ic("check")}<span><b>アプリ・Excel出力の機能は保存済み</b>です。通信がなくても起動できます（樹木データ・点検データは端末内に保存されています）。</span>`;
   }
   function offlineHTML() {
     const areas = offAreas(), b = map ? curBounds() : null;

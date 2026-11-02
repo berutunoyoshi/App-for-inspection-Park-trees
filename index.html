@@ -416,6 +416,8 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .stabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 0 12px; }
 .stabs button { border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg); padding: 7px 8px; font-weight: 800; font-size: 14px; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
 .stabs button small { font-size: 11px; color: var(--muted); font-weight: 700; }
+.stabs.ilmode { grid-template-columns: repeat(3, 1fr); }
+.stabs.ilmode button { font-size: 13px; }
 .stabs button.on { border-color: var(--st); background: var(--st); color: #fff; }
 .stabs button.on small { color: rgba(255,255,255,.85); }
 .ihelp { font-size: 12px; color: var(--muted); line-height: 1.45; margin: -2px 0 8px; }
@@ -453,6 +455,9 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .tape.dbl { background: radial-gradient(circle, #8d6e63 0 30%, var(--mc) 31% 46%, #8d6e63 47% 52%, var(--mc) 53% 68%, #8d6e63 69%); }
 .boardfull { position: fixed; inset: 0; z-index: 400; background: #0b1f12; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
 .boardfull p { color: #cfe3d4; font-size: 13px; margin: 0; }
+.bdwrap { text-align: left; margin: 4px -4px 0; padding: 0 4px; }
+.bdform .field { margin-bottom: 8px; }
+.bdform .inp { font-size: 15px; }
 
 .ibanner { display: flex; gap: 10px; align-items: center; border-radius: 12px; padding: 10px 12px; margin: 0 0 6px; font-size: 13px; }
 .ibanner.done { background: color-mix(in srgb, var(--bc) 14%, var(--surface)); box-shadow: inset 4px 0 0 var(--bc); }
@@ -2482,23 +2487,49 @@ window.WorkStore = window.NoteStore.work;
     d.onclick = () => d.remove(); document.body.appendChild(d);
     void W; void H;
   }
+  // 黒板の編集欄：件名・受託者はこの端末に記憶し、次の撮影でも使う
+  function boardFormHTML(b, kindSel) {
+    const f = (id, lbl, v, ph = "", ta = false) => `<label class="field bdf"><span class="lbl">${lbl}</span>${ta ? `<textarea class="inp" rows="2" id="${id}" placeholder="${esc(ph)}">${esc(v || "")}</textarea>` : `<input class="inp" id="${id}" value="${esc(v || "")}" placeholder="${esc(ph)}">`}</label>`;
+    return `<div class="bdform">${f("bdTitle", "① 件名", b.title, "委託名", true)}${f("bdType", "② 業務内容（工種）", b.type)}${f("bdPos", "③ 位置", b.pos)}
+      ${kindSel ? `<label class="field bdf"><span class="lbl">④ 撮影種別内容</span><select class="inp" id="bdKindSel">${CFG.workKinds.map((k) => `<option${k === kindSel ? " selected" : ""}>${esc(k)}</option>`).join("")}</select></label>` : ""}
+      ${f("bdKind", kindSel ? "④ 撮影種別内容（黒板に入る文）" : "④ 撮影種別内容", b.kind)}${f("bdWho", "⑤ 受託者", b.who, "例：〇〇造園株式会社")}${f("bdDate", "⑥ 撮影年月日", b.date)}</div>`;
+  }
+  const readBoardForm = (d) => ({ title: d.querySelector("#bdTitle").value.trim(), type: d.querySelector("#bdType").value.trim(), pos: d.querySelector("#bdPos").value.trim(), kind: d.querySelector("#bdKind").value.trim(), who: d.querySelector("#bdWho").value.trim(), date: d.querySelector("#bdDate").value.trim() });
+  function bindBoardForm(d, cp, b) {
+    const sync = () => { Object.assign(b, readBoardForm(d)); setSetting("title", b.title); setSetting("contractor", b.who); };
+    d.querySelectorAll(".bdform input, .bdform textarea").forEach((x) => x.addEventListener("input", sync));
+    const ks = d.querySelector("#bdKindSel");
+    if (ks) ks.onchange = () => { WK.kind = ks.value; d.querySelector("#bdKind").value = boardFor(cp, ks.value).kind; sync(); };
+    return sync;
+  }
+  // 撮影後に黒板を直す
+  async function editBoard(w, ph) {
+    const b = { ...w.board };
+    const ok = await dialog({ icon: "pen", title: "黒板の内容を直す", body: boardFormHTML(b) + `<button type="button" class="btn line block" id="bdFull2" style="margin-top:8px">黒板を全画面で確認</button>`, ok: "この内容にする", cancel: "やめる",
+      onMount: (d) => { const sync = bindBoardForm(d, w, b); d.querySelector("#bdFull2").onclick = () => { sync(); boardFullscreen(b); }; } });
+    if (!ok) return false;
+    w.board = b; w.kind = b.kind; ph.data = await composeBoard(ph.orig || ph.data, b, w.boardMode || "left"); w.updated = new Date().toISOString();
+    setSetting("title", b.title); setSetting("contractor", b.who);
+    return true;
+  }
   async function workPhotoPrompt(cp, late) {
     const st = cp.stage || "tenken", r = cp.rec, every = everyOf(st), kinds = CFG.workKinds;
     WK.kind = WK.kind && kinds.includes(WK.kind) ? WK.kind : "目視状況";
-    const f = await dialog({ icon: "camera", title: late ? `作業状況写真（${STAGES[st].short} ${cp.seq}本目）` : `${STAGES[st].label} ${cp.seq}本目が完了しました`,
-      body: `<p>${every}本に1本の<b>作業状況写真</b>を撮影してください（特記仕様書14）。写真にはデジタル黒板が入ります。</p>
-        <label class="field" style="text-align:left"><span class="lbl">撮影種別内容</span><select class="inp" id="wkKind">${kinds.map((k) => `<option${k === WK.kind ? " selected" : ""}>${esc(k)}</option>`).join("")}</select></label>
-        <div class="card small" style="text-align:left">対象：${esc(r?.sp || "")}・${esc(r ? placeOf(r) : "")}${r?.tno ? "・" + esc(r.tno) : ""}<br>${esc(STAGES[st].label)}：${esc(cp.inspector)}・${dateJ(cp.date)}</div>
+    const b = boardFor(cp, WK.kind);
+    const title = cp.seq ? (late ? `作業状況写真（${STAGES[st].short} ${cp.seq}本目）` : `${STAGES[st].label} ${cp.seq}本目が完了しました`) : `作業状況写真（${STAGES[st].label}）`;
+    const f = await dialog({ icon: "camera", title,
+      body: `<p class="small" style="text-align:left">${cp.seq ? `${every}本に1本の<b>作業状況写真</b>を撮影してください（特記仕様書14）。` : ""}黒板の内容を確認・修正してから撮影します。</p>
+        <div class="bdwrap">${boardFormHTML(b, WK.kind)}</div>
         <button type="button" class="btn line block" id="wkFull" style="margin-top:8px">黒板を全画面で確認</button>`,
       ok: "カメラを起動", cancel: late ? "やめる" : "あとで撮影", camera: true,
-      onMount: (d) => { d.querySelector("#wkKind").onchange = (e) => { WK.kind = e.target.value; }; d.querySelector("#wkFull").onclick = () => boardFullscreen(boardFor(cp, WK.kind)); } });
+      onMount: (d) => { const sync = bindBoardForm(d, cp, b); d.querySelector("#wkFull").onclick = () => { sync(); boardFullscreen(b); }; } });
     if (!f) { if (!late) toast("撮影していない分は「作業記録」に撮り忘れとして表示されます（作業状況写真）", 4500); updateInspHead(); return; }
-    await saveWork(f, cp, WK.kind);
+    await saveWork(f, cp, WK.kind, b);
   }
-  async function saveWork(file, cp, kind) {
+  async function saveWork(file, cp, kind, boardIn) {
     const r = cp.rec || {}, now = new Date(), iso = now.toISOString(), st = cp.stage || "tenken";
     let orig; try { orig = await stampPhoto(file, []); } catch { toast("画像を読み込めませんでした"); return; }
-    const board = boardFor(cp, kind || "", now), mode = setting("board") === "none" ? "none" : "left";
+    const board = boardIn || boardFor(cp, kind || "", now), mode = setting("board") === "none" ? "none" : "left";
     const w = { id: "w-" + uid(), stage: st, kind: kind || "", inspector: cp.inspector, takenBy: INSP.name, date: cp.date, seq: cp.seq || null, every: everyOf(st),
       key: r.id || null, tree: r.tree ?? null, sp: r.sp || "", cat: r.cat || "", area: r.area || INSP.park || "", zone: r.zone || "", place: r.place || "",
       tno: r.tno || "", lon: r.lon ?? userLoc?.[0] ?? null, lat: r.lat ?? userLoc?.[1] ?? null, gps: userLoc ? [...userLoc] : null, takenAt: iso, updated: iso, device: INSP.device, board, boardMode: mode };
@@ -2542,7 +2573,55 @@ window.WorkStore = window.NoteStore.work;
   }
 
   // ---------- 点検一覧 ----------
-  const IL = { date: "all", who: "", j: "", q: "", park: true };
+  const IL = { date: "all", who: "", j: "", q: "", park: true, mode: "rec", sort: "near", tq: "", lim: 300 };
+  // ---------- 未点検の木・外観診断待ちの一覧 ----------
+  const inParkTree = (t) => !INSP.park || !parkHasTrees() || t.area === INSP.park;
+  function todoData(mode) {
+    const out = [];
+    for (let i = 0; i < N; i++) {
+      const t = T[i]; if (!inParkTree(t)) continue;
+      const tr = treeRec(i), dg = diagRec(i);
+      if (mode === "todo") { if (isDone(tr)) continue; out.push({ i, t, draft: !!tr && tr.status === "draft" }); }
+      else { if (!(isDone(tr) && tr.judge === "外観") || isDone(dg)) continue; out.push({ i, t, draft: !!dg && dg.status === "draft", tr }); }
+    }
+    return out;
+  }
+  function todoList() {
+    let list = todoData(IL.mode);
+    const q = toKata(IL.tq.trim());
+    if (q) list = list.filter(({ t }) => toKata([t.tno, t.insNo, t.sp, t.std, t.zone, t.place, t.memo].join(" ")).includes(q));
+    const ref = userLoc || (map ? [map.getCenter().lng, map.getCenter().lat] : null);
+    for (const x of list) x.d = ref ? distM(ref[0], ref[1], x.t.lon, x.t.lat) : null;
+    const byNo = (a, b) => String(a.t.tno).localeCompare(String(b.t.tno), "ja", { numeric: true });
+    if (IL.sort === "near" && ref) list.sort((a, b) => a.d - b.d);
+    else if (IL.sort === "zone") list.sort((a, b) => (a.t.zone || "").localeCompare(b.t.zone || "", "ja") || (a.t.place || "").localeCompare(b.t.place || "", "ja") || byNo(a, b));
+    else list.sort(byNo);
+    return list;
+  }
+  function todoItem({ i, t, draft, d, tr }) {
+    const tags = [`<span class="tag gray">${esc(t.tno)}</span>`, draft ? '<span class="tag">下書き</span>' : "", tr ? `<span class="tag" style="background:${STAGES.gaikan.theme};color:#fff">外観診断要</span>` : ""].join(" ");
+    const size = [t.h != null ? `樹高${t.h}m` : "", t.g != null ? `幹周${t.g}cm` : ""].filter(Boolean).join("・");
+    return `<span class="avatar" style="background:${treeColor(i)}">${esc((t.sp || "？")[0])}</span>
+      <span class="item-txt"><span class="item-main">${esc(t.sp || "樹種不明")} ${tags}</span>
+      <span class="item-sub">${esc(placeOf(t) || "")}${size ? "　" + size : ""}${t.insNo ? `・点検番号 ${esc(t.insNo)}` : ""}${d != null ? `・${userLoc ? "現在地から" : "地図の中心から"}${fmtDist(d)}` : ""}${tr && tr.ans?.reason ? `<br>点検の判定理由：${esc(String(tr.ans.reason).slice(0, 60))}` : ""}</span></span>`;
+  }
+  function renderTodo() {
+    const list = todoList(), el = $("#ilBody");
+    el.innerHTML = `<input id="ilTq" class="inp" type="search" placeholder="樹種・樹木番号・点検番号・${esc(LBL.zone)}・${esc(LBL.place)}で探す" value="${esc(IL.tq)}" autocomplete="off">
+      <div class="seg" id="ilSort" style="margin-top:8px">${[["near", "近い順"], ["no", "樹木番号順"], ["zone", `${LBL.zone}順`]].map(([v, l]) => `<button data-sort="${v}"${IL.sort === v ? ' class="on"' : ""}>${l}</button>`).join("")}</div>
+      <div class="listhead" style="margin-top:10px"><span id="ilMeta">${IL.mode === "todo" ? "未点検" : "外観診断待ち"} <b>${list.length}本</b>${INSP.park && parkHasTrees() ? `（${esc(INSP.park)}）` : ""}</span><span><button class="btn line minibtn" data-il="tfit">地図で表示</button> <button class="btn line minibtn" data-il="txlsx">Excel</button></span></div>
+      <ol id="ilList" class="list">${list.length ? list.slice(0, IL.lim).map((x) => `<li><button class="item" data-ti="${x.i}">${todoItem(x)}</button></li>`).join("") : `<li class="empty">${ic("check")}${IL.mode === "todo" ? "未点検の木はありません" : "外観診断を待っている木はありません"}</li>`}</ol>
+      ${list.length > IL.lim ? `<button class="btn line block" data-il="more">さらに表示（残り${list.length - IL.lim}本）</button>` : ""}
+      <p class="small muted">木を選ぶと、地図がその木に移動し、樹木の情報（樹種・樹高・幹周・枝張・場所・備考）と入力画面が開きます。</p>`;
+  }
+  async function todoXlsx(list) {
+    await loadXLSX();
+    const rows = [["No", "状態", "樹木番号", "点検番号", "樹種", "区分", "樹高(m)", "幹周(cm)", "枝張(m)", LBL.area, LBL.zone, LBL.place, "備考", "緯度", "経度", "地図"],
+      ...list.map((x, k) => [k + 1, IL.mode === "todo" ? (x.draft ? "下書き" : "未点検") : (x.draft ? "外観診断 下書き" : "外観診断待ち"), x.t.tno, x.t.insNo || "", x.t.sp, x.t.cat, x.t.h ?? "", x.t.g ?? "", x.t.w ?? "", x.t.area || "", x.t.zone || "", x.t.place || "", x.t.memo || "", x.t.lat, x.t.lon, `https://www.google.com/maps/search/?api=1&query=${x.t.lat},${x.t.lon}`])];
+    const wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet(rows); ws["!cols"] = rows[0].map((h) => ({ wch: Math.max(8, String(h).length * 2 + 2) }));
+    XLSX.utils.book_append_sheet(wb, ws, IL.mode === "todo" ? "未点検" : "外観診断待ち");
+    saveBlob(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: XMIME }), `${IL.mode === "todo" ? "未点検" : "外観診断待ち"}_${fsName(INSP.park || "全公園")}_${localDate()}.xlsx`);
+  }
   const recDate = (r) => r.doneDate || (r.updated ? localDate(new Date(r.updated)) : "");
   function recItem(r, extra = "") {
     const j = judgeOf(r.judge), draft = r.status !== "done";
@@ -2568,13 +2647,16 @@ window.WorkStore = window.NoteStore.work;
     return { base, list, f };
   }
   function renderInspList() {
+    const nTodo = todoData("todo").length, nWait = todoData("wait").length;
+    const tabs = `<div class="stabs ilmode">${[["rec", "点検記録", ""], ["todo", "未点検の木", nTodo], ["wait", "外観診断待ち", nWait]].map(([k, l, n]) => `<button type="button" data-ilm="${k}" class="${IL.mode === k ? "on" : ""}" style="--st:${k === "wait" ? STAGES.gaikan.theme : STAGES.tenken.theme}">${l}<small>${n === "" ? "完了・下書き" : n + "本"}</small></button>`).join("")}</div>`;
+    if (IL.mode !== "rec") { $("#pane-insplist").innerHTML = `${tabs}<div id="ilBody"></div>`; renderTodo(); return; }
     const all = [...INSP.recs.values()].filter((r) => r.status !== "new");
     const dates = [...new Set(all.map(recDate).filter(Boolean))].sort().reverse(), whos = [...new Set(all.map((r) => r.inspector).filter(Boolean))].sort();
     if (IL.date !== "today" && IL.date !== "all" && !dates.includes(IL.date)) IL.date = "all";
     const { base, f } = inspListData();
     const cnt = (k) => base.filter(f[k]).length;
     const segs = [["", "すべて"], ...STG_KEYS.map((k) => ["st:" + k, STAGES[k].label]), ...ALLJ.map((j) => [j.v, j.stage === "gaikan" ? `診断 ${j.v}` : j.label]), ["draft", "下書き"], ["mark", "テープ未"]];
-    $("#pane-insplist").innerHTML = `
+    $("#pane-insplist").innerHTML = `${tabs}
       <div class="grid2"><label class="field"><span class="lbl">点検日</span><select id="ilDate" class="inp"><option value="today">今日</option><option value="all">すべての日</option>${dates.map((d) => `<option value="${d}">${dateJ(d)}</option>`).join("")}</select></label>
         <label class="field"><span class="lbl">点検員</span><select id="ilWho" class="inp"><option value="">全員</option>${whos.map((w) => `<option${w === IL.who ? " selected" : ""}>${esc(w)}</option>`).join("")}</select></label></div>
       <label class="toggle small" style="margin:-4px 0 6px">${esc(INSP.park || "")} の記録だけ<span class="switch"><input type="checkbox" id="ilPark"${IL.park ? " checked" : ""}><span></span></span></label>
@@ -2602,12 +2684,11 @@ window.WorkStore = window.NoteStore.work;
     WL.missing = missingWork(match);
     const ws = INSP.work.filter((w) => match(w.inspector, w.date)).sort((a, b) => (b.takenAt || "").localeCompare(a.takenAt || ""));
     $("#pane-worklog").innerHTML = `
-      <div class="grid2"><label class="field"><span class="lbl">段階（黒板の工種）</span><select id="wlStage" class="inp">${STG_KEYS.map((k) => `<option value="${k}"${(WL.stage || "tenken") === k ? " selected" : ""}>${esc(STAGES[k].label)}</option>`).join("")}</select></label>
-        <label class="field"><span class="lbl">撮影種別内容</span><select id="wlKind" class="inp">${CFG.workKinds.map((k) => `<option${k === (WK.kind || "目視状況") ? " selected" : ""}>${esc(k)}</option>`).join("")}</select></label></div>
-      <div class="btnrow"><label class="btn file-btn">${ic("camera")}作業状況写真を撮影<input id="wlAny" type="file" accept="image/*" capture="environment"></label><button class="btn line" data-wl="full">黒板を全画面で確認</button></div>
+      <label class="field"><span class="lbl">段階（黒板の工種）</span><select id="wlStage" class="inp">${STG_KEYS.map((k) => `<option value="${k}"${(WL.stage || "tenken") === k ? " selected" : ""}>${esc(STAGES[k].label)}</option>`).join("")}</select></label>
+      <button class="btn block" data-wl="shoot">${ic("camera")}作業状況写真を撮影（黒板を確認・編集）</button>
       <div class="grid2" style="margin-top:12px"><label class="field"><span class="lbl">日付</span><select id="wlDate" class="inp"><option value="today">今日</option><option value="all">すべての日</option>${dates.map((x) => `<option value="${x}">${dateJ(x)}</option>`).join("")}</select></label>
         <label class="field"><span class="lbl">点検員</span><select id="wlWho" class="inp"><option value="">全員</option>${whos.map((w) => `<option${w === WL.who ? " selected" : ""}>${esc(w)}</option>`).join("")}</select></label></div>
-      ${WL.missing.length ? `<div class="errbox"><b>${ic("warn")}撮り忘れ ${WL.missing.length}件</b>${WL.missing.map((m, k) => `<div class="errrow"><span><b>${esc(m.inspector)}・${esc(STAGES[m.stage].label)} ${m.seq}本目</b>の作業状況写真がありません<br><small>${m.seq}本目：${esc(m.rec.sp)}・${esc(placeOf(m.rec))}（${timeOf(m.rec.doneAt)} 完了）</small></span><label class="btn line minibtn file-btn">${ic("camera")}撮影<input type="file" accept="image/*" capture="environment" data-late="${k}"></label></div>`).join("")}</div>`
+      ${WL.missing.length ? `<div class="errbox"><b>${ic("warn")}撮り忘れ ${WL.missing.length}件</b>${WL.missing.map((m, k) => `<div class="errrow"><span><b>${esc(m.inspector)}・${esc(STAGES[m.stage].label)} ${m.seq}本目</b>の作業状況写真がありません<br><small>${m.seq}本目：${esc(m.rec.sp)}・${esc(placeOf(m.rec))}（${timeOf(m.rec.doneAt)} 完了）</small></span><button class="btn line minibtn" data-wlate="${k}">${ic("camera")}撮影</button></div>`).join("")}</div>`
         : `<div class="oklabel">${ic("check")}撮り忘れはありません（樹木点検 ${everyOf("tenken") || "-"}本・外観診断 ${everyOf("gaikan") || "-"}本に1本）</div>`}
       <div class="listhead"><span>作業記録 ${ws.length}件</span><span><button class="btn line minibtn" data-wl="xlsx">Excel</button> <button class="btn line minibtn" data-wl="zip">写真をZIP</button></span></div>
       ${ws.length ? `<div class="wgrid">${ws.map((w) => `<div class="wcard"><img src="${w.ph.data}" alt="作業記録" data-wview="${esc(w.id)}"><button class="ph-del" data-wdel="${esc(w.id)}" aria-label="削除">×</button>
@@ -3253,7 +3334,7 @@ window.WorkStore = window.NoteStore.work;
   // スタート画面：準備の状況とアプリの設定
   // =====================================================================
   const AS = { page: "", ready: false };
-  const AS_PAGES = { trees: "樹木データ", project: "業務の情報（黒板・帳票）", mail: "速報の送信先", every: "作業状況写真の撮影頻度", device: "この端末の情報" };
+  const AS_PAGES = { trees: "樹木データ", project: "カルテの事務所名", mail: "速報の送信先", every: "作業状況写真の撮影頻度", device: "この端末の情報" };
   const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
   function treesInfo() { return baseCount ? `${fmt(baseCount)}本${dataInfo.title ? "（" + esc(dataInfo.title) + "）" : ""}` : ""; }
   function renderPrep() {
@@ -3265,7 +3346,6 @@ window.WorkStore = window.NoteStore.work;
     const item = (ok, label, val, page) => `<button type="button" class="prep-i${ok ? "" : " ng"}"${page ? ` data-as="${page}"` : " disabled"}>${ic(ok ? "check" : "warn")}<span>${label}</span><b>${val}</b></button>`;
     el.innerHTML = `<div class="prep-t">準備の状況</div>
       ${item(!!N, "樹木データ", N ? treesInfo() || fmt(N) + "本" : "未読込（読み込んでください）", "trees")}
-      ${item(!!setting("contractor"), "受託者（黒板）", setting("contractor") ? esc(setting("contractor")) : "未設定", "project")}
       ${item(!!mail, "速報の送信先", mail ? esc(mail) : "未設定", "mail")}
       ${item(true, "作業状況写真", ev, "every")}
       ${item(!OFF.supported || OFF.ready, "オフライン", !OFF.supported ? "使えない表示方法" : OFF.ready ? "アプリ保存済み" : "保存中…", "device")}`;
@@ -3280,7 +3360,7 @@ window.WorkStore = window.NoteStore.work;
       body.innerHTML = `<p class="small muted" style="margin-top:0">この端末で使うアプリ全体の設定です。点検中の操作（データの保存・提出、バックアップ、取り込み、オフライン地図、保管庫）は、点検を開始したあとの「設定・データ」にあります。</p>
         <div class="mlist">
           ${rowHTML({ attr: 'data-as="trees"', icon: "tree", title: "樹木データ", sub: N ? treesInfo() || fmt(N) + "本" : "読み込まれていません", badge: N ? "" : "要対応", tone: "red" })}
-          ${rowHTML({ attr: 'data-as="project"', icon: "clip", title: "業務の情報（黒板・帳票）", sub: `件名・受託者・事務所名・黒板の表示${setting("contractor") ? "" : "（受託者が未設定）"}`, badge: setting("contractor") ? "" : "未設定", tone: "gray" })}
+          ${rowHTML({ attr: 'data-as="project"', icon: "clip", title: "カルテの事務所名", sub: setting("office") ? esc(setting("office")) : "未設定（カルテの「事務所名」欄）" })}
           ${rowHTML({ attr: 'data-as="mail"', icon: "send", title: "速報の送信先", sub: mail ? esc(mail) : "未設定", badge: mail ? "" : "未設定", tone: "gray" })}
           ${rowHTML({ attr: 'data-as="every"', icon: "camera", title: "作業状況写真の撮影頻度", sub: `樹木点検 ${everyOf("tenken") || "-"}本・外観診断 ${everyOf("gaikan") || "-"}本に1本` })}
           ${rowHTML({ attr: 'data-as="device"', icon: "info", title: "この端末の情報", sub: `端末ID ${esc(INSP.device || "")}・使用量・オフラインの状態` })}
@@ -3316,14 +3396,9 @@ window.WorkStore = window.NoteStore.work;
         <p class="small muted">初期値は特記仕様書14の頻度（樹木点検100本に1本・外観診断50本に1本）です。点検員ごとに、完了した本数がこの数になるたびにカメラを起動します。</p>`;
     }
     if (page === "project") {
-      const bm = setting("board") === "none" ? "none" : "left";
-      body.innerHTML = `<label class="field"><span class="lbl">件名（委託名）</span><textarea id="asTitleIn" class="inp" rows="2">${esc(setting("title") || "")}</textarea></label>
-        <label class="field"><span class="lbl">受託者（会社名）</span><input id="asContr" class="inp" value="${esc(setting("contractor") || "")}" placeholder="例：〇〇造園株式会社"></label>
-        <label class="field"><span class="lbl">事務所名（カルテ）</span><input id="asOffice" class="inp" value="${esc(setting("office") || "")}" placeholder="例：〇〇サービスセンター"></label>
-        <div class="field"><span class="lbl">作業状況写真の黒板</span><div class="seg" id="asBoard">${[["left", "左端に表示"], ["none", "表示なし"]].map(([v, l]) => `<button data-v="${v}"${bm === v ? ' class="on"' : ""}>${l}</button>`).join("")}</div></div>
-        <button class="btn line block" data-asa="boardfull" style="margin-bottom:10px">黒板を全画面で確認</button>
+      body.innerHTML = `<label class="field"><span class="lbl">事務所名（カルテ）</span><input id="asOffice" class="inp" value="${esc(setting("office") || "")}" placeholder="例：〇〇サービスセンター"></label>
         <button class="btn block" data-asa="projsave">保存</button>
-        <p class="small muted">黒板には ①件名 ②業務内容（工種：樹木点検／外観診断）③位置（公園名・場所・樹木番号）④撮影種別内容（目視状況・〇本目など）⑤受託者 ⑥撮影年月日（西暦）が入ります。撮影後の写真ごとにも「左端に表示／表示なし」を切り替えられます。</p>`;
+        <p class="small muted">作業状況写真の黒板（件名・工種・位置・撮影種別内容・受託者・撮影年月日）は、撮影するときの画面で確認・修正します。</p>`;
     }
     if (page === "device") {
       body.innerHTML = `<div class="card"><p style="margin:0">端末ID：<b>${esc(INSP.device || "")}</b></p><p class="small muted" style="margin:4px 0 0">点検記録に入る、この端末の番号です。とりまとめの際に、どの端末の記録か分かります。</p></div>
@@ -3352,11 +3427,9 @@ window.WorkStore = window.NoteStore.work;
       toast("作業状況写真の撮影頻度を保存しました"); AS.page = ""; renderAppSet(); renderPrep(); updateInspHead();
     }
     if (a === "projsave") {
-      setSetting("title", $("#asTitleIn").value.trim()); setSetting("contractor", $("#asContr").value.trim()); setSetting("office", $("#asOffice").value.trim());
-      const b = $("#asBoard .on"); if (b) setSetting("board", b.dataset.v);
-      toast("業務の情報を保存しました"); AS.page = ""; renderAppSet(); renderPrep();
+      setSetting("office", $("#asOffice").value.trim());
+      toast("事務所名を保存しました"); AS.page = ""; renderAppSet(); renderPrep();
     }
-    if (a === "boardfull") { setSetting("title", $("#asTitleIn").value.trim()); setSetting("contractor", $("#asContr").value.trim()); boardFullscreen(boardFor({ stage: "tenken", rec: { area: INSP.park || CFG.parks[0], tno: "例-1", place: "" }, seq: 100 }, "目視状況")); }
   }
   // 樹木データを、テンプレートと同じ形式のExcelに書き出す（配布用に使える）
   async function treesXlsx() {
@@ -3373,7 +3446,7 @@ window.WorkStore = window.NoteStore.work;
     $("#asClose").onclick = () => { $("#appSet").hidden = true; renderPrep(); };
     $("#asBack").onclick = () => { AS.page = ""; renderAppSet(); };
     const body = $("#asBody");
-    body.onclick = (e) => { const bb = e.target.closest("#asBoard button"); if (bb) { $$("#asBoard button").forEach((x) => x.classList.toggle("on", x === bb)); return; } const p = e.target.closest("[data-as]"); if (p) { AS.page = p.dataset.as; renderAppSet(); body.scrollTop = 0; return; } const a = e.target.closest("[data-asa]"); if (a) appSetAction(a.dataset.asa); };
+    body.onclick = (e) => { const p = e.target.closest("[data-as]"); if (p) { AS.page = p.dataset.as; renderAppSet(); body.scrollTop = 0; return; } const a = e.target.closest("[data-asa]"); if (a) appSetAction(a.dataset.asa); };
     body.onchange = (e) => {
       const t = e.target;
       if (t.id === "asLedger" && t.files[0]) { importTreesXlsx(t.files[0], "ledger"); t.value = ""; }
@@ -3660,8 +3733,19 @@ window.WorkStore = window.NoteStore.work;
     $("#onlyUninsp").onchange = (e) => { F.uninsp = e.target.checked; applyFilters(); };
     const il = $("#pane-insplist");
     il.onchange = (e) => { if (e.target.id === "ilPark") { IL.park = e.target.checked; renderInspList(); } if (e.target.id === "ilDate") { IL.date = e.target.value; renderInspList(); } if (e.target.id === "ilWho") { IL.who = e.target.value; renderInspList(); } };
-    il.oninput = (e) => { if (e.target.id === "ilQ") { IL.q = e.target.value; fillInspItems(); } };
+    il.oninput = (e) => { if (e.target.id === "ilQ") { IL.q = e.target.value; fillInspItems(); } if (e.target.id === "ilTq") { IL.tq = e.target.value; IL.lim = 300; const pos = e.target.selectionStart; renderTodo(); const q = $("#ilTq"); q.focus(); try { q.setSelectionRange(pos, pos); } catch { } } };
     il.onclick = async (e) => {
+      const m = e.target.closest("[data-ilm]"); if (m) { IL.mode = m.dataset.ilm; IL.lim = 300; renderInspList(); return; }
+      const so = e.target.closest("[data-sort]"); if (so) { IL.sort = so.dataset.sort; renderTodo(); return; }
+      const ti = e.target.closest("[data-ti]"); if (ti) { selectTree(+ti.dataset.ti, true); return; }
+      const tb = e.target.closest("[data-il]");
+      if (tb && tb.dataset.il === "more") { IL.lim += 300; renderTodo(); return; }
+      if (tb && (tb.dataset.il === "tfit" || tb.dataset.il === "txlsx")) {
+        const list = todoList(); if (!list.length) { toast("該当する木がありません"); return; }
+        if (tb.dataset.il === "txlsx") { try { await todoXlsx(list); } catch (er) { toast(er.message, 4000); } return; }
+        if (IL.mode === "todo" && !F.uninsp) { F.uninsp = true; applyFilters(); toast("地図を「未点検だけ」の表示にしました（絞り込みで解除できます）", 3500); }
+        const bb = new maplibregl.LngLatBounds(); list.forEach((x) => bb.extend([x.t.lon, x.t.lat])); peekMap(); map.fitBounds(bb, { padding: 60, maxZoom: 18 }); return;
+      }
       const j = e.target.closest("[data-j]"); if (j) { IL.j = j.dataset.j; renderInspList(); return; }
       const it = e.target.closest("[data-rid]"); if (it) { const r = INSP.recs.get(it.dataset.rid); if (r) openInspectRec(r); return; }
       const b = e.target.closest("[data-il]"); if (!b) return;
@@ -3675,17 +3759,15 @@ window.WorkStore = window.NoteStore.work;
       const t = e.target;
       if (t.id === "wlDate") { WL.date = t.value; renderWorklog(); }
       if (t.id === "wlWho") { WL.who = t.value; renderWorklog(); }
-      if (t.id === "wlKind") WK.kind = t.value;
       if (t.id === "wlStage") WL.stage = t.value;
-      if (t.id === "wlAny" && t.files[0]) { const st = WL.stage || "tenken", sel = typeof selected === "number" ? (st === "gaikan" ? diagRec(selected) : treeRec(selected)) || newRecFor(selected, st) : null; await saveWork(t.files[0], { inspector: INSP.name, date: localDate(), seq: null, stage: st, rec: sel }, $("#wlKind")?.value || WK.kind); }
-      if (t.dataset.late != null && t.files[0]) await saveWork(t.files[0], WL.missing[+t.dataset.late], $("#wlKind")?.value || WK.kind);
     };
     wl.onclick = async (e) => {
       const v = e.target.closest("[data-wview]"); if (v) { const w = INSP.work.find((x) => x.id === v.dataset.wview); if (w) { await photoViewer(w.ph, { path: workPath(w), noDelete: true, noEdit: !!w.board, work: w }); w.updated = new Date().toISOString(); await WorkStore.put(w); renderWorklog(); } return; }
       const d = e.target.closest("[data-wdel]");
       if (d) { if (!confirm("この作業記録を削除しますか？（写真は保管庫に残ります）")) return; const w0 = INSP.work.find((x) => x.id === d.dataset.wdel); if (w0) await archive("work", w0, { type: "work" }); await WorkStore.remove(d.dataset.wdel); INSP.work = INSP.work.filter((x) => x.id !== d.dataset.wdel); updateInspHead(); renderWorklog(); return; }
+      const lt = e.target.closest("[data-wlate]"); if (lt) { await workPhotoPrompt(WL.missing[+lt.dataset.wlate], true); return; }
       const b = e.target.closest("[data-wl]"); if (!b) return;
-      if (b.dataset.wl === "full") { const st = WL.stage || "tenken", sel = typeof selected === "number" ? (st === "gaikan" ? live(diagRec(selected)) : live(treeRec(selected))) || newRecFor(selected, st) : null; boardFullscreen(boardFor({ stage: st, rec: sel }, $("#wlKind")?.value || WK.kind)); return; }
+      if (b.dataset.wl === "shoot") { const st = WL.stage || "tenken", sel = typeof selected === "number" ? (st === "gaikan" ? live(diagRec(selected)) : live(treeRec(selected))) || newRecFor(selected, st) : null; await workPhotoPrompt({ inspector: INSP.name, date: localDate(), seq: null, stage: st, rec: sel }, true); return; }
       const today = localDate(), dd = WL.date === "today" ? today : WL.date, match = (who, date) => (WL.date === "all" || date === dd) && (!WL.who || who === WL.who);
       const ws = INSP.work.filter((w) => match(w.inspector, w.date)).sort((a, c) => (a.takenAt || "").localeCompare(c.takenAt || ""));
       if (!ws.length && b.dataset.wl === "zip") { toast("作業記録の写真がありません"); return; }
@@ -3762,7 +3844,7 @@ window.WorkStore = window.NoteStore.work;
         <div class="field" style="margin:10px 0 4px;text-align:left"><span class="lbl">コメント</span>
           <div class="voicebox"><textarea class="inp" rows="2" id="phCap" placeholder="異常の内容・位置・寸法など（マイクで音声入力）">${esc(ph.cap || "")}</textarea><button type="button" class="mic" id="phMic" aria-label="音声入力">${ic("mic")}</button></div>
           <div class="chips phpre">${(opts.work ? CFG.workKinds : INSP.cur ? STG(INSP.cur).captionPresets : CFG.inspect.captionPresets).map((t) => `<button type="button" class="chip" data-pre="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
-        ${opts.work && opts.work.board ? `<div class="field" style="text-align:left;margin:6px 0"><span class="lbl">デジタル黒板</span><div class="seg" id="bdMode">${[["left", "左端に表示"], ["none", "表示なし"]].map(([v, l]) => `<button data-bm="${v}"${(opts.work.boardMode || "left") === v ? ' class="on"' : ""}>${l}</button>`).join("")}<button data-bm="full">全画面で確認</button></div></div>` : ""}
+        ${opts.work && opts.work.board ? `<div class="field" style="text-align:left;margin:6px 0"><span class="lbl">デジタル黒板</span><div class="seg" id="bdMode">${[["left", "左端に表示"], ["none", "表示なし"]].map(([v, l]) => `<button data-bm="${v}"${(opts.work.boardMode || "left") === v ? ' class="on"' : ""}>${l}</button>`).join("")}<button data-bm="full">全画面で確認</button></div><button type="button" class="btn line block" id="bdEdit" style="margin-top:6px">${ic("pen")}黒板の内容を直す</button></div>` : ""}
         <p class="small muted" style="text-align:left;margin:0">保存先：${esc(opts.path || phPath(ph))}</p>
         <div class="modal-btns">${opts.noDelete ? "" : `<button class="btn danger" data-r="del">削除</button>`}${opts.noEdit ? "" : `<button class="btn sub" data-r="edit">${ic("pen")}書き込み</button>`}<button class="btn main" data-r="ok">完了</button></div></div>`;
       document.body.appendChild(d);
@@ -3772,10 +3854,12 @@ window.WorkStore = window.NoteStore.work;
       d.querySelector(".phv-img").onclick = () => lightbox(ph.data);
       const done = (act) => { if (INSP.voice) { try { INSP.voice.stop(); } catch { } } ph.cap = ta.value.trim(); d.remove(); res(act); };
       d.querySelector('[data-r="ok"]').onclick = () => done("ok");
+      const be = d.querySelector("#bdEdit");
+      if (be) be.onclick = async () => { if (await editBoard(opts.work, ph)) d.querySelector(".phv-img").src = ph.data; };
       const bm = d.querySelector("#bdMode");
       if (bm) bm.onclick = async (e) => { const b = e.target.closest("[data-bm]"); if (!b) return; const w = opts.work;
         if (b.dataset.bm === "full") { boardFullscreen(w.board); return; }
-        w.boardMode = b.dataset.bm; ph.data = await composeBoard(ph.orig || ph.data, w.board, w.boardMode); w.updated = new Date().toISOString();
+        w.boardMode = b.dataset.bm; setSetting("board", w.boardMode); ph.data = await composeBoard(ph.orig || ph.data, w.board, w.boardMode); w.updated = new Date().toISOString();
         d.querySelector(".phv-img").src = ph.data; bm.querySelectorAll("[data-bm]").forEach((x) => x.classList.toggle("on", x.dataset.bm === w.boardMode)); };
       if (d.querySelector('[data-r="edit"]')) d.querySelector('[data-r="edit"]').onclick = async () => {
         ph.cap = ta.value.trim();

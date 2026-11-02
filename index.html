@@ -417,6 +417,69 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .stabs button { border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg); padding: 7px 8px; font-weight: 800; font-size: 14px; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
 .stabs button small { font-size: 11px; color: var(--muted); font-weight: 700; }
 .stabs.ilmode { grid-template-columns: repeat(3, 1fr); }
+.checks { display: grid; gap: 6px; }
+.checks label { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 14px; line-height: 1.4; cursor: pointer; }
+.checks input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--stage); }
+.checks label:has(input:checked) { border-color: var(--stage); background: color-mix(in srgb, var(--stage) 10%, var(--surface)); font-weight: 700; }
+.checks label.none { border-style: dashed; }
+.checks label.none:has(input:checked) { border-color: #7cb342; background: color-mix(in srgb, #7cb342 12%, var(--surface)); }
+.yn { margin-top: 6px; }
+.ynb { display: inline-block; font-size: 12.5px; font-weight: 800; padding: 3px 10px; border-radius: 99px; background: var(--surface-2); color: var(--muted); }
+.ynb.y { background: #c62828; color: #fff; }
+.ynb.n { background: #7cb342; color: #fff; }
+.secnav { position: sticky; top: -1px; z-index: 3; display: flex; gap: 6px; overflow-x: auto; padding: 8px 0; margin: 0 0 4px; background: var(--surface); scrollbar-width: none; }
+.secnav::-webkit-scrollbar { display: none; }
+.secnav button { flex: none; border: 1.5px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 99px; padding: 6px 12px; font-size: 12.5px; font-weight: 800; }
+.secnav button.ok { border-color: var(--stage); color: var(--stage); }
+.ibtns.descs { grid-template-columns: 1fr; gap: 6px; }
+.ibtns.descs button { display: flex; gap: 12px; align-items: center; text-align: left; padding: 9px 12px; min-height: 0; }
+.ibtns.descs button b { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); color: var(--fg); font-size: 15px; }
+.ibtns.descs button span { font-size: 13px; font-weight: 600; line-height: 1.35; }
+.ptabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; position: sticky; top: 44px; z-index: 2; background: var(--surface); padding: 4px 0; }
+.ptabs button { border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--fg); padding: 6px 4px; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.ptabs button b { font-size: 15px; }
+.ptabs button small { font-size: 10.5px; color: var(--muted); font-weight: 700; }
+.ptabs button.on { border-color: var(--stage); background: var(--stage); color: #fff; }
+.ptabs button.on small { color: rgba(255,255,255,.85); }
+.ptabs button.nj:not(.on) small { color: #c62828; }
+.pv-body { border: 1px solid var(--line); border-radius: 12px; padding: 4px 10px 10px; }
+.pv-row { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.pv-row.abn .pv-lbl { color: #c62828; }
+.pv-lbl { font-size: 13px; font-weight: 800; margin-bottom: 5px; }
+.pv-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.pv-btns button { flex: 1 1 0; min-width: 64px; min-height: 38px; border: 0; border-radius: 9px; background: var(--surface-2); color: var(--fg); font-weight: 700; font-size: 13px; }
+.pv-btns.pj4 button { flex: 1 1 calc(50% - 6px); }
+.pv-btns button.on { background: var(--stage); color: #fff; }
+.pv-btns button.on.bad { background: #c62828; }
+.pv-note { margin-top: 6px; height: 40px; font-size: 14px; }
+.pv-sub { font-size: 12.5px; font-weight: 800; color: var(--stage); margin: 12px 0 6px; }
+.pv-judge { margin-top: 8px; background: var(--stage-tint); border-radius: 10px; padding: 2px 10px 6px; margin-bottom: 10px; }
+.pv-sum { font-size: 12.5px; padding: 6px 0; color: #c62828; font-weight: 700; }
+.pv-sum.ok { color: var(--muted); font-weight: 600; }
+.bdsize { display: flex; align-items: center; gap: 10px; margin: 8px 0 2px; font-size: 13px; font-weight: 700; }
+.bdsize input { flex: 1; accent-color: var(--accent); }
+.bdsize b { width: 3.2em; text-align: right; }
+.kprev { position: fixed; inset: 0; z-index: 300; background: var(--bg, #f4f6f4); overflow: auto; padding: env(safe-area-inset-top) 0 calc(20px + env(safe-area-inset-bottom)); }
+.kp-head { position: sticky; top: 0; z-index: 2; display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: var(--surface); box-shadow: 0 1px 0 var(--line); }
+.kp-head b { flex: 1; font-size: 16px; }
+.kp-warn { margin: 10px 14px 0; padding: 8px 12px; border-radius: 10px; background: #fff4e5; color: #7a4100; font-size: 13px; display: flex; gap: 8px; }
+.kp-sheet { max-width: 900px; margin: 10px auto; background: #fff; color: #111; padding: 14px; border-radius: 10px; }
+.kp-sheet h2 { text-align: center; font-size: 18px; margin: 4px 0 12px; letter-spacing: .1em; }
+.kp-sheet h3 { font-size: 14px; margin: 14px 0 6px; border-left: 4px solid #5b3a8c; padding-left: 8px; }
+.kt { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 6px; }
+.kt th, .kt td { border: 1px solid #555; padding: 5px 6px; vertical-align: top; text-align: left; }
+.kt th { background: #f1f1f1; font-weight: 700; white-space: nowrap; width: 1%; }
+.kt td.pre { white-space: pre-wrap; }
+.kt td.c { text-align: center; font-size: 16px; }
+.kt td.na { background: repeating-linear-gradient(135deg, #fff 0 6px, #eee 6px 8px); }
+.kscroll { overflow-x: auto; }
+.kpart { min-width: 560px; }
+.kpart th { white-space: normal; width: auto; }
+.kphotos { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.kph { margin: 0; border: 1px solid #555; padding: 4px; }
+.kph img { width: 100%; height: 170px; object-fit: contain; background: #fafafa; display: block; }
+.kph-empty { height: 170px; display: grid; place-items: center; color: #999; font-size: 12px; background: #fafafa; }
+.kph figcaption { font-size: 12px; text-align: center; padding-top: 4px; }
 .stabs.ilmode button { font-size: 13px; }
 .stabs button.on { border-color: var(--st); background: var(--st); color: #fff; }
 .stabs button.on small { color: rgba(255,255,255,.85); }
@@ -1194,13 +1257,20 @@ window.APP_CONFIG = {
       ],
       items: [
         { id: "insNo", section: "基本", label: "点検番号", type: "line", ref: "insNo", placeholder: "例：10" },
-        { id: "cut", section: "判定（特記仕様書 13(3)）", label: "1) 枯損木伐採の必要性", type: "buttons", options: ["有", "無"], required: true, help: "外観診断による判定を行うまでもなく、明らかに枯損していて伐採が必要な樹木か。「有」の場合、2)〜4)は判定しません。" },
-        { id: "deadBr", label: "2) 枯枝・危険枝処理の必要性", type: "buttons", options: ["有", "無"], required: true, onlyIf: { cut: ["無"] }, help: "利用者に影響のある落枝の可能性がある枯枝・危険枝の処理が必要か。「有」の場合、3)・4)は処理が実施された後の状態を想定して判定します。" },
-        { id: "regular", label: "3) 年4回の樹木定期点検の必要性", type: "buttons", options: ["有", "無"], required: true, onlyIf: { cut: ["無"] },
-          help: "・芯まで達した腐朽・空洞があるもの ・樹皮枯死・腐朽・空洞があり、被害が周長の1/3より大きいもの、もしくは1/3に近く被害が進行しているもの ・ベッコウタケ、コフキサルノコシカケ、ナラタケモドキもしくはそれらに類似したキノコが発生しているもの ・キノコが発生し、被害が周長の1/3より大きいもの、もしくは1/3に近く被害が進行しているもの ・打音異常の範囲が広く、樹皮枯死・空洞・腐朽とあわせて周長の1/2より広いもの ・根元の揺らぎがあるもの ・幹が不自然に傾斜しているもの ・分岐部に新たな亀裂が生じているもの ・樹勢・樹形が著しく衰退しているもの。該当せず、年1回の点検で安全性が確保される場合は「無」（4)は判定しません）。" },
-        { id: "diagC", label: "4) 外観診断の必要性：C判定となる可能性", type: "buttons", options: ["有", "無"], required: true, onlyIf: { cut: ["無"], regular: ["有"] }, help: "外観診断により、C判定となる可能性がある場合（建築限界に関する場合は除く）。" },
-        { id: "diagK", label: "4) 外観診断の必要性：機器診断が必要とされる可能性", type: "buttons", options: ["有", "無"], required: true, onlyIf: { cut: ["無"], regular: ["有"] }, help: "外観診断により、機器診断が必要とされる可能性がある場合。いずれも該当せず、年4回の定期点検による経過観察で安全性が確保される場合は「無」。" },
-        { id: "reason", section: "意見", label: "判定理由（判定結果および根拠となる問題や異常）", type: "text", voice: true, required: true, placeholder: "例：根元にベッコウタケ発生、芯に達した開口空洞あり（マイクで音声入力）" },
+        { id: "cut", section: "1) 枯損木伐採の必要性", label: "伐採が必要な理由（1つでもあれば「有」）", type: "multi", check: true, options: ["樹木全体が枯死している", "主幹が枯死し、回復の見込みがない", "根元・主幹の腐朽が著しく、明らかに伐採が必要", "その他", "該当なし"], exclusive: "該当なし", required: true,
+          help: "外観診断を行うまでもなく、明らかに枯損していて伐採が必要な場合。「有」の場合、2)〜4)は判定しません。" },
+        { id: "cutOther", label: "その他の内容", type: "line", onlyIfAny: { cut: ["その他"] }, required: true },
+        { id: "deadBr", section: "2) 枯枝・危険枝処理の必要性", label: "処理が必要な理由（1つでもあれば「有」）", type: "multi", check: true, options: ["利用者に影響のある枯枝がある", "折れ・裂けのある危険枝がある", "かかり枝（折れて引っかかった枝）がある", "その他", "該当なし"], exclusive: "該当なし", required: true, onlyIf: { cut: ["該当なし"] },
+          help: "利用者に影響のある落枝の可能性がある枯枝・危険枝。「有」の場合、3)・4)は処理が実施された後の状態を想定して判定します。" },
+        { id: "deadBrOther", label: "その他の内容", type: "line", onlyIfAny: { deadBr: ["その他"] }, required: true },
+        { id: "regular", section: "3) 年4回の樹木定期点検の必要性", label: "該当する状態（1つでもあれば「有」）", type: "multi", check: true, onlyIf: { cut: ["該当なし"] }, required: true, exclusive: "該当なし",
+          options: ["芯まで達した腐朽・空洞がある", "樹皮枯死・腐朽・空洞があり、被害が周長の1/3より大きい（または1/3に近く進行している）", "ベッコウタケ・コフキサルノコシカケ・ナラタケモドキ、またはそれらに類似したキノコが発生している", "キノコが発生し、被害が周長の1/3より大きい（または1/3に近く進行している）", "打音異常の範囲が広く、樹皮枯死・空洞・腐朽とあわせて周長の1/2より広い", "根元の揺らぎがある", "幹が不自然に傾斜している", "分岐部に新たな亀裂が生じている", "樹勢・樹形が著しく衰退している", "その他", "該当なし"],
+          help: "いずれにも該当せず、年1回の点検で安全性が確保される場合は「該当なし」（定期点検木から除外。4)は判定しません）。" },
+        { id: "regularOther", label: "その他の内容", type: "line", onlyIfAny: { regular: ["その他"] }, required: true },
+        { id: "diag", section: "4) 樹木診断（外観診断）の必要性", label: "該当する可能性（1つでもあれば「有」）", type: "multi", check: true, onlyIf: { cut: ["該当なし"] }, onlyIfAny: { regular: ["*"] }, required: true, exclusive: "該当なし",
+          options: ["外観診断によりC判定となる可能性がある（建築限界に関する場合を除く）", "外観診断により機器診断が必要とされる可能性がある", "該当なし"],
+          help: "いずれにも該当せず、年4回の定期点検による経過観察で安全性が確保される場合は「該当なし」。" },
+        { id: "diagNote", label: "そう判断した部位・状況（任意）", type: "line", onlyIfAny: { diag: ["外観診断によりC判定となる可能性がある（建築限界に関する場合を除く）", "外観診断により機器診断が必要とされる可能性がある"] }, placeholder: "例：根元の開口空洞が芯に達している" },
       ],
     },
     gaikan: {
@@ -1217,14 +1287,16 @@ window.APP_CONFIG = {
         { v: "C", label: "不健全", color: "#d81b60", desc: "活力度5・倒木や幹折れの危険" },
       ],
       items: [
-        { id: "plant", section: "基本事項", label: "植栽形態", type: "buttons", options: ["単独桝", "植栽帯", "緑地内", "その他"], required: true, def: "緑地内" },
+        { id: "plant", section: "1 基本事項", label: "植栽形態", type: "buttons", options: ["単独桝", "植栽帯", "緑地内", "その他"], required: true, def: "緑地内" },
         { id: "stake", label: "支柱", type: "buttons", options: ["良好", "なし", "破損"], required: true, def: "なし" },
         { id: "size", label: "樹高・幹周・枝張（空欄は樹木点検票の値）", type: "nums", fields: [{ id: "hReal", label: "樹高", unit: "m", ref: "h", max: 60 }, { id: "gReal", label: "幹周", unit: "cm", ref: "g", max: 1000 }, { id: "wReal", label: "枝張", unit: "m", ref: "w", max: 60 }] },
-        { id: "vSei", section: "活力診断", label: "樹勢（枝の伸長量、梢端の枯損、枝の枯損、葉の密度・大きさ・葉色等）1良←→5不良", type: "buttons", options: ["1", "2", "3", "4", "5"], required: true },
-        { id: "vKei", label: "樹形（主幹・骨格となる大枝・枝などの枯損及び欠損、枝の密度と配置等）", type: "buttons", options: ["1", "2", "3", "4", "5"], required: true },
-        { id: "vNote", label: "活力診断の所見", type: "text", voice: true },
-        { id: "vJudge", label: "活力判定", type: "buttons", options: ["健全か健全に近い", "注意すべき被害が見られる", "著しい被害が見られる", "不健全"], required: true, hint: "vigor" },
-        { id: "parts", section: "部位診断", label: "部位ごとの診断（「あり」は括弧内の内容を記入）", type: "grid", parts: [["R", "根元"], ["T", "幹"], ["B", "大枝"]],
+        { id: "vSei", section: "2 活力診断", label: "樹勢（枝の伸長量、梢端の枯損、枝の枯損、葉の密度・大きさ・葉色等）", type: "buttons", options: ["1", "2", "3", "4", "5"], required: true,
+          descs: ["旺盛な生育状態を示し、被害が全く見られない", "いくぶん被害の影響を受けているが、あまり目立たない", "異常が明らかに認められる", "生育状態が劣悪で回復の見込みが低い", "ほぼ枯死している"] },
+        { id: "vKei", label: "樹形（主幹・骨格となる大枝・枝などの枯損及び欠損、枝の密度と配置等）", type: "buttons", options: ["1", "2", "3", "4", "5"], required: true,
+          descs: ["望ましい樹形を保っている", "若干の乱れはあるが、望ましい樹形に近い", "望ましい樹形の崩壊が進んでいる", "望ましい樹形がかなり崩壊し回復の見込みが低い", "望ましい樹形が完全に崩壊している"], help: "枯枝や切除を要する枝がある場合は、剪定後ではなく現状の樹形で評価します。" },
+        { id: "vNote", label: "活力診断の所見（樹勢・樹形の判定の根拠）", type: "text", voice: true, requiredWhen: { vSei: ["3", "4", "5"], vKei: ["3", "4", "5"] }, help: "活力度3以上がある場合は必ず記載します。" },
+        { id: "vJudge", label: "活力判定", type: "buttons", options: ["健全か健全に近い", "注意すべき被害が見られる", "著しい被害が見られる", "不健全"], required: true, hint: "vigor", help: "どちらも1か2＝健全か健全に近い／3がある（4・5はない）＝注意すべき被害／4はあるが5はない＝著しい被害／5がある＝不健全" },
+        { id: "parts", section: "3 部位診断", label: "部位ごとに、診断・部位判定まで入力します（根元 → 幹 → 大枝）", type: "grid", parts: [["R", "根元"], ["T", "幹"], ["B", "大枝"]],
           rows: [
             { id: "bark", label: "樹皮枯死･欠損･腐朽（周囲長比率）", options: ["なし", "1/3未満", "1/3以上"] },
             { id: "cav1", label: "芯に達していない開口空洞", options: ["なし", "1/3未満", "1/3以上"] },
@@ -1243,22 +1315,23 @@ window.APP_CONFIG = {
             { id: "roshutsu", label: "露出根被害（切断等の状況）", options: ["なし", "あり"], parts: ["R"], note: true },
             { id: "keisha", label: "不自然な傾斜（程度・方向）", options: ["なし", "あり"], parts: ["R"], note: true },
           ] },
-        { id: "dmg", label: "最大被害部の周囲長比率（被害部幅／被害部周囲長）", type: "nums", fields: [{ id: "dmgWR", label: "根元 幅", unit: "cm" }, { id: "dmgCR", label: "根元 周囲長", unit: "cm" }, { id: "dmgWT", label: "幹 幅", unit: "cm" }, { id: "dmgCT", label: "幹 周囲長", unit: "cm" }],
+        { id: "dmg", merged: true, label: "最大被害部の周囲長比率（被害部幅／被害部周囲長）", type: "nums", fields: [{ id: "dmgWR", label: "根元 幅", unit: "cm" }, { id: "dmgCR", label: "根元 周囲長", unit: "cm" }, { id: "dmgWT", label: "幹 幅", unit: "cm" }, { id: "dmgCT", label: "幹 周囲長", unit: "cm" }],
           onlyIfAny: { parts_bark_R: ["1/3未満", "1/3以上"], parts_cav1_R: ["1/3未満", "1/3以上"], parts_cav2_R: ["1/3未満", "1/3以上"], parts_bark_T: ["1/3未満", "1/3以上"], parts_cav1_T: ["1/3未満", "1/3以上"], parts_cav2_T: ["1/3未満", "1/3以上"] } },
         { id: "clr", label: "建築限界越え（枝は越えている長さL・高さGL、幹は越え幅・高さGL）", type: "grid", parts: [["C", "車道側"], ["W", "歩道側"]],
           rows: [{ id: "trunk", label: "幹", options: ["なし", "あり"], note: true }, { id: "branch", label: "枝", options: ["なし", "あり"], note: true }] },
         { id: "pNote", label: "部位診断の所見（被害の形状寸法・範囲・程度、要剪定の枝、周囲の状況など）", type: "text", voice: true, required: true },
-        { id: "pj", label: "部位判定・処置", type: "grid", parts: [["R", "根元"], ["T", "幹"], ["B", "大枝"]],
+        { id: "pj", merged: true, label: "部位判定・処置", type: "grid", parts: [["R", "根元"], ["T", "幹"], ["B", "大枝"]],
           rows: [
             { id: "judge", label: "部位判定", options: ["健全か健全に近い", "注意すべき被害が見られる", "著しい被害が見られる", "不健全"], short: ["健全", "注意", "著しい", "不健全"], def: null, required: true },
             { id: "prune", label: "剪定が必要", options: ["不要", "必要"] },
             { id: "kiki", label: "機器診断が必要", options: ["不要", "必要"] },
           ] },
-        { id: "judge", section: "外観診断判定", label: "外観診断判定（活力判定と部位判定の悪い方）", type: "judge", required: true },
+        { id: "judge", section: "4 外観診断判定", label: "外観診断判定（活力判定と部位判定の悪い方）", type: "judge", required: true,
+          help: "A：樹勢・樹形の活力度が1か2で、その他に異常がないか軽微で処置不要／B1：活力度3、または今後の活力低下や腐朽の進行が予測され注意を要する・簡易な処置が必要／B2：活力度4、または幹や根の腐朽が進行し何らかの処置が必要／C：活力度5、または幹や根の腐朽が著しく回復の見込みがない、倒木や幹折れの危険がある" },
         { id: "jReason", label: "判定理由", type: "text", voice: true, required: true },
         { id: "kikiPart", label: "機器診断の測定部位（例：根株、G.L.1.2m）", type: "line", onlyIfAny: { pj_kiki_R: ["必要"], pj_kiki_T: ["必要"], pj_kiki_B: ["必要"] }, required: true },
         { id: "cSafe", label: "C判定：支柱・コブラロープ等の設置等により安全が確保できる", type: "buttons", options: ["はい", "いいえ"], onlyIf: { judge: ["C"] }, required: true, help: "「はい」の場合、緑色のテープをさらに1周巻いて2段にし、その旨を速報表に記載します。" },
-        { id: "need", section: "処置", label: "処置の必要性", type: "buttons", options: ["なし", "あり"], required: true },
+        { id: "need", section: "5 処置", label: "処置の必要性", type: "buttons", options: ["なし", "あり"], required: true },
         { id: "urgent", label: "緊急性（緊急対応の必要性）", type: "buttons", options: ["なし", "あり"], required: true },
         { id: "obs", label: "要観察", type: "buttons", options: ["なし", "要観察（長期周期）", "要観察（短期周期）"] },
         { id: "prune", label: "剪定", type: "multi", options: ["枯枝", "腐朽枝等", "支障枝", "風圧軽減", "スタブカット", "巻き根"] },
@@ -1269,7 +1342,7 @@ window.APP_CONFIG = {
         { id: "tRenew", label: "更新（留意点）", type: "line" },
         { id: "tOther", label: "その他（癒合剤塗布等）", type: "line" },
         { id: "tNote", label: "摘要（処置の具体的な説明）", type: "text", voice: true, requiredWhen: { urgent: ["あり"] } },
-        { id: "other", section: "その他・次回診断", label: "その他特記事項", type: "text", voice: true },
+        { id: "other", section: "6 その他・次回診断", label: "その他特記事項", type: "text", voice: true },
         { id: "next", label: "次回診断", type: "multi", options: ["フォローアップ診断", "外観診断"] },
         { id: "nextWhen", label: "次回再診断時期", type: "buttons", options: ["1年後", "2年後", "3年後"] },
       ],
@@ -1994,7 +2067,11 @@ window.WorkStore = window.NoteStore.work;
   // ---------- 点検入力画面（樹木点検・外観診断） ----------
   const itemsOf = (c) => STG(c).items;
   const itemOf = (id, c = INSP.cur) => itemsOf(c).find((it) => it.id === id);
-  const condMatch = (obj, ans, any) => { const ok = ([k, vals]) => vals.includes(k === "exist" && !any && !ans.exist ? "現存" : ans[k]); const e = Object.entries(obj); return any ? e.some(ok) : e.every(ok); };
+  const condMatch = (obj, ans, any) => { const ok = ([k, vals]) => { const v = ans[k]; if (Array.isArray(v)) return vals.includes("*") ? hasYes(v) : v.some((x) => vals.includes(x)); return vals.includes("*") ? hasYes(v) : vals.includes(v); }; const e = Object.entries(obj); return any ? e.some(ok) : e.every(ok); };
+  // チェック項目：1つでもチェック（該当なし以外）があれば「有」、該当なしだけなら「無」、未入力なら判定しない
+  const hasYes = (v) => Array.isArray(v) ? v.some((x) => x !== "該当なし") : v === "有";
+  const answered = (v) => Array.isArray(v) ? v.length > 0 : !!v;
+  const DIAG_C = "外観診断によりC判定となる可能性がある（建築限界に関する場合を除く）", DIAG_K = "外観診断により機器診断が必要とされる可能性がある";
   const isShown = (it, ans) => (!it.onlyIf || condMatch(it.onlyIf, ans, false)) && (!it.onlyIfAny || condMatch(it.onlyIfAny, ans, true));
   const isReq = (it, ans) => isShown(it, ans) && (it.required === true || (!!it.requiredWhen && condMatch(it.requiredWhen, ans, true)));
   const isEmpty = (v) => v == null || v === "" || (Array.isArray(v) && !v.length);
@@ -2007,13 +2084,25 @@ window.WorkStore = window.NoteStore.work;
   const kikiParts = (a) => ["R", "T", "B"].filter((p) => a[`pj_kiki_${p}`] === "必要");
   // 樹木点検の判定（入力内容から決める）
   function tenkenJudge(a) {
-    if (a.cut === "有") return "伐採";
-    if (a.cut !== "無" || !a.deadBr || !a.regular) return "";
-    if (a.regular === "有" && (!a.diagC || !a.diagK)) return "";
-    if (a.regular === "有" && (a.diagC === "有" || a.diagK === "有")) return "外観";
-    if (a.deadBr === "有") return "枯枝";
-    if (a.regular === "有") return "定期";
+    if (!answered(a.cut)) return "";
+    if (hasYes(a.cut)) return "伐採";
+    if (!answered(a.deadBr) || !answered(a.regular)) return "";
+    if (hasYes(a.regular) && !answered(a.diag)) return "";
+    if (hasYes(a.regular) && hasYes(a.diag)) return "外観";
+    if (hasYes(a.deadBr)) return "枯枝";
+    if (hasYes(a.regular)) return "定期";
     return "除外";
+  }
+  // 速報表の「判定理由」：チェックした内容から作る
+  function tenkenReason(a) {
+    const pick = (id, oth) => (Array.isArray(a[id]) ? a[id] : []).filter((x) => x !== "該当なし").map((x) => (x === "その他" ? a[oth] || "その他" : x.replace(/（建築限界に関する場合を除く）/, "")));
+    const parts = [];
+    const c = pick("cut", "cutOther"); if (c.length) return `【枯損木伐採】${c.join("、")}`;
+    const d = pick("deadBr", "deadBrOther"); if (d.length) parts.push(`【枯枝・危険枝】${d.join("、")}`);
+    const r = pick("regular", "regularOther"); if (r.length) parts.push(`【定期点検】${r.join("、")}`);
+    const g = pick("diag"); if (g.length) parts.push(`【外観診断】${g.map((x) => x.replace(/^外観診断により/, "")).join("、")}${a.diagNote ? "（" + a.diagNote + "）" : ""}`);
+    if (!parts.length && answered(a.cut) && answered(a.deadBr) && answered(a.regular)) return "いずれの項目にも該当なし（年1回の点検で安全性を確保できる）";
+    return parts.join("／");
   }
   const recJudge = (c) => stageOf(c) === "tenken" ? tenkenJudge(c.ans) : (c.ans.judge || "");
   // 現地のテープ（特記仕様書 13(3)(4)）：巻く／外す
@@ -2023,7 +2112,7 @@ window.WorkStore = window.NoteStore.work;
     if (stageOf(c) === "tenken") {
       const j = tenkenJudge(a);
       if (j === "伐採") t("red", "枯損木伐採が必要です。幹に赤のテープを巻いてください。");
-      if (a.cut === "無" && a.deadBr === "有") t("orange", "枯枝・危険枝の処理が必要です。オレンジのテープを巻いてください。");
+      if (!hasYes(a.cut) && hasYes(a.deadBr)) t("orange", "枯枝・危険枝の処理が必要です。オレンジのテープを巻いてください。");
       if (j === "外観" && !c.diagNow) t("green", "外観診断が必要です。緑のテープを巻いてください（直ちに外観診断を行う場合は不要）。");
       return out;
     }
@@ -2082,8 +2171,12 @@ window.WorkStore = window.NoteStore.work;
 
   function fieldHTML(it, c) {
     const v = c.ans[it.id]; let ctl = "";
-    if (it.type === "buttons") ctl = `<div class="ibtns${it.options.length >= 5 && it.options.every((o) => o.length <= 2) ? " nums5" : ""}" data-single="${it.id}">${it.options.map((o) => `<button type="button" data-v="${esc(o)}"${v === o ? ' class="on"' : ""}>${esc(o)}</button>`).join("")}</div>`;
+    if (it.merged) return "";
+    if (it.type === "buttons" && it.descs) ctl = `<div class="ibtns descs" data-single="${it.id}">${it.options.map((o, k) => `<button type="button" data-v="${esc(o)}"${v === o ? ' class="on"' : ""}><b>${esc(o)}</b><span>${esc(it.descs[k] || "")}</span></button>`).join("")}</div>`;
+    else if (it.type === "grid" && it.id === "parts") ctl = `<div class="pview">${partViewHTML(c)}</div>`;
+    else if (it.type === "buttons") ctl = `<div class="ibtns${it.options.length >= 5 && it.options.every((o) => o.length <= 2) ? " nums5" : ""}" data-single="${it.id}">${it.options.map((o) => `<button type="button" data-v="${esc(o)}"${v === o ? ' class="on"' : ""}>${esc(o)}</button>`).join("")}</div>`;
     else if (it.type === "select") ctl = `<select class="inp" data-sel="${it.id}"><option value="">選択してください</option>${it.options.map((o) => `<option${v === o ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+    else if (it.type === "multi" && it.check) ctl = `<div class="checks" data-multi="${it.id}">${it.options.map((o) => `<label class="${o === "該当なし" ? "none" : ""}"><input type="checkbox" value="${esc(o)}"${(v || []).includes(o) ? " checked" : ""}><span>${esc(o)}</span></label>`).join("")}</div><div class="yn" data-yn="${it.id}"></div>`;
     else if (it.type === "multi") ctl = `<div class="pills" data-multi="${it.id}">${it.options.map((o) => `<label><input type="checkbox" value="${esc(o)}"${(v || []).includes(o) ? " checked" : ""}><span>${esc(o)}</span></label>`).join("")}</div>`;
     else if (it.type === "number") ctl = `<div class="numrow"><input class="inp" type="number" inputmode="decimal" step="${it.step || 1}" min="0" data-num="${it.id}" value="${v ?? ""}" placeholder="${it.ref && c[it.ref] != null ? "台帳 " + c[it.ref] : ""}"><span>${esc(it.unit || "")}</span></div>`;
     else if (it.type === "nums") ctl = `<div class="numsrow">${it.fields.map((f) => `<label><small>${esc(f.label)}</small><span class="numrow"><input class="inp" type="number" inputmode="decimal" step="any" min="0" data-num="${f.id}" value="${c.ans[f.id] ?? ""}" placeholder="${f.ref && c[f.ref] != null ? c[f.ref] : ""}"><span>${esc(f.unit || "")}</span></span></label>`).join("")}</div>${it.id === "dmg" ? '<div class="small muted" id="dmgRatio"></div>' : ""}`;
@@ -2105,6 +2198,31 @@ window.WorkStore = window.NoteStore.work;
       const notes = row.note ? gParts(it, row).filter(([p]) => { const v = gVal(a, it, row, p); return v != null && v !== row.options[0]; }).map(([p, n]) => `<label class="ig-note"><small>${esc(n)}</small><input class="inp" data-text="${gKey(it, row, p)}_n" value="${esc(a[gKey(it, row, p) + "_n"] || "")}" placeholder="${esc(row.label.replace(/^.*?（|）$/g, "").replace(/^.*（/, "")) || "内容"}"></label>`).join("") : "";
       return `<div class="ig-row" data-grow="${row.id}"><span class="ig-lbl">${esc(row.label.replace(/（[^）]*）$/, ""))}</span>${cells}${notes ? `<div class="ig-notes">${notes}</div>` : ""}</div>`;
     }).join("")}</div>`;
+  }
+  // 部位診断：部位（根元・幹・大枝）ごとのタブで、診断項目 → 最大被害部 → 部位判定・剪定・機器診断 の順に入力
+  function partBad(a, p) {
+    const it = itemOf("parts", INSP.cur), out = [];
+    for (const row of it.rows) { if (row.parts && !row.parts.includes(p)) continue; const v = a[gKey(it, row, p)]; if (v && v !== row.options[0]) out.push(`${row.label.replace(/（[^）]*）$/, "")}${row.options.length > 2 ? "（" + v + "）" : ""}${a[gKey(it, row, p) + "_n"] ? "：" + a[gKey(it, row, p) + "_n"] : ""}`); }
+    return out;
+  }
+  function partViewHTML(c) {
+    const a = c.ans, it = itemOf("parts", c), pj = itemOf("pj", c), dm = itemOf("dmg", c), P = INSP.ptab || "R";
+    const tabs = it.parts.map(([p, n]) => { const bad = partBad(a, p).length, j = a[`pj_judge_${p}`], sh = j ? pj.rows[0].short[pj.rows[0].options.indexOf(j)] : "判定未";
+      return `<button type="button" data-ptab="${p}" class="${P === p ? "on" : ""}${j ? "" : " nj"}"><b>${n}</b><small>${bad ? `異常${bad}` : "異常なし"}・${esc(sh)}</small></button>`; }).join("");
+    const rows = it.rows.filter((row) => !row.parts || row.parts.includes(P)).map((row) => {
+      const k = gKey(it, row, P), v = a[k], abn = v && v !== row.options[0];
+      const btn = row.options.map((o, oi) => `<button type="button" data-gv="${esc(o)}"${v === o ? ` class="on${oi > 0 ? " bad" : ""}"` : ""}>${esc(o)}</button>`).join("");
+      return `<div class="pv-row${abn ? " abn" : ""}"><div class="pv-lbl">${esc(row.label)}</div><span class="pv-btns" data-gc="${k}">${btn}</span>${row.note && abn ? `<input class="inp pv-note" data-text="${k}_n" value="${esc(a[k + "_n"] || "")}" placeholder="${esc((row.label.match(/（([^）]*)）$/) || [, "内容"])[1])}を記入">` : ""}</div>`;
+    }).join("");
+    const df = dm.fields.filter((f) => f.id.endsWith(P));
+    const dmg = df.length ? `<div class="pv-sub">最大被害部（樹皮枯死・開口空洞のうち最も大きいもの）</div><div class="numsrow">${df.map((f) => `<label><small>${esc(f.label.replace(/^(根元|幹) /, ""))}</small><span class="numrow"><input class="inp" type="number" inputmode="decimal" step="any" min="0" data-num="${f.id}" value="${a[f.id] ?? ""}"><span>${esc(f.unit || "")}</span></span></label>`).join("")}</div><div class="small muted">周囲長比率：${+a[df[0].id] > 0 && +a[df[1].id] > 0 ? (a[df[0].id] / a[df[1].id] * 100).toFixed(1) + "%" : "－"}</div>` : "";
+    const pjRows = pj.rows.map((row) => { const k = `pj_${row.id}_${P}`, v = a[k];
+      return `<div class="pv-row"><div class="pv-lbl">${esc(row.label)}${row.required ? '<b class="req">必須</b>' : ""}</div><span class="pv-btns${row.id === "judge" ? " pj4" : ""}" data-gc="${k}">${row.options.map((o, oi) => `<button type="button" data-gv="${esc(o)}"${v === o ? ` class="on${oi > 0 ? " bad" : ""}"` : ""}>${esc(o)}</button>`).join("")}</span></div>`; }).join("");
+    const bad = partBad(a, P), idx = it.parts.findIndex(([p]) => p === P), nx = it.parts[idx + 1];
+    return `<div class="ptabs">${tabs}</div>
+      <div class="pv-body">${rows}${dmg}
+        <div class="pv-judge"><div class="pv-sub">${esc(PART_NAME[P])}の部位判定・処置</div>${bad.length ? `<div class="pv-sum">この部位の異常：${esc(bad.join("、"))}</div>` : `<div class="pv-sum ok">この部位に異常の入力はありません</div>`}${pjRows}</div>
+        ${nx ? `<button type="button" class="btn line block" data-ptab="${nx[0]}">次の部位（${esc(nx[1])}）へ</button>` : ""}</div>`;
   }
   function stageTabsHTML(c) {
     const base = String(c.id).replace(/^[tg]:/, ""), reg = /^[tg]:/.test(String(c.id));
@@ -2131,7 +2249,9 @@ window.WorkStore = window.NoteStore.work;
       : `<div class="hero"><span class="avatar" style="background:${treeColor(c.tree)}">${esc((c.sp || "？")[0])}</span><div><div class="hero-title">${esc(c.sp)}</div><div class="hero-sub">${esc(c.cat)}・${esc(placeOf(c))}${dist}</div></div></div>
         <div class="tiles">${tile("樹高", c.h, "m")}${tile("幹周", c.g, "cm")}${tile("枝張", c.w, "m")}</div>
         <p class="imeta"><b>樹木番号 ${esc(c.tno)}</b>${c.insNo ? `・点検番号 ${esc(c.insNo)}` : ""}${c.zone ? `・${esc(LBL.zone)} ${esc(c.zone)}` : ""}${c.tmemo ? `<br>備考：${esc(c.tmemo)}` : ""}</p>`;
+    INSP.ptab = "R";
     $("#pane-detail").innerHTML = `${stageTabsHTML(c)}${head}${banner}
+      <nav class="secnav" id="secNav"></nav>
       <div id="inspForm" class="inspform">
         ${S.items.map((it) => fieldHTML(it, c)).join("")}
         ${st === "tenken" ? `<div class="field ifield" data-f="__result"><span class="lbl">判定結果<b class="req" hidden></b></span><div id="tkResult" class="tkresult"></div><div class="ferr" hidden></div></div>` : ""}
@@ -2140,6 +2260,7 @@ window.WorkStore = window.NoteStore.work;
           <label class="toggle">テープの対応をした<span class="switch"><input type="checkbox" id="markDone"${c.mark ? " checked" : ""}><span></span></span></label><div class="ferr" hidden></div></div>
       </div>
       <div class="sticky-foot">${c.status !== "done" && IC.allowDraft ? `<button class="btn sub" data-ia="draft">下書き保存</button>` : ""}<button class="btn main" data-ia="done">${ic("check")}${c.status === "done" ? "変更を保存" : `${S.short}完了・保存`}</button></div>
+      ${st === "gaikan" ? `<button class="btn line block" data-ia="karte" style="margin-top:10px">${ic("clip")}カルテを確認（Excelで出力も可）</button>` : ""}
       <div class="btnrow"><button class="btn line" data-ia="next">${ic("next")}次の未点検の木へ</button>
         <a class="btn sub" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}">${ic("pin")}地図アプリ</a></div>
       ${c.status !== "new" ? `<button class="btn danger block" data-ia="delete">この${esc(S.label)}の記録を削除</button>` : ""}`;
@@ -2153,6 +2274,11 @@ window.WorkStore = window.NoteStore.work;
       const sh = isShown(it, c.ans); f.hidden = !sh;
       f.querySelector(".req").hidden = !(isReq(it, c.ans) || (it.type === "grid" && it.rows.some((r) => r.required)));
     }
+    // 見出しの一覧（入力の進み具合）
+    const nav = $("#secNav");
+    if (nav) { const miss0 = new Set(validate(c).map(([id]) => ({ pj: "parts", dmg: "parts" })[id] || id)); let cur = null; const secs = [];
+      for (const it of itemsOf(c)) { if (it.section) { cur = { id: it.id, label: it.section, n: 0, miss: 0 }; secs.push(cur); } if (!cur || !isShown(it, c.ans)) continue; cur.n++; if (miss0.has(it.id)) cur.miss++; }
+      nav.innerHTML = secs.filter((x) => x.n).map((x) => `<button type="button" data-secgo="${x.id}" class="${x.miss ? "" : "ok"}">${x.miss ? "" : "✓ "}${esc(x.label.replace(/^\d\)\s*/, (m) => m))}</button>`).join(""); }
     // 見出し：その見出しから次の見出しまでに表示中の項目があれば表示
     const its = itemsOf(c); let secEl = null, any = false;
     for (const it of its) { if (it.section) { if (secEl) secEl.hidden = !any; secEl = root.querySelector(`.isec[data-sec="${it.id}"]`); any = false; } if (isShown(it, c.ans)) any = true; }
@@ -2161,10 +2287,11 @@ window.WorkStore = window.NoteStore.work;
     const m = markRule(c), mf = root.querySelector('.ifield[data-f="mark"]');
     mf.hidden = !m;
     if (m) { mf.querySelector(".req").hidden = false; $("#markInst").innerHTML = m.list.map((t) => `<div class="tapeline"><span class="tape${t.act === "remove" ? " rm" : t.act === "double" ? " dbl" : ""}" style="--mc:${t.color}"></span><span><b>${esc(t.label)}</b><br><small>${esc(t.how)}</small></span></div>`).join(""); $("#markDone").checked = !!c.mark; }
+    root.querySelectorAll("[data-yn]").forEach((el) => { const v = c.ans[el.dataset.yn]; el.innerHTML = !answered(v) ? `<span class="ynb">未入力：該当する理由か「該当なし」をチェック</span>` : hasYes(v) ? `<span class="ynb y">判定：有</span>` : `<span class="ynb n">判定：無</span>`; });
     const tr = $("#tkResult");
     if (tr) { const j = judgeOf(tenkenJudge(c.ans)), a = c.ans;
       const flag = (l, on) => `<span class="tkf${on ? " on" : ""}">${on ? "〇" : "－"} ${l}</span>`;
-      tr.innerHTML = j ? `<div class="tkj" style="--jc:${j.color}"><b>${esc(j.label)}</b><small>${esc(j.desc)}</small></div><div class="tkflags">${flag("枯損木伐採", a.cut === "有")}${flag("枯枝・危険枝処理", a.deadBr === "有")}${flag("定期点検必要", a.regular === "有")}${flag("外観診断必要(C判定)", a.diagC === "有")}${flag("外観診断必要(機器診断)", a.diagK === "有")}</div>` : `<span class="muted small">判定 1)〜4) を入力すると表示されます</span>`; }
+      tr.innerHTML = j ? `<div class="tkj" style="--jc:${j.color}"><b>${esc(j.label)}</b><small>${esc(j.desc)}</small></div><div class="tkflags">${flag("枯損木伐採", hasYes(a.cut))}${flag("枯枝・危険枝処理", hasYes(a.deadBr))}${flag("定期点検必要", hasYes(a.regular))}${flag("外観診断必要(C判定)", (a.diag || []).includes(DIAG_C))}${flag("外観診断必要(機器診断)", (a.diag || []).includes(DIAG_K))}</div><div class="small" style="margin-top:6px">判定理由：${esc(tenkenReason(a))}</div>` : `<span class="muted small">判定 1)〜4) を入力すると表示されます</span>`; }
     const h = $("#jHint");
     if (h) { const s = suggestJudge(c), j = judgeOf(s); h.innerHTML = j ? `入力内容からの目安：<button type="button" data-ia="usehint" data-v="${j.v}">${j.v} ${esc(j.label)}</button><span class="small">（活力判定と部位判定の悪い方。最終判断は診断者が行ってください）</span>` : ""; }
     const vh = root.querySelector('[data-hint="vJudge"]');
@@ -2203,7 +2330,7 @@ window.WorkStore = window.NoteStore.work;
   function showMissing(miss) {
     const root = $("#pane-detail");
     root.querySelectorAll(".ifield").forEach((f) => { f.classList.remove("err"); f.querySelector(".ferr").hidden = true; });
-    for (const [id, lbl] of miss) { const f = root.querySelector(`.ifield[data-f="${id}"]`); if (f) { f.classList.add("err"); const e = f.querySelector(".ferr"); e.textContent = /以下の値/.test(lbl) ? "値を確認してください" : id === "mark" ? "テープの対応をしてからチェックしてください" : "入力してください"; e.hidden = false; } }
+    for (const [id0, lbl] of miss) { const id = ({ pj: "parts", dmg: "parts" })[id0] || id0; if (id0 === "pj") { const p = ["R", "T", "B"].find((x) => !INSP.cur.ans[`pj_judge_${x}`]); if (p && INSP.ptab !== p) { INSP.ptab = p; const pv = root.querySelector(".pview"); if (pv) pv.innerHTML = partViewHTML(INSP.cur); } } const f = root.querySelector(`.ifield[data-f="${id}"]`); if (f) { f.classList.add("err"); const e = f.querySelector(".ferr"); e.textContent = /以下の値/.test(lbl) ? "値を確認してください" : id === "mark" ? "テープの対応をしてからチェックしてください" : "入力してください"; e.hidden = false; } }
     dialog({ tone: "warn", icon: "warn", title: "未入力の必須項目があります", body: `<p>次の項目を入力するまで保存できません。</p><ul class="misslist">${miss.map(([, l]) => `<li>${esc(l)}</li>`).join("")}</ul>`, ok: "入力に戻る" }).then(() => {
       const f = root.querySelector(".ifield.err"); if (!f) return;
       if (!isWide() && sheetSize() !== "full") setSheetSize("full");
@@ -2307,6 +2434,7 @@ window.WorkStore = window.NoteStore.work;
       if (box) {
         const it = itemOf(box.dataset.multi);
         if (it.exclusive && t.checked) box.querySelectorAll("input").forEach((x) => { if (x !== t && (t.value === it.exclusive || x.value === it.exclusive)) x.checked = false; });
+        if (it.check) { INSP.cur.mark = false; delete INSP.cur.diagNow; }
         setAns(it.id, [...box.querySelectorAll("input:checked")].map((x) => x.value));
       }
       if (t.dataset.sel) setAns(t.dataset.sel, t.value);
@@ -2318,15 +2446,18 @@ window.WorkStore = window.NoteStore.work;
       const sb = t.closest("[data-single] button");
       if (sb) { const box = sb.parentElement, id = box.dataset.single, cur = id.startsWith("__") ? INSP.cur[id.slice(2)] : INSP.cur.ans[id], v = cur === sb.dataset.v ? "" : sb.dataset.v;
         box.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === v));
-        if (["cut", "deadBr", "regular", "diagC", "diagK", "cSafe"].includes(id)) { INSP.cur.mark = false; delete INSP.cur.diagNow; }
+        if (["cSafe"].includes(id)) { INSP.cur.mark = false; delete INSP.cur.diagNow; }
         setAns(id, v); return; }
       const jb = t.closest("[data-jv]"); if (jb) { await setJudge(INSP.cur.ans.judge === jb.dataset.jv ? "" : jb.dataset.jv); return; }
       const stb = t.closest("[data-stab]"); if (stb) { switchStage(stb.dataset.stab); return; }
+      const pt = t.closest("[data-ptab]"); if (pt) { INSP.ptab = pt.dataset.ptab; body.querySelector(".pview").innerHTML = partViewHTML(INSP.cur); body.querySelector('.ifield[data-f="parts"]').scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+      const sg = t.closest("[data-secgo]"); if (sg) { const el = body.querySelector(`.isec[data-sec="${sg.dataset.secgo}"]`); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
       const gb = t.closest("[data-gc] button");
       if (gb) { const cell = gb.parentElement, k = cell.dataset.gc, it = itemOf(k.split("_")[0]), row = it.rows.find((x) => x.id === k.split("_")[1]);
         const cur = INSP.cur.ans[k], v = cur === gb.dataset.gv && row.def === null ? "" : gb.dataset.gv;
         INSP.cur.ans[k] = v; if (v === row.options[0]) delete INSP.cur.ans[k + "_n"]; markDirty();
         if (it.id === "pj") { INSP.cur.mark = false; }
+        if (it.id === "parts" || it.id === "pj") { const pv = body.querySelector(".pview"), y = $("#sheetBody").scrollTop; pv.innerHTML = partViewHTML(INSP.cur); $("#sheetBody").scrollTop = y; refreshFormState(); return; }
         const f = body.querySelector(`.ifield[data-f="${it.id}"]`); f.querySelector(".igrid").outerHTML = gridHTML(it, INSP.cur); refreshFormState(); return; }
       const hs = t.closest("[data-hintset]"); if (hs) { const id = hs.dataset.hintset; body.querySelectorAll(`[data-single="${id}"] button`).forEach((b) => b.classList.toggle("on", b.dataset.v === hs.dataset.v)); setAns(id, hs.dataset.v); return; }
       const mic = t.closest("[data-mic]"); if (mic) { startVoice(body.querySelector(`[data-text="${mic.dataset.mic}"]`), mic); return; }
@@ -2337,6 +2468,7 @@ window.WorkStore = window.NoteStore.work;
       if (a === "draft") saveDraft();
       if (a === "done") completeInsp();
       if (a === "next") nextUninspected();
+      if (a === "karte") showKarte(INSP.cur);
       if (a === "delete") deleteRec();
       if (a === "usehint") setJudge(b.dataset.v);
     };
@@ -2429,7 +2561,7 @@ window.WorkStore = window.NoteStore.work;
     return { title: setting("title") || "", type: STAGES[st].workType, pos: pos || (userLoc ? `${userLoc[1].toFixed(5)}, ${userLoc[0].toFixed(5)}` : ""),
       kind: `${kind || ""}${cp.seq ? `（${STAGES[st].short} ${cp.seq}本目）` : ""}`, who: setting("contractor") || "", date: `${at.getFullYear()}年${at.getMonth() + 1}月${at.getDate()}日` };
   }
-  const BOARD_ROWS = [["title", "件　名"], ["type", "工　種"], ["pos", "位　置"], ["kind", "撮影内容"], ["who", "受託者"], ["date", "撮影日"]];
+  const BOARD_ROWS = [["title", "件　名"], ["type", "工　種"], ["pos", "位　置"], ["kind", "撮影種別"], ["who", "受託者"], ["date", "撮影日"]];
   // 黒板を描く（x, y, w, h の範囲いっぱい）
   function drawBoard(g, x, y, w, h, b) {
     const pad = Math.max(2, w * 0.012), lw = Math.max(1.5, w * 0.004);
@@ -2461,14 +2593,16 @@ window.WorkStore = window.NoteStore.work;
     out.push(cur); return out.slice(0, maxLines);
   }
   // 写真に黒板を合わせる（mode: left=左端に表示 / none=表示なし）
-  function composeBoard(orig, board, mode) {
+  // scale：黒板の幅（写真の幅に対する割合）。未指定なら縦写真 62%・横写真 45%
+  function composeBoard(orig, board, mode, scale) {
     return new Promise((res, rej) => {
       if (mode === "none") { res(orig); return; }
       const img = new Image();
       img.onload = () => {
         const cv = document.createElement("canvas"); cv.width = img.width; cv.height = img.height;
         const g = cv.getContext("2d"); g.drawImage(img, 0, 0);
-        const bw = Math.round(Math.max(Math.min(img.width, img.height) * 0.62, img.width * 0.42)), bh = Math.round(bw * 0.62), m = Math.round(img.width * 0.015);
+        const sc = +scale > 0 ? +scale : img.height > img.width ? 0.62 : 0.45;
+        const bw = Math.round(img.width * Math.min(0.98, Math.max(0.2, sc))), bh = Math.min(Math.round(bw * 0.62), img.height - 4), m = Math.round(img.width * 0.012);
         drawBoard(g, m, img.height - bh - m, bw, bh, board);
         res(cv.toDataURL("image/jpeg", 0.85));
       };
@@ -2508,7 +2642,7 @@ window.WorkStore = window.NoteStore.work;
     const ok = await dialog({ icon: "pen", title: "黒板の内容を直す", body: boardFormHTML(b) + `<button type="button" class="btn line block" id="bdFull2" style="margin-top:8px">黒板を全画面で確認</button>`, ok: "この内容にする", cancel: "やめる",
       onMount: (d) => { const sync = bindBoardForm(d, w, b); d.querySelector("#bdFull2").onclick = () => { sync(); boardFullscreen(b); }; } });
     if (!ok) return false;
-    w.board = b; w.kind = b.kind; ph.data = await composeBoard(ph.orig || ph.data, b, w.boardMode || "left"); w.updated = new Date().toISOString();
+    w.board = b; w.kind = b.kind; ph.data = await composeBoard(ph.orig || ph.data, b, w.boardMode || "left", w.boardScale); w.updated = new Date().toISOString();
     setSetting("title", b.title); setSetting("contractor", b.who);
     return true;
   }
@@ -2518,7 +2652,7 @@ window.WorkStore = window.NoteStore.work;
     const b = boardFor(cp, WK.kind);
     const title = cp.seq ? (late ? `作業状況写真（${STAGES[st].short} ${cp.seq}本目）` : `${STAGES[st].label} ${cp.seq}本目が完了しました`) : `作業状況写真（${STAGES[st].label}）`;
     const f = await dialog({ icon: "camera", title,
-      body: `<p class="small" style="text-align:left">${cp.seq ? `${every}本に1本の<b>作業状況写真</b>を撮影してください（特記仕様書14）。` : ""}黒板の内容を確認・修正してから撮影します。</p>
+      body: `<p class="small" style="text-align:left">${cp.seq ? `${every}本に1本の<b>作業状況写真</b>を撮影してください。` : ""}黒板の内容を確認・修正してから撮影します。</p>
         <div class="bdwrap">${boardFormHTML(b, WK.kind)}</div>
         <button type="button" class="btn line block" id="wkFull" style="margin-top:8px">黒板を全画面で確認</button>`,
       ok: "カメラを起動", cancel: late ? "やめる" : "あとで撮影", camera: true,
@@ -2533,7 +2667,8 @@ window.WorkStore = window.NoteStore.work;
     const w = { id: "w-" + uid(), stage: st, kind: kind || "", inspector: cp.inspector, takenBy: INSP.name, date: cp.date, seq: cp.seq || null, every: everyOf(st),
       key: r.id || null, tree: r.tree ?? null, sp: r.sp || "", cat: r.cat || "", area: r.area || INSP.park || "", zone: r.zone || "", place: r.place || "",
       tno: r.tno || "", lon: r.lon ?? userLoc?.[0] ?? null, lat: r.lat ?? userLoc?.[1] ?? null, gps: userLoc ? [...userLoc] : null, takenAt: iso, updated: iso, device: INSP.device, board, boardMode: mode };
-    w.ph = { data: await composeBoard(orig, board, mode), orig, cap: kind || "", date: w.date, at: iso }; w.ph.name = workName(w);
+    w.boardScale = +setting("boardScale") || 0;
+    w.ph = { data: await composeBoard(orig, board, mode, w.boardScale), orig, cap: kind || "", date: w.date, at: iso }; w.ph.name = workName(w);
     await photoViewer(w.ph, { path: workPath(w), noDelete: true, noEdit: true, work: w });
     await WorkStore.put(w, true); INSP.work.push(w); updateInspHead();
     toast("作業状況写真を保存しました"); if (pane === "worklog") renderWorklog();
@@ -2573,59 +2708,11 @@ window.WorkStore = window.NoteStore.work;
   }
 
   // ---------- 点検一覧 ----------
-  const IL = { date: "all", who: "", j: "", q: "", park: true, mode: "rec", sort: "near", tq: "", lim: 300 };
-  // ---------- 未点検の木・外観診断待ちの一覧 ----------
-  const inParkTree = (t) => !INSP.park || !parkHasTrees() || t.area === INSP.park;
-  function todoData(mode) {
-    const out = [];
-    for (let i = 0; i < N; i++) {
-      const t = T[i]; if (!inParkTree(t)) continue;
-      const tr = treeRec(i), dg = diagRec(i);
-      if (mode === "todo") { if (isDone(tr)) continue; out.push({ i, t, draft: !!tr && tr.status === "draft" }); }
-      else { if (!(isDone(tr) && tr.judge === "外観") || isDone(dg)) continue; out.push({ i, t, draft: !!dg && dg.status === "draft", tr }); }
-    }
-    return out;
-  }
-  function todoList() {
-    let list = todoData(IL.mode);
-    const q = toKata(IL.tq.trim());
-    if (q) list = list.filter(({ t }) => toKata([t.tno, t.insNo, t.sp, t.std, t.zone, t.place, t.memo].join(" ")).includes(q));
-    const ref = userLoc || (map ? [map.getCenter().lng, map.getCenter().lat] : null);
-    for (const x of list) x.d = ref ? distM(ref[0], ref[1], x.t.lon, x.t.lat) : null;
-    const byNo = (a, b) => String(a.t.tno).localeCompare(String(b.t.tno), "ja", { numeric: true });
-    if (IL.sort === "near" && ref) list.sort((a, b) => a.d - b.d);
-    else if (IL.sort === "zone") list.sort((a, b) => (a.t.zone || "").localeCompare(b.t.zone || "", "ja") || (a.t.place || "").localeCompare(b.t.place || "", "ja") || byNo(a, b));
-    else list.sort(byNo);
-    return list;
-  }
-  function todoItem({ i, t, draft, d, tr }) {
-    const tags = [`<span class="tag gray">${esc(t.tno)}</span>`, draft ? '<span class="tag">下書き</span>' : "", tr ? `<span class="tag" style="background:${STAGES.gaikan.theme};color:#fff">外観診断要</span>` : ""].join(" ");
-    const size = [t.h != null ? `樹高${t.h}m` : "", t.g != null ? `幹周${t.g}cm` : ""].filter(Boolean).join("・");
-    return `<span class="avatar" style="background:${treeColor(i)}">${esc((t.sp || "？")[0])}</span>
-      <span class="item-txt"><span class="item-main">${esc(t.sp || "樹種不明")} ${tags}</span>
-      <span class="item-sub">${esc(placeOf(t) || "")}${size ? "　" + size : ""}${t.insNo ? `・点検番号 ${esc(t.insNo)}` : ""}${d != null ? `・${userLoc ? "現在地から" : "地図の中心から"}${fmtDist(d)}` : ""}${tr && tr.ans?.reason ? `<br>点検の判定理由：${esc(String(tr.ans.reason).slice(0, 60))}` : ""}</span></span>`;
-  }
-  function renderTodo() {
-    const list = todoList(), el = $("#ilBody");
-    el.innerHTML = `<input id="ilTq" class="inp" type="search" placeholder="樹種・樹木番号・点検番号・${esc(LBL.zone)}・${esc(LBL.place)}で探す" value="${esc(IL.tq)}" autocomplete="off">
-      <div class="seg" id="ilSort" style="margin-top:8px">${[["near", "近い順"], ["no", "樹木番号順"], ["zone", `${LBL.zone}順`]].map(([v, l]) => `<button data-sort="${v}"${IL.sort === v ? ' class="on"' : ""}>${l}</button>`).join("")}</div>
-      <div class="listhead" style="margin-top:10px"><span id="ilMeta">${IL.mode === "todo" ? "未点検" : "外観診断待ち"} <b>${list.length}本</b>${INSP.park && parkHasTrees() ? `（${esc(INSP.park)}）` : ""}</span><span><button class="btn line minibtn" data-il="tfit">地図で表示</button> <button class="btn line minibtn" data-il="txlsx">Excel</button></span></div>
-      <ol id="ilList" class="list">${list.length ? list.slice(0, IL.lim).map((x) => `<li><button class="item" data-ti="${x.i}">${todoItem(x)}</button></li>`).join("") : `<li class="empty">${ic("check")}${IL.mode === "todo" ? "未点検の木はありません" : "外観診断を待っている木はありません"}</li>`}</ol>
-      ${list.length > IL.lim ? `<button class="btn line block" data-il="more">さらに表示（残り${list.length - IL.lim}本）</button>` : ""}
-      <p class="small muted">木を選ぶと、地図がその木に移動し、樹木の情報（樹種・樹高・幹周・枝張・場所・備考）と入力画面が開きます。</p>`;
-  }
-  async function todoXlsx(list) {
-    await loadXLSX();
-    const rows = [["No", "状態", "樹木番号", "点検番号", "樹種", "区分", "樹高(m)", "幹周(cm)", "枝張(m)", LBL.area, LBL.zone, LBL.place, "備考", "緯度", "経度", "地図"],
-      ...list.map((x, k) => [k + 1, IL.mode === "todo" ? (x.draft ? "下書き" : "未点検") : (x.draft ? "外観診断 下書き" : "外観診断待ち"), x.t.tno, x.t.insNo || "", x.t.sp, x.t.cat, x.t.h ?? "", x.t.g ?? "", x.t.w ?? "", x.t.area || "", x.t.zone || "", x.t.place || "", x.t.memo || "", x.t.lat, x.t.lon, `https://www.google.com/maps/search/?api=1&query=${x.t.lat},${x.t.lon}`])];
-    const wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet(rows); ws["!cols"] = rows[0].map((h) => ({ wch: Math.max(8, String(h).length * 2 + 2) }));
-    XLSX.utils.book_append_sheet(wb, ws, IL.mode === "todo" ? "未点検" : "外観診断待ち");
-    saveBlob(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: XMIME }), `${IL.mode === "todo" ? "未点検" : "外観診断待ち"}_${fsName(INSP.park || "全公園")}_${localDate()}.xlsx`);
-  }
+  // ---------- 点検一覧：選んだ公園のすべての木（未点検＋点検済）を一覧にし、状態・日付・点検員・文字で絞り込む ----------
+  const IL = { st: "", date: "all", who: "", q: "", sort: "no", lim: 300 };
   const recDate = (r) => r.doneDate || (r.updated ? localDate(new Date(r.updated)) : "");
   function recItem(r, extra = "") {
-    const j = judgeOf(r.judge), draft = r.status !== "done";
-    const S = STG(r);
+    const j = judgeOf(r.judge), draft = r.status !== "done", S = STG(r);
     const tags = [`<span class="tag" style="background:${S.theme};color:#fff">${S.short}</span>`, draft ? '<span class="tag gray">下書き</span>' : j ? `<span class="tag" style="background:${j.color};color:#fff">${stageOf(r) === "gaikan" ? j.v : esc(j.label)}</span>` : `<span class="tag gray">${NOJ.label}</span>`,
       r.markReq ? (r.mark ? '<span class="tag">テープ済</span>' : '<span class="tag red">テープ未</span>') : "",
       r.reportedAt ? '<span class="tag">速報済</span>' : "", (r.photos || []).length ? `<span class="tag gray">写真${r.photos.length}</span>` : "", r.tree == null ? '<span class="tag gray">台帳外</span>' : ""].join(" ");
@@ -2633,45 +2720,99 @@ window.WorkStore = window.NoteStore.work;
       <span class="item-txt"><span class="item-main">${esc(r.sp || "樹種未入力")} ${tags}</span>
       <span class="item-sub">${esc(placeOf(r))}${r.tno ? `・${esc(r.tno)}` : ""}　${draft ? dtOf(r.updated) : timeOf(r.doneAt)}・${esc(r.inspector || "")}${extra}</span></span>`;
   }
-  function inspListData() {
-    const today = localDate(), d = IL.date === "today" ? today : IL.date;
-    let list = [...INSP.recs.values()].filter((r) => r.status !== "new" && (IL.date === "all" || recDate(r) === d) && (!IL.who || r.inspector === IL.who) && (!IL.park || (r.area || "") === INSP.park));
-    const base = list;
-    const f = { "": () => true, draft: (r) => r.status !== "done", mark: (r) => isDone(r) && r.markReq && !r.mark, "-": (r) => isDone(r) && !judgeOf(r.judge) };
-    ALLJ.forEach((j) => { f[j.v] = (r) => isDone(r) && r.judge === j.v; });
-    STG_KEYS.forEach((k) => { f["st:" + k] = (r) => stageOf(r) === k; });
-    list = list.filter(f[IL.j] || f[""]);
+  const inParkTree = (t) => !INSP.park || !parkHasTrees() || t.area === INSP.park;
+  // 1本＝1行：台帳の木（記録がなくても出す）＋台帳にない木の記録
+  function listRows() {
+    const rows = [];
+    for (let i = 0; i < N; i++) { const t = T[i]; if (!inParkTree(t)) continue; rows.push({ i, t, tr: live(treeRec(i)), dg: live(diagRec(i)) }); }
+    for (const r of INSP.recs.values()) if (r.tree == null && r.status !== "new" && stageOf(r) === "tenken" && (!INSP.park || !r.area || r.area === INSP.park)) rows.push({ i: null, t: { tno: r.tno || "", sp: r.sp, cat: r.cat, h: r.h, g: r.g, w: r.w, lat: r.lat, lon: r.lon, area: r.area, zone: r.zone, place: r.place, insNo: r.insNo }, tr: r, dg: live(INSP.recs.get(gIdOf(r))), unreg: true });
+    return rows;
+  }
+  const rowState = (x) => !isDone(x.tr) ? (x.tr ? "draft" : "todo") : x.tr.judge === "外観" && !isDone(x.dg) ? "wait" : isDone(x.dg) ? "diag" : "done";
+  const ST_FILTERS = [["", "すべて"], ["todo", "未点検"], ["draft", "下書き"], ["doneAll", "点検済"], ["wait", "外観診断待ち"], ["diag", "外観診断済"], ["mark", "テープ未"]];
+  function rowMatch(x, k) {
+    const s = rowState(x);
+    if (!k) return true;
+    if (k === "todo") return s === "todo";
+    if (k === "draft") return s === "draft" || (x.dg && x.dg.status === "draft");
+    if (k === "doneAll") return isDone(x.tr);
+    if (k === "wait") return s === "wait";
+    if (k === "diag") return isDone(x.dg);
+    if (k === "mark") return [x.tr, x.dg].some((r) => isDone(r) && r.markReq && !r.mark);
+    if (k.startsWith("j:")) { const v = k.slice(2); return [x.tr, x.dg].some((r) => isDone(r) && r.judge === v); }
+    return true;
+  }
+  function listData() {
+    const d = IL.date === "today" ? localDate() : IL.date;
+    let rows = listRows();
+    // 点検日・点検員：その条件に合う記録がある木だけ
+    if (IL.date !== "all" || IL.who) rows = rows.filter((x) => [x.tr, x.dg].some((r) => r && (IL.date === "all" || recDate(r) === d) && (!IL.who || r.inspector === IL.who)));
+    const base = rows;
+    rows = rows.filter((x) => rowMatch(x, IL.st));
     const q = toKata(IL.q.trim());
-    if (q) list = list.filter((r) => toKata([r.sp, r.zone, r.place, r.area, r.tno, r.inspector, ansText(r.ans?.memo)].join(" ")).includes(q));
-    list.sort((a, b) => (b.doneAt || b.updated || "").localeCompare(a.doneAt || a.updated || ""));
-    return { base, list, f };
+    if (q) rows = rows.filter((x) => toKata([x.t.tno, x.t.insNo, x.t.sp, x.t.zone, x.t.place, x.t.memo, x.tr?.inspector, x.dg?.inspector, x.tr && tenkenReason(x.tr.ans), x.dg?.ans?.jReason].filter(Boolean).join(" ")).includes(q));
+    const ref = userLoc || (map ? [map.getCenter().lng, map.getCenter().lat] : null);
+    for (const x of rows) x.d = ref && isFinite(x.t.lon) ? distM(ref[0], ref[1], x.t.lon, x.t.lat) : null;
+    const byNo = (a, b) => String(a.t.tno).localeCompare(String(b.t.tno), "ja", { numeric: true });
+    const last = (x) => [x.tr, x.dg].filter(Boolean).map((r) => r.doneAt || r.updated || "").sort().pop() || "";
+    if (IL.sort === "near" && ref) rows.sort((a, b) => (a.d ?? 1e12) - (b.d ?? 1e12));
+    else if (IL.sort === "zone") rows.sort((a, b) => (a.t.zone || "").localeCompare(b.t.zone || "", "ja") || (a.t.place || "").localeCompare(b.t.place || "", "ja") || byNo(a, b));
+    else if (IL.sort === "new") rows.sort((a, b) => last(b).localeCompare(last(a)) || byNo(a, b));
+    else rows.sort(byNo);
+    return { base, rows };
+  }
+  const listRecs = (rows) => rows.flatMap((x) => [x.tr, x.dg]).filter((r) => r && r.status !== "new");
+  function rowItem(x) {
+    const s = rowState(x), t = x.t, disp = x.dg || x.tr, j = disp && isDone(disp) ? judgeOf(disp.judge) : null;
+    const tag = (bg, txt) => `<span class="tag" style="background:${bg};color:#fff">${esc(txt)}</span>`;
+    const tags = [t.tno ? `<span class="tag gray">${esc(t.tno)}</span>` : "", x.unreg ? '<span class="tag gray">台帳外</span>' : "",
+      s === "todo" ? '<span class="tag gray">未点検</span>' : "", s === "draft" ? '<span class="tag">下書き</span>' : "",
+      isDone(x.tr) ? tag(STAGES.tenken.theme, `点検：${judgeOf(x.tr.judge)?.label || "－"}`) : "",
+      s === "wait" ? tag(STAGES.gaikan.theme, "外観診断待ち") : "", x.dg && x.dg.status === "draft" ? '<span class="tag">診断下書き</span>' : "",
+      isDone(x.dg) ? tag(judgeOf(x.dg.judge)?.color || STAGES.gaikan.theme, `診断：${x.dg.judge || "－"}`) : "",
+      [x.tr, x.dg].some((r) => isDone(r) && r.markReq && !r.mark) ? '<span class="tag red">テープ未</span>' : ""].filter(Boolean).join(" ");
+    const size = [t.h != null && t.h !== "" ? `樹高${t.h}m` : "", t.g != null && t.g !== "" ? `幹周${t.g}cm` : ""].filter(Boolean).join("・");
+    const when = disp && disp.status !== "new" ? `${dtOf(disp.doneAt || disp.updated)}・${esc(disp.inspector || "")}` : "";
+    return `<span class="avatar${s === "draft" ? " ring" : ""}" style="background:${s === "todo" ? "#9aa59f" : s === "draft" ? "#fff" : j ? j.color : recColor(disp)}">${esc((t.sp || "？")[0])}</span>
+      <span class="item-txt"><span class="item-main">${esc(t.sp || "樹種不明")} ${tags}</span>
+      <span class="item-sub">${esc(placeOf(t) || "")}${size ? "　" + size : ""}${t.insNo ? `・点検番号 ${esc(t.insNo)}` : ""}${x.d != null ? `・${fmtDist(x.d)}` : ""}${when ? `<br>${when}` : ""}</span></span>`;
   }
   function renderInspList() {
-    const nTodo = todoData("todo").length, nWait = todoData("wait").length;
-    const tabs = `<div class="stabs ilmode">${[["rec", "点検記録", ""], ["todo", "未点検の木", nTodo], ["wait", "外観診断待ち", nWait]].map(([k, l, n]) => `<button type="button" data-ilm="${k}" class="${IL.mode === k ? "on" : ""}" style="--st:${k === "wait" ? STAGES.gaikan.theme : STAGES.tenken.theme}">${l}<small>${n === "" ? "完了・下書き" : n + "本"}</small></button>`).join("")}</div>`;
-    if (IL.mode !== "rec") { $("#pane-insplist").innerHTML = `${tabs}<div id="ilBody"></div>`; renderTodo(); return; }
     const all = [...INSP.recs.values()].filter((r) => r.status !== "new");
     const dates = [...new Set(all.map(recDate).filter(Boolean))].sort().reverse(), whos = [...new Set(all.map((r) => r.inspector).filter(Boolean))].sort();
     if (IL.date !== "today" && IL.date !== "all" && !dates.includes(IL.date)) IL.date = "all";
-    const { base, f } = inspListData();
-    const cnt = (k) => base.filter(f[k]).length;
-    const segs = [["", "すべて"], ...STG_KEYS.map((k) => ["st:" + k, STAGES[k].label]), ...ALLJ.map((j) => [j.v, j.stage === "gaikan" ? `診断 ${j.v}` : j.label]), ["draft", "下書き"], ["mark", "テープ未"]];
-    $("#pane-insplist").innerHTML = `${tabs}
-      <div class="grid2"><label class="field"><span class="lbl">点検日</span><select id="ilDate" class="inp"><option value="today">今日</option><option value="all">すべての日</option>${dates.map((d) => `<option value="${d}">${dateJ(d)}</option>`).join("")}</select></label>
-        <label class="field"><span class="lbl">点検員</span><select id="ilWho" class="inp"><option value="">全員</option>${whos.map((w) => `<option${w === IL.who ? " selected" : ""}>${esc(w)}</option>`).join("")}</select></label></div>
-      <label class="toggle small" style="margin:-4px 0 6px">${esc(INSP.park || "")} の記録だけ<span class="switch"><input type="checkbox" id="ilPark"${IL.park ? " checked" : ""}><span></span></span></label>
-      <div class="segscroll" id="ilJ" style="margin-top:0">${segs.map(([k, l]) => `<button data-j="${k}"${IL.j === k ? ' class="on"' : ""}>${esc(l)}<span class="ilcnt">${cnt(k)}</span></button>`).join("")}</div>
-      <input id="ilQ" class="inp" type="search" placeholder="樹種・樹木番号・${esc(LBL.zone)}・所見で探す" value="${esc(IL.q)}" autocomplete="off">
-      <div class="listhead" style="margin-top:10px"><span id="ilMeta"></span><span><button class="btn line minibtn" data-il="fit">地図で表示</button> <button class="btn line minibtn" data-il="docs">提出書類</button> <button class="btn line minibtn" data-il="xlsx">一覧Excel</button></span></div>
-      <ol id="ilList" class="list"></ol>`;
+    const { base } = listData(), cnt = (k) => base.filter((x) => rowMatch(x, k)).length;
+    const segs = [...ST_FILTERS, ...STAGES.tenken.judges.map((j) => ["j:" + j.v, `点検 ${j.label}`]), ...STAGES.gaikan.judges.map((j) => ["j:" + j.v, `診断 ${j.v}`])];
+    $("#pane-insplist").innerHTML = `
+      <input id="ilQ" class="inp" type="search" placeholder="樹種・樹木番号・点検番号・${esc(LBL.zone)}・${esc(LBL.place)}・内容で探す" value="${esc(IL.q)}" autocomplete="off">
+      <div class="segscroll" id="ilJ">${segs.map(([k, l]) => `<button data-j="${k}"${IL.st === k ? ' class="on"' : ""}>${esc(l)}<span class="ilcnt">${cnt(k)}</span></button>`).join("")}</div>
+      <details class="attrs ilmore"${IL.date !== "all" || IL.who ? " open" : ""}><summary>点検日・点検員・並べ替え</summary>
+        <div class="grid2"><label class="field"><span class="lbl">点検日</span><select id="ilDate" class="inp"><option value="all">すべて</option><option value="today">今日</option>${dates.map((d) => `<option value="${d}">${dateJ(d)}</option>`).join("")}</select></label>
+          <label class="field"><span class="lbl">点検員</span><select id="ilWho" class="inp"><option value="">全員</option>${whos.map((w) => `<option${w === IL.who ? " selected" : ""}>${esc(w)}</option>`).join("")}</select></label></div>
+        <div class="seg" id="ilSort">${[["no", "樹木番号順"], ["near", "近い順"], ["zone", `${LBL.zone}順`], ["new", "点検日の新しい順"]].map(([v, l]) => `<button data-sort="${v}"${IL.sort === v ? ' class="on"' : ""}>${l}</button>`).join("")}</div></details>
+      <div class="listhead" style="margin-top:10px"><span id="ilMeta"></span><span><button class="btn line minibtn" data-il="fit">地図で表示</button> <button class="btn line minibtn" data-il="docs">提出書類</button> <button class="btn line minibtn" data-il="xlsx">Excel</button></span></div>
+      <ol id="ilList" class="list"></ol><div id="ilMore"></div>`;
     $("#ilDate").value = IL.date;
     fillInspItems();
   }
   function fillInspItems() {
-    const { list } = inspListData();
-    $("#ilMeta").textContent = `${list.length}本`;
-    $("#ilList").innerHTML = list.length ? list.slice(0, 300).map((r) => `<li><button class="item" data-rid="${esc(r.id)}">${recItem(r)}</button></li>`).join("")
-      : `<li class="empty">${ic("check")}該当する点検記録はありません。<br>地図の木をタップして点検を始めましょう。</li>`;
+    const { rows } = listData();
+    $("#ilMeta").innerHTML = `<b>${rows.length}本</b>${INSP.park && parkHasTrees() ? `（${esc(INSP.park)}）` : ""}`;
+    $("#ilList").innerHTML = rows.length ? rows.slice(0, IL.lim).map((x) => `<li><button class="item" ${x.unreg ? `data-rid="${esc(x.tr.id)}"` : `data-ti="${x.i}"`}>${rowItem(x)}</button></li>`).join("")
+      : `<li class="empty">${ic("check")}該当する木はありません</li>`;
+    $("#ilMore").innerHTML = rows.length > IL.lim ? `<button class="btn line block" data-il="more">さらに表示（残り${rows.length - IL.lim}本）</button>` : "";
+  }
+  async function listXlsx(rows) {
+    await loadXLSX();
+    const st = { todo: "未点検", draft: "下書き", done: "点検済", wait: "外観診断待ち", diag: "外観診断済" };
+    const out = [["No", "状態", "樹木番号", "点検番号", "樹種", "区分", "樹高(m)", "幹周(cm)", "枝張(m)", LBL.area, LBL.zone, LBL.place, "点検の判定", "点検の判定理由", "点検日", "点検員", "外観診断判定", "外観診断の判定理由", "診断日", "樹木医", "テープ", "緯度", "経度", "地図"],
+      ...rows.map((x, k) => [k + 1, st[rowState(x)], x.t.tno || "", x.t.insNo || "", x.t.sp || "", x.t.cat || "", x.t.h ?? "", x.t.g ?? "", x.t.w ?? "", x.t.area || "", x.t.zone || "", x.t.place || "",
+        isDone(x.tr) ? judgeOf(x.tr.judge)?.label || "" : "", isDone(x.tr) ? tenkenReason(x.tr.ans) : "", isDone(x.tr) ? x.tr.doneDate : "", x.tr?.inspector || "",
+        isDone(x.dg) ? x.dg.judge : "", isDone(x.dg) ? x.dg.ans.jReason || "" : "", isDone(x.dg) ? x.dg.doneDate : "", x.dg?.inspector || "",
+        [x.tr, x.dg].filter((r) => isDone(r)).flatMap((r) => r.tapes || []).join("・"), x.t.lat ?? "", x.t.lon ?? "", isFinite(x.t.lat) ? `https://www.google.com/maps/search/?api=1&query=${x.t.lat},${x.t.lon}` : ""])];
+    const wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet(out); ws["!cols"] = out[0].map((h) => ({ wch: /理由/.test(h) ? 40 : Math.max(8, String(h).length * 2 + 2) }));
+    XLSX.utils.book_append_sheet(wb, ws, "樹木一覧");
+    saveBlob(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: XMIME }), `点検一覧_${fsName(INSP.park || "全公園")}_${localDate()}.xlsx`);
   }
 
   // ---------- 作業記録の一覧 ----------
@@ -2969,7 +3110,8 @@ window.WorkStore = window.NoteStore.work;
   // 樹木点検速報表（別紙1）の1行
   function sokuho1Row(r, k) {
     const a = r.ans;
-    return [k + 1, r.inspector, insNoOf(r), r.tno || "台帳外", maru(a.cut === "有"), maru(a.deadBr === "有"), maru(a.regular === "有"), maru(a.diagC === "有"), maru(a.diagK === "有"), a.reason || ""];
+    const cut = hasYes(a.cut);
+    return [k + 1, r.inspector, insNoOf(r), r.tno || "台帳外", maru(cut), maru(!cut && hasYes(a.deadBr)), maru(!cut && hasYes(a.regular)), maru(!cut && hasYes(a.regular) && (a.diag || []).includes(DIAG_C)), maru(!cut && hasYes(a.regular) && (a.diag || []).includes(DIAG_K)), tenkenReason(a)];
   }
   // 外観診断速報表（別紙2）の1行
   function sokuho2Row(r, k) {
@@ -3097,6 +3239,43 @@ window.WorkStore = window.NoteStore.work;
     const loc = rest.filter((x) => x !== zen).slice(0, 3);
     return { plan, zen, loc, extra: rest.filter((x) => x !== zen && !loc.includes(x)) };
   }
+  // カルテの確認（画面）：Excelのカルテと同じ内容を、様式の順に表示
+  function kartePreviewHTML(r) {
+    const C = karteCells(r), v = (k) => esc(C[k] ?? ""), P2 = kartePhotos(r);
+    const td = (x, cls = "") => `<td class="${cls}">${x}</td>`, th = (x, at = "") => `<th ${at}>${x}</th>`;
+    const PC = { R: ["M", "Q"], T: ["X", "AB"], B: ["AI", "AM"] };
+    const prow = (label, rr, note) => `<tr>${th(label)}${["R", "T", "B"].map((p) => td(`${esc(C[PC[p][0] + rr] || "")}${note && C[PC[p][1] + rr] ? esc(C[PC[p][1] + rr]) : ""}${note ? "）" : ""}`)).join("")}</tr>`;
+    const rrow = (label, rr) => `<tr>${th(label)}${td(`${esc(C["M" + rr] || "")}${esc(C["Q" + rr] || "")}）`, "")}${td("", "na")}${td("", "na")}</tr>`;
+    const ph = (x, lbl) => `<figure class="kph">${x ? `<img src="${x.data}" alt="">` : `<div class="kph-empty">写真なし</div>`}<figcaption>${esc(lbl)}${x && x.cap ? "：" + esc(x.cap) : ""}</figcaption></figure>`;
+    return `<div class="kp-sheet"><h2>街 路 樹 診 断 カ ル テ</h2>
+      <table class="kt"><tr>${th("事務所名")}${td(v("AI2"))}${th("路線名")}${td(v("G3"))}</tr><tr>${th("樹木医")}${td(v("X3"))}${th("診断日")}${td(v("AL3"))}</tr>
+        <tr>${th("樹木番号")}${td(v("G4"))}${th("樹種名")}${td(v("E5"))}</tr><tr>${th("樹高・幹周・枝張")}<td colspan="3">H＝${v("Y4")} m　C＝${v("AF4")} cm　W＝${v("AN4")} m</td></tr>
+        <tr>${th("植栽形態")}<td colspan="3">${v("Q5")}</td></tr><tr>${th("支柱")}<td colspan="3">${v("AK5")}</td></tr></table>
+      <h3>活力診断</h3><table class="kt"><tr>${th("樹勢")}${td(v("AF7"))}</tr><tr>${th("樹形")}${td(v("AF8"))}</tr><tr>${th("所見")}${td(v("G9"), "pre")}</tr><tr>${th("活力判定")}${td(v("H11"))}</tr></table>
+      <h3>部位診断</h3><div class="kscroll"><table class="kt kpart"><tr>${th("診断内容")}${th("根元")}${th("幹")}${th("骨格となる大枝")}</tr>
+        ${[["樹皮枯死・欠損・腐朽", 13], ["芯に達していない開口空洞", 14], ["芯に達した開口空洞", 15]].map(([l, rr]) => `<tr>${th(l)}${["R", "T", "B"].map((p) => td(esc(C[PC[p][0] + rr] || ""))).join("")}</tr>`).join("")}
+        <tr>${th("最大被害部の周囲長比率")}${td(`${v("M17")} ／ ${v("Q17")} ＝ ${v("U17")} %`)}${td(`${v("X17")} ／ ${v("AB17")} ＝ ${v("AF17")} %`)}${td(`枯枝 ${v("AL16")}${v("AP16")}）<br>スタブカット ${v("AL17")}${v("AP17")}）`)}</tr>
+        ${prow("キノコ（子実体）", 18, true)}${prow("木槌打診（異常音）", 19, true)}${prow("分岐部・付根の異常", 20, true)}${prow("胴枯れなどの病害", 21, true)}${prow("虫穴・虫フン、ヤニ", 22, true)}
+        ${rrow("根元の揺らぎ", 23)}${rrow("鋼棒貫入異常", 24)}${rrow("巻き根", 25)}<tr>${th("ルートカラー")}${td(`${v("M26")}${v("T26")}）`)}${td("", "na")}${td("", "na")}</tr>${rrow("露出根被害", 27)}${rrow("不自然な傾斜", 28)}</table></div>
+      <table class="kt"><tr>${th("建築限界越え 車道側")}${td(`幹 ${v("Z24")}${C.Z25 ? "（" + v("Z25") + "）" : ""}<br>枝 ${v("Z26")}${C.Z27 ? "（" + v("Z27") + "）" : ""}`)}</tr><tr>${th("建築限界越え 歩道側")}${td(`幹 ${v("AK24")}${C.AK25 ? "（" + v("AK25") + "）" : ""}<br>枝 ${v("AK26")}${C.AK27 ? "（" + v("AK27") + "）" : ""}`)}</tr>
+        <tr>${th("所見")}${td(v("G29"), "pre")}</tr></table>
+      <h3>部位判定・処置</h3><table class="kt kpart"><tr>${th("")}${th("根元")}${th("幹")}${th("骨格となる大枝")}</tr>
+        ${[["健全か健全に近い", 40], ["注意すべき被害が見られる", 41], ["著しい被害が見られる", 42], ["不健全", 43], ["剪定が必要", 44], ["機器診断が必要", 45]].map(([l, rr]) => `<tr>${th(l)}${["P", "Z", "AJ"].map((c) => td(v(c + rr), "c")).join("")}</tr>`).join("")}</table>
+      <table class="kt"><tr>${th("外観診断判定")}${td(v("G46"))}</tr><tr>${th("判定理由")}${td(v("F48"), "pre")}</tr></table>
+      <h3>機器診断</h3><table class="kt"><tr>${th("測定部位")}${td(v("L52"))}</tr><tr>${th("所見")}${td(v("F54"), "pre")}</tr><tr>${th("総合判定")}${td(v("G60"))}</tr><tr>${th("判定理由")}${td(v("F62"), "pre")}</tr></table>
+      <h3>処置</h3><table class="kt"><tr>${th("必要性")}${td(v("BD3"))}</tr><tr>${th("緊急性")}${td(v("BY3"))}</tr><tr>${th("内容")}${td(`${v("AX4").trim()}<br>${v("AX5")}<br>${v("AX6")}${v("BC6")}）　${v("BR6")}${v("BY6")}）<br>${v("AX7")}${v("BC7")}）　${v("BR7")}${v("BX7")}）<br>${v("AX8")}${v("BA8")}）　${v("BR8")}${v("BV8")}）`)}</tr><tr>${th("摘要")}${td(v("AY9"), "pre")}</tr></table>
+      <h3>写真</h3><div class="kphotos">${ph(P2.plan, "立地平面図")}${ph(P2.zen, "診断概要図")}${[0, 1, 2].map((k) => ph(P2.loc[k], `写真${k + 1}`)).join("")}</div>
+      <table class="kt"><tr>${th("その他特記事項")}${td(v("AW56"), "pre")}</tr><tr>${th("次回診断")}${td(`${v("BD62")}${v("BL62")}）　${v("CC62")}`)}</tr><tr>${th("次回再診断時期")}${td(v("BD63"))}</tr></table></div>`;
+  }
+  async function showKarte(r0) {
+    const r = JSON.parse(JSON.stringify(r0)); if (!r.doneDate) r.doneDate = localDate(); if (!r.inspector) r.inspector = INSP.name;
+    const miss = validate(r0).map(([, l]) => l);
+    const d = document.createElement("div"); d.className = "kprev";
+    d.innerHTML = `<div class="kp-head"><b>カルテの確認</b><button class="btn line minibtn" data-kp="xlsx">Excelで出力</button><button class="btn sub minibtn" data-kp="close">閉じる</button></div>
+      ${miss.length ? `<div class="kp-warn">${ic("warn")}未入力の必須項目があります：${esc(miss.slice(0, 6).join("、"))}${miss.length > 6 ? " など" : ""}</div>` : ""}${kartePreviewHTML(r)}`;
+    d.onclick = async (e) => { const b = e.target.closest("[data-kp]"); if (!b) return; if (b.dataset.kp === "close") d.remove(); if (b.dataset.kp === "xlsx") { try { toast("カルテを作成しています…"); saveBlob(await karteBlob([r]), `外観診断カルテ_${fsName(r.tno || "台帳外")}_${r.doneDate}.xlsx`); } catch (er) { toast(er.message || "作成できませんでした", 4000); } } };
+    document.body.appendChild(d);
+  }
   async function karteBlob(list) {
     list = [...list].sort(byDone);
     const sheets = list.map((r) => { const cells = karteCells(r), P2 = kartePhotos(r), boxes = ["AW37:BI53", "BK37:BW53", "BY37:CK53"], caps = ["AW54", "BK54", "BY54"];
@@ -3164,7 +3343,7 @@ window.WorkStore = window.NoteStore.work;
     const S = STAGES[RP.stage], tape = list.filter((r) => r.markReq);
     const lines = [`${S.label}速報表（${RP.stage === "gaikan" ? "別紙2" : "別紙1"}）を送付します。`, "", `実施日：${meta.dateLabel}`, `公園名：${meta.parks}`, `実施者：${meta.who}`, `本数：${list.length}本（${countsText(list, RP.stage)}）`, `テープ：${tape.length}本（対応済 ${tape.filter((r) => r.mark).length}本）`];
     const imp = RP.stage === "gaikan" ? list.filter((r) => r.judge === "C" || r.ans.urgent === "あり" || kikiParts(r.ans).length) : list.filter((r) => ["伐採", "外観", "枯枝"].includes(r.judge));
-    if (imp.length) { lines.push("", RP.stage === "gaikan" ? "■ C判定・緊急対応・機器診断" : "■ 伐採・外観診断・枯枝処理"); imp.forEach((r, k) => lines.push(`${k + 1}. ${judgeOf(r.judge)?.[RP.stage === "gaikan" ? "v" : "label"] || ""}｜${r.tno || "台帳外"}｜${r.sp}｜${((RP.stage === "gaikan" ? r.ans.jReason : r.ans.reason) || "").replace(/\s+/g, " ").slice(0, 80)}`)); }
+    if (imp.length) { lines.push("", RP.stage === "gaikan" ? "■ C判定・緊急対応・機器診断" : "■ 伐採・外観診断・枯枝処理"); imp.forEach((r, k) => lines.push(`${k + 1}. ${judgeOf(r.judge)?.[RP.stage === "gaikan" ? "v" : "label"] || ""}｜${r.tno || "台帳外"}｜${r.sp}｜${((RP.stage === "gaikan" ? r.ans.jReason : tenkenReason(r.ans)) || "").replace(/\s+/g, " ").slice(0, 80)}`)); }
     lines.push("", "詳細は添付の速報表をご確認ください。");
     return lines.join("\n");
   }
@@ -3393,7 +3572,7 @@ window.WorkStore = window.NoteStore.work;
       body.innerHTML = `<label class="field"><span class="lbl">樹木点検（◯本に1本・0で案内なし）</span><input id="asEveryT" class="inp" type="number" inputmode="numeric" min="0" max="500" value="${everyOf("tenken")}"></label>
         <label class="field"><span class="lbl">外観診断（◯本に1本・0で案内なし）</span><input id="asEveryG" class="inp" type="number" inputmode="numeric" min="0" max="500" value="${everyOf("gaikan")}"></label>
         <button class="btn block" data-asa="everysave">保存</button>
-        <p class="small muted">初期値は特記仕様書14の頻度（樹木点検100本に1本・外観診断50本に1本）です。点検員ごとに、完了した本数がこの数になるたびにカメラを起動します。</p>`;
+        <p class="small muted">初期値は樹木点検100本に1本・外観診断50本に1本です。点検員ごとに、完了した本数がこの数になるたびにカメラを起動します。</p>`;
     }
     if (page === "project") {
       body.innerHTML = `<label class="field"><span class="lbl">事務所名（カルテ）</span><input id="asOffice" class="inp" value="${esc(setting("office") || "")}" placeholder="例：〇〇サービスセンター"></label>
@@ -3732,27 +3911,19 @@ window.WorkStore = window.NoteStore.work;
     $("#inspAddOk").onclick = confirmInspAdd; $("#inspAddCancel").onclick = stopInspAdd;
     $("#onlyUninsp").onchange = (e) => { F.uninsp = e.target.checked; applyFilters(); };
     const il = $("#pane-insplist");
-    il.onchange = (e) => { if (e.target.id === "ilPark") { IL.park = e.target.checked; renderInspList(); } if (e.target.id === "ilDate") { IL.date = e.target.value; renderInspList(); } if (e.target.id === "ilWho") { IL.who = e.target.value; renderInspList(); } };
-    il.oninput = (e) => { if (e.target.id === "ilQ") { IL.q = e.target.value; fillInspItems(); } if (e.target.id === "ilTq") { IL.tq = e.target.value; IL.lim = 300; const pos = e.target.selectionStart; renderTodo(); const q = $("#ilTq"); q.focus(); try { q.setSelectionRange(pos, pos); } catch { } } };
+    il.onchange = (e) => { if (e.target.id === "ilDate") { IL.date = e.target.value; IL.lim = 300; renderInspList(); } if (e.target.id === "ilWho") { IL.who = e.target.value; IL.lim = 300; renderInspList(); } };
+    il.oninput = (e) => { if (e.target.id === "ilQ") { IL.q = e.target.value; IL.lim = 300; fillInspItems(); } };
     il.onclick = async (e) => {
-      const m = e.target.closest("[data-ilm]"); if (m) { IL.mode = m.dataset.ilm; IL.lim = 300; renderInspList(); return; }
-      const so = e.target.closest("[data-sort]"); if (so) { IL.sort = so.dataset.sort; renderTodo(); return; }
+      const j = e.target.closest("[data-j]"); if (j) { IL.st = j.dataset.j; IL.lim = 300; il.querySelectorAll("[data-j]").forEach((x) => x.classList.toggle("on", x === j)); fillInspItems(); return; }
+      const so = e.target.closest("[data-sort]"); if (so) { IL.sort = so.dataset.sort; il.querySelectorAll("[data-sort]").forEach((x) => x.classList.toggle("on", x === so)); fillInspItems(); return; }
       const ti = e.target.closest("[data-ti]"); if (ti) { selectTree(+ti.dataset.ti, true); return; }
-      const tb = e.target.closest("[data-il]");
-      if (tb && tb.dataset.il === "more") { IL.lim += 300; renderTodo(); return; }
-      if (tb && (tb.dataset.il === "tfit" || tb.dataset.il === "txlsx")) {
-        const list = todoList(); if (!list.length) { toast("該当する木がありません"); return; }
-        if (tb.dataset.il === "txlsx") { try { await todoXlsx(list); } catch (er) { toast(er.message, 4000); } return; }
-        if (IL.mode === "todo" && !F.uninsp) { F.uninsp = true; applyFilters(); toast("地図を「未点検だけ」の表示にしました（絞り込みで解除できます）", 3500); }
-        const bb = new maplibregl.LngLatBounds(); list.forEach((x) => bb.extend([x.t.lon, x.t.lat])); peekMap(); map.fitBounds(bb, { padding: 60, maxZoom: 18 }); return;
-      }
-      const j = e.target.closest("[data-j]"); if (j) { IL.j = j.dataset.j; renderInspList(); return; }
       const it = e.target.closest("[data-rid]"); if (it) { const r = INSP.recs.get(it.dataset.rid); if (r) openInspectRec(r); return; }
       const b = e.target.closest("[data-il]"); if (!b) return;
-      const { list } = inspListData();
-      if (b.dataset.il === "fit") { const ids = list.filter((r) => isFinite(r.lon)); if (!ids.length) { toast("表示する木がありません"); return; } const bb = new maplibregl.LngLatBounds(); ids.forEach((r) => bb.extend([r.lon, r.lat])); peekMap(); map.fitBounds(bb, { padding: 60, maxZoom: 17 }); }
-      if (b.dataset.il === "docs") { await chooseOutput(list); return; }
-      if (b.dataset.il === "xlsx") { if (!list.length) { toast("出力する記録がありません"); return; } try { saveBlob(await inspWorkbook(list, { title: `${CFG.reportTitle}結果一覧`, sheet: "点検結果", dateLabel: IL.date === "all" ? "すべて" : dateJ(IL.date === "today" ? localDate() : IL.date), who: IL.who || "全員" }), `点検一覧_${localDate()}.xlsx`); } catch (er) { toast(er.message, 4000); } }
+      if (b.dataset.il === "more") { IL.lim += 300; fillInspItems(); return; }
+      const { rows } = listData();
+      if (b.dataset.il === "fit") { const ps = rows.filter((x) => isFinite(x.t.lon)); if (!ps.length) { toast("表示する木がありません"); return; } const bb = new maplibregl.LngLatBounds(); ps.forEach((x) => bb.extend([x.t.lon, x.t.lat])); peekMap(); map.fitBounds(bb, { padding: 60, maxZoom: 18 }); }
+      if (b.dataset.il === "docs") { await chooseOutput(listRecs(rows)); return; }
+      if (b.dataset.il === "xlsx") { if (!rows.length) { toast("出力する木がありません"); return; } try { await listXlsx(rows); } catch (er) { toast(er.message, 4000); } }
     };
     const wl = $("#pane-worklog");
     wl.onchange = async (e) => {
@@ -3844,7 +4015,9 @@ window.WorkStore = window.NoteStore.work;
         <div class="field" style="margin:10px 0 4px;text-align:left"><span class="lbl">コメント</span>
           <div class="voicebox"><textarea class="inp" rows="2" id="phCap" placeholder="異常の内容・位置・寸法など（マイクで音声入力）">${esc(ph.cap || "")}</textarea><button type="button" class="mic" id="phMic" aria-label="音声入力">${ic("mic")}</button></div>
           <div class="chips phpre">${(opts.work ? CFG.workKinds : INSP.cur ? STG(INSP.cur).captionPresets : CFG.inspect.captionPresets).map((t) => `<button type="button" class="chip" data-pre="${esc(t)}">${esc(t)}</button>`).join("")}</div></div>
-        ${opts.work && opts.work.board ? `<div class="field" style="text-align:left;margin:6px 0"><span class="lbl">デジタル黒板</span><div class="seg" id="bdMode">${[["left", "左端に表示"], ["none", "表示なし"]].map(([v, l]) => `<button data-bm="${v}"${(opts.work.boardMode || "left") === v ? ' class="on"' : ""}>${l}</button>`).join("")}<button data-bm="full">全画面で確認</button></div><button type="button" class="btn line block" id="bdEdit" style="margin-top:6px">${ic("pen")}黒板の内容を直す</button></div>` : ""}
+        ${opts.work && opts.work.board ? `<div class="field" style="text-align:left;margin:6px 0"><span class="lbl">デジタル黒板</span><div class="seg" id="bdMode">${[["left", "左端に表示"], ["none", "表示なし"]].map(([v, l]) => `<button data-bm="${v}"${(opts.work.boardMode || "left") === v ? ' class="on"' : ""}>${l}</button>`).join("")}<button data-bm="full">全画面で確認</button></div>
+          <label class="bdsize"${(opts.work.boardMode || "left") === "none" ? " hidden" : ""}><span>黒板の大きさ</span><input type="range" id="bdScale" min="20" max="95" step="1" value="${Math.round((opts.work.boardScale || 0) * 100) || 50}"><b id="bdScaleV">${Math.round((opts.work.boardScale || 0) * 100) || "自動"}${opts.work.boardScale ? "%" : ""}</b></label>
+          <button type="button" class="btn line block" id="bdEdit" style="margin-top:6px">${ic("pen")}黒板の内容を直す</button></div>` : ""}
         <p class="small muted" style="text-align:left;margin:0">保存先：${esc(opts.path || phPath(ph))}</p>
         <div class="modal-btns">${opts.noDelete ? "" : `<button class="btn danger" data-r="del">削除</button>`}${opts.noEdit ? "" : `<button class="btn sub" data-r="edit">${ic("pen")}書き込み</button>`}<button class="btn main" data-r="ok">完了</button></div></div>`;
       document.body.appendChild(d);
@@ -3856,10 +4029,13 @@ window.WorkStore = window.NoteStore.work;
       d.querySelector('[data-r="ok"]').onclick = () => done("ok");
       const be = d.querySelector("#bdEdit");
       if (be) be.onclick = async () => { if (await editBoard(opts.work, ph)) d.querySelector(".phv-img").src = ph.data; };
+      const bs = d.querySelector("#bdScale");
+      if (bs) { let tm = null; bs.oninput = () => { const w = opts.work; w.boardScale = +bs.value / 100; d.querySelector("#bdScaleV").textContent = bs.value + "%"; setSetting("boardScale", w.boardScale);
+        clearTimeout(tm); tm = setTimeout(async () => { ph.data = await composeBoard(ph.orig || ph.data, w.board, w.boardMode || "left", w.boardScale); w.updated = new Date().toISOString(); d.querySelector(".phv-img").src = ph.data; }, 120); }; }
       const bm = d.querySelector("#bdMode");
       if (bm) bm.onclick = async (e) => { const b = e.target.closest("[data-bm]"); if (!b) return; const w = opts.work;
         if (b.dataset.bm === "full") { boardFullscreen(w.board); return; }
-        w.boardMode = b.dataset.bm; setSetting("board", w.boardMode); ph.data = await composeBoard(ph.orig || ph.data, w.board, w.boardMode); w.updated = new Date().toISOString();
+        w.boardMode = b.dataset.bm; setSetting("board", w.boardMode); const sz = d.querySelector(".bdsize"); if (sz) sz.hidden = w.boardMode === "none"; ph.data = await composeBoard(ph.orig || ph.data, w.board, w.boardMode, w.boardScale); w.updated = new Date().toISOString();
         d.querySelector(".phv-img").src = ph.data; bm.querySelectorAll("[data-bm]").forEach((x) => x.classList.toggle("on", x.dataset.bm === w.boardMode)); };
       if (d.querySelector('[data-r="edit"]')) d.querySelector('[data-r="edit"]').onclick = async () => {
         ph.cap = ta.value.trim();

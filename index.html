@@ -462,6 +462,16 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .kprev { position: fixed; inset: 0; z-index: 300; background: var(--bg, #f4f6f4); overflow: auto; padding: env(safe-area-inset-top) 0 calc(20px + env(safe-area-inset-bottom)); }
 .kp-head { position: sticky; top: 0; z-index: 2; display: flex; gap: 8px; align-items: center; padding: 10px 14px; background: var(--surface); box-shadow: 0 1px 0 var(--line); }
 .kp-head b { flex: 1; font-size: 16px; }
+.kp-body { overflow: auto; padding: 8px; -webkit-overflow-scrolling: touch; }
+.kp-zoom { position: relative; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.2); }
+.xs-wrap { position: relative; background: #fff; transform-origin: 0 0; }
+.xs { border-collapse: collapse; table-layout: fixed; width: 100%; background: #fff; color: #000; font-family: "ＭＳ Ｐゴシック", "MS PGothic", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif; }
+.xs td { padding: 0 1px; overflow: hidden; line-height: 1.15; }
+.xs-v { writing-mode: vertical-rl; text-orientation: upright; }
+.xs-pic { position: absolute; }
+.xs td { position: relative; }
+.xs-o { position: absolute; top: 50%; transform: translateY(-50%); white-space: pre; z-index: 1; }
+.xs-o.xs-l { left: 1px; } .xs-o.xs-r { right: 1px; } .xs-o.xs-c { left: 50%; transform: translate(-50%, -50%); }
 .kp-warn { margin: 10px 14px 0; padding: 8px 12px; border-radius: 10px; background: #fff4e5; color: #7a4100; font-size: 13px; display: flex; gap: 8px; }
 .kp-sheet { max-width: 900px; margin: 10px auto; background: #fff; color: #111; padding: 14px; border-radius: 10px; }
 .kp-sheet h2 { text-align: center; font-size: 18px; margin: 4px 0 12px; letter-spacing: .1em; }
@@ -605,6 +615,12 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .ie-zv { font-size: 12px; color: #bbb; min-width: 3.4em; text-align: right; }
 .ie-stage { display: block; }
 .ie-stage canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.planbox { margin-top: 10px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 12px; display: grid; gap: 6px; }
+.ie-cropbar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; color: #ffeb3b; }
+.ie-cropbar[hidden], .ie-selbar[hidden] { display: none; }
+.ie-sub { flex-wrap: wrap; }
+.ie-sub .ie-btn { padding: 7px 10px; }
+.ie-sub .ie-btn svg { width: 15px; height: 15px; vertical-align: -3px; margin-right: 2px; }
 .ie-selbar { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 12px; color: #9fe8f5; flex-wrap: wrap; }
 .ie-lbl { font-size: 11.5px; color: #aaa; font-weight: 700; }
 .ie-tools button { flex: 1 0 64px; }
@@ -1231,7 +1247,7 @@ window.APP_CONFIG = {
     captionPresets: ["全景", "根元", "幹", "枝", "腐朽部", "空洞部", "亀裂", "キノコ（子実体）", "根上がり", "支柱"],
     textPresets: ["根元・キノコ（ ）", "幹・空洞（芯達）", "幹・樹皮欠損", "大枝・腐朽（剪定痕）", "枯枝 φ cm L= m", "要剪定", "要切除", "大枝・スタブカット", "巻き根", "露出根被害", "亀裂", "入り皮", "ガードパイプ接触", "×", "2ヶ所"],
     dimPresets: ["G.L.0m", "G.L.1.2m", "1.2-1.6m", "0.3m", "0.5m", "1.0m", "1.5m", "2.0m", "幅 cm", "地上 0〜1.5m"],
-    rodPresets: ["鋼棒貫入異常（芯達）", "鋼棒貫入異常 cm/ cm", "鋼棒貫入異常（芯達） cm/ cm"],
+    rodPresets: ["鋼棒貫入異常（芯達）", "鋼棒貫入異常 cm/ cm", "鋼棒貫入異常（芯達） cm/ cm", "鋼棒貫入異常"],
     kikiPresets: ["G.L.0m", "G.L.1.2m", "根株", "1.2m"],
     dashinPresets: ["打音(大)", "打音(小)", "打音(大) G.L.0〜1.8m", "極大"],
   },
@@ -1274,16 +1290,16 @@ window.APP_CONFIG = {
       ],
       items: [
         { id: "insNo", section: "基本", label: "点検番号", type: "line", ref: "insNo", placeholder: "例：10" },
-        { id: "cut", section: "1) 枯損木伐採の必要性", label: "伐採が必要な理由（1つでもあれば「有」）", type: "multi", check: true, options: ["樹木全体が枯死している", "主幹が枯死し、回復の見込みがない", "根元・主幹の腐朽が著しく、明らかに伐採が必要", "その他", "該当なし"], exclusive: "該当なし", required: true,
+        { id: "cut", section: "1) 枯損木伐採の必要性", label: "伐採が必要な理由（1つでもあれば「有」）", type: "multi", check: true, options: ["樹木全体が枯死している", "主幹が枯死し、回復の見込みがない", "根元・主幹の腐朽が著しく、明らかに伐採が必要", "その他", "該当なし"], exclusive: "該当なし", required: true, noneLabel: "該当なし → (2)〜(4)の判定に進む",
           help: "外観診断を行うまでもなく、明らかに枯損していて伐採が必要な場合。「有」の場合、2)〜4)は判定しません。" },
-        { id: "cutOther", label: "その他の内容", type: "line", onlyIfAny: { cut: ["その他"] }, required: true },
+        { id: "cutOther", label: "その他：伐採が必要な理由", type: "text", onlyIfAny: { cut: ["その他"] }, required: true, help: "何が（症状）・どこに（部位）・どの程度か、伐採が必要と判断した理由を書きます。", placeholder: "例：落雷により主幹が裂け、根元まで枯死している" },
         { id: "deadBr", section: "2) 枯枝・危険枝処理の必要性", label: "処理が必要な理由（1つでもあれば「有」）", type: "multi", check: true, options: ["利用者に影響のある枯枝がある", "折れ・裂けのある危険枝がある", "かかり枝（折れて引っかかった枝）がある", "その他", "該当なし"], exclusive: "該当なし", required: true, onlyIf: { cut: ["該当なし"] },
           help: "利用者に影響のある落枝の可能性がある枯枝・危険枝。「有」の場合、3)・4)は処理が実施された後の状態を想定して判定します。" },
-        { id: "deadBrOther", label: "その他の内容", type: "line", onlyIfAny: { deadBr: ["その他"] }, required: true },
+        { id: "deadBrOther", label: "その他：枯枝・危険枝の処理が必要な理由", type: "text", onlyIfAny: { deadBr: ["その他"] }, required: true, help: "処理が必要な枝の位置・太さ・長さと、利用者への影響（園路上・遊具の上など）を書きます。", placeholder: "例：園路上に裂けた枝 φ8cm L=2.5m、落枝のおそれ" },
         { id: "regular", section: "3) 年4回の樹木定期点検の必要性", label: "該当する状態（1つでもあれば「有」）", type: "multi", check: true, onlyIf: { cut: ["該当なし"] }, required: true, exclusive: "該当なし",
           options: ["芯まで達した腐朽・空洞がある", "樹皮枯死・腐朽・空洞があり、被害が周長の1/3より大きい（または1/3に近く進行している）", "ベッコウタケ・コフキサルノコシカケ・ナラタケモドキ、またはそれらに類似したキノコが発生している", "キノコが発生し、被害が周長の1/3より大きい（または1/3に近く進行している）", "打音異常の範囲が広く、樹皮枯死・空洞・腐朽とあわせて周長の1/2より広い", "根元の揺らぎがある", "幹が不自然に傾斜している", "分岐部に新たな亀裂が生じている", "樹勢・樹形が著しく衰退している", "その他", "該当なし"],
           help: "いずれにも該当せず、年1回の点検で安全性が確保される場合は「該当なし」（定期点検木から除外。4)は判定しません）。" },
-        { id: "regularOther", label: "その他の内容", type: "line", onlyIfAny: { regular: ["その他"] }, required: true },
+        { id: "regularOther", label: "その他：定期点検が必要な理由", type: "text", onlyIfAny: { regular: ["その他"] }, required: true, help: "上の項目にない異常の内容・部位・程度と、年4回の点検で経過を見る必要がある理由を書きます。", placeholder: "例：幹 G.L.1.0m に縦方向の亀裂、進行の有無を確認" },
         { id: "diag", section: "4) 樹木診断（外観診断）の必要性", label: "該当する可能性（1つでもあれば「有」）", type: "multi", check: true, onlyIf: { cut: ["該当なし"] }, onlyIfAny: { regular: ["*"] }, required: true, exclusive: "該当なし",
           options: ["外観診断によりC判定となる可能性がある（建築限界に関する場合を除く）", "外観診断により機器診断が必要とされる可能性がある", "該当なし"],
           help: "いずれにも該当せず、年4回の定期点検による経過観察で安全性が確保される場合は「該当なし」。" },
@@ -1294,7 +1310,7 @@ window.APP_CONFIG = {
       label: "外観診断", short: "診断", theme: "#5b3a8c", tint: "#f0eaf7",
       workEvery: 50,           // 特記仕様書 14(2) 外観診断 50本に1本程度
       workType: "外観診断",
-      minPhotos: 1,            // カルテ：全景写真（診断概要図）＋問題箇所の局部写真
+      minPhotos: 0,            // カルテ：全景写真（診断概要図）＋問題箇所の局部写真（必須にしない）
       photoGuide: "全景（診断概要図に使用）＋問題箇所の局部写真（説明を必ず記入）。「立地平面図」のコメントを付けた写真は立地平面図の欄に入ります",
       captionPresets: ["全景", "立地平面図", "根元", "幹", "大枝", "枯枝", "スタブカット", "キノコ（子実体）", "開口空洞", "樹皮枯死・欠損", "巻き根", "露出根"],
       judges: [
@@ -1304,63 +1320,61 @@ window.APP_CONFIG = {
         { v: "C", label: "不健全", color: "#d81b60", desc: "活力度5・倒木や幹折れの危険" },
       ],
       items: [
-        { id: "plant", section: "1 基本事項", label: "植栽形態", type: "buttons", options: ["単独桝", "植栽帯", "緑地内", "その他"], required: true, def: "緑地内" },
-        { id: "stake", label: "支柱", type: "buttons", options: ["良好", "なし", "破損"], required: true, def: "なし" },
+        { id: "plant", section: "基本事項", label: "植栽形態", type: "buttons", options: ["単独桝", "植栽帯", "緑地内", "その他"], def: "緑地内" },
+        { id: "stake", label: "支柱", type: "buttons", options: ["良好", "なし", "破損"], def: "なし" },
         { id: "size", label: "樹高・幹周・枝張（空欄は樹木点検票の値）", type: "nums", fields: [{ id: "hReal", label: "樹高", unit: "m", ref: "h", max: 60 }, { id: "gReal", label: "幹周", unit: "cm", ref: "g", max: 1000 }, { id: "wReal", label: "枝張", unit: "m", ref: "w", max: 60 }] },
-        { id: "vSei", section: "2 活力診断", label: "樹勢（枝の伸長量、梢端の枯損、枝の枯損、葉の密度・大きさ・葉色等）", type: "buttons", options: ["1", "2", "3", "4", "5"], required: true,
-          descs: ["旺盛な生育状態を示し、被害が全く見られない", "いくぶん被害の影響を受けているが、あまり目立たない", "異常が明らかに認められる", "生育状態が劣悪で回復の見込みが低い", "ほぼ枯死している"] },
-        { id: "vKei", label: "樹形（主幹・骨格となる大枝・枝などの枯損及び欠損、枝の密度と配置等）", type: "buttons", options: ["1", "2", "3", "4", "5"], required: true,
-          descs: ["望ましい樹形を保っている", "若干の乱れはあるが、望ましい樹形に近い", "望ましい樹形の崩壊が進んでいる", "望ましい樹形がかなり崩壊し回復の見込みが低い", "望ましい樹形が完全に崩壊している"], help: "枯枝や切除を要する枝がある場合は、剪定後ではなく現状の樹形で評価します。" },
-        { id: "vNote", label: "活力診断の所見（樹勢・樹形の判定の根拠）", type: "text", voice: true, requiredWhen: { vSei: ["3", "4", "5"], vKei: ["3", "4", "5"] }, help: "活力度3以上がある場合は必ず記載します。" },
-        { id: "vJudge", label: "活力判定", type: "buttons", options: ["健全か健全に近い", "注意すべき被害が見られる", "著しい被害が見られる", "不健全"], required: true, hint: "vigor", help: "どちらも1か2＝健全か健全に近い／3がある（4・5はない）＝注意すべき被害／4はあるが5はない＝著しい被害／5がある＝不健全" },
-        { id: "parts", section: "3 部位診断", label: "部位ごとに、診断・部位判定まで入力します（根元 → 幹 → 大枝）", type: "grid", parts: [["R", "根元"], ["T", "幹"], ["B", "大枝"]],
+        { id: "vSei", section: "活力診断", label: "樹勢（枝の伸長量、梢端の枯損、枝の枯損、葉の密度・大きさ・葉色等）1良←→5不良", type: "buttons", options: ["1", "2", "3", "4", "5"] },
+        { id: "vKei", label: "樹形（主幹・骨格となる大枝・枝などの枯損及び欠損、枝の密度と配置等）", type: "buttons", options: ["1", "2", "3", "4", "5"] },
+        { id: "vNote", label: "所見", type: "text", voice: true },
+        { id: "vJudge", label: "活力判定", type: "buttons", options: ["健全か健全に近い", "注意すべき被害が見られる", "著しい被害が見られる", "不健全"], hint: "vigor" },
+        { id: "parts", section: "部位診断", label: "診断内容（「あり」は括弧内を記入）", type: "grid", parts: [["R", "根元"], ["T", "幹"], ["B", "骨格となる大枝"]],
           rows: [
             { id: "bark", label: "樹皮枯死･欠損･腐朽（周囲長比率）", options: ["なし", "1/3未満", "1/3以上"] },
-            { id: "cav1", label: "芯に達していない開口空洞", options: ["なし", "1/3未満", "1/3以上"] },
-            { id: "cav2", label: "芯に達した開口空洞", options: ["なし", "1/3未満", "1/3以上"] },
-            { id: "deadb", label: "枯枝（元口直径φ・長さL）", options: ["なし", "あり"], parts: ["B"], note: true },
-            { id: "stub", label: "スタブカット（切除の可否）", options: ["なし", "あり"], parts: ["B"], note: true },
-            { id: "kinoko", label: "キノコ（子実体）（種類等）", options: ["なし", "あり"], note: true },
-            { id: "dashin", label: "木槌打診（異常音）（程度・範囲）", options: ["なし", "あり"], note: true },
-            { id: "bunki", label: "分岐部・付根の異常（亀裂・入り皮・腐朽等）", options: ["なし", "あり"], note: true },
-            { id: "dogare", label: "胴枯れなどの病害（種類等）", options: ["なし", "あり"], note: true },
-            { id: "mushi", label: "虫穴・虫フン、ヤニ（種類等）", options: ["なし", "あり"], note: true },
-            { id: "yuragi", label: "根元の揺らぎ（程度）", options: ["なし", "あり"], parts: ["R"], note: true },
-            { id: "kobo", label: "鋼棒貫入異常（深さcm・芯達）", options: ["なし", "あり"], parts: ["R"], note: true },
-            { id: "makine", label: "巻き根（切除の可否）", options: ["なし", "あり"], parts: ["R"], note: true },
-            { id: "rootc", label: "ルートカラー（深植え・盛土の深さ）", options: ["見える", "見えない"], parts: ["R"], note: true },
-            { id: "roshutsu", label: "露出根被害（切断等の状況）", options: ["なし", "あり"], parts: ["R"], note: true },
-            { id: "keisha", label: "不自然な傾斜（程度・方向）", options: ["なし", "あり"], parts: ["R"], note: true },
+            { id: "cav1", label: "芯に達していない開口空洞（周囲長比率）", options: ["なし", "1/3未満", "1/3以上"] },
+            { id: "cav2", label: "芯に達した開口空洞（周囲長比率）", options: ["なし", "1/3未満", "1/3以上"] },
+            { id: "deadb", label: "枯枝", options: ["なし", "あり"], parts: ["B"], note: true },
+            { id: "stub", label: "スタブカット", options: ["なし", "あり"], parts: ["B"], note: true },
+            { id: "kinoko", label: "キノコ（子実体）", options: ["なし", "あり"], note: true },
+            { id: "dashin", label: "木槌打診（異常音）", options: ["なし", "あり"], note: true },
+            { id: "bunki", label: "分岐部・付根の異常", options: ["なし", "あり"], note: true },
+            { id: "dogare", label: "胴枯れなどの病害", options: ["なし", "あり"], note: true },
+            { id: "mushi", label: "虫穴・虫フン、ヤニ", options: ["なし", "あり"], note: true },
+            { id: "yuragi", label: "根元の揺らぎ", options: ["なし", "あり"], parts: ["R"], note: true },
+            { id: "kobo", label: "鋼棒貫入異常", options: ["なし", "あり"], parts: ["R"], note: true },
+            { id: "makine", label: "巻き根", options: ["なし", "あり"], parts: ["R"], note: true },
+            { id: "rootc", label: "ルートカラー", options: ["見える", "見えない"], parts: ["R"], note: true },
+            { id: "roshutsu", label: "露出根被害", options: ["なし", "あり"], parts: ["R"], note: true },
+            { id: "keisha", label: "不自然な傾斜", options: ["なし", "あり"], parts: ["R"], note: true },
           ] },
-        { id: "dmg", merged: true, label: "最大被害部の周囲長比率（被害部幅／被害部周囲長）", type: "nums", fields: [{ id: "dmgWR", label: "根元 幅", unit: "cm" }, { id: "dmgCR", label: "根元 周囲長", unit: "cm" }, { id: "dmgWT", label: "幹 幅", unit: "cm" }, { id: "dmgCT", label: "幹 周囲長", unit: "cm" }],
-          onlyIfAny: { parts_bark_R: ["1/3未満", "1/3以上"], parts_cav1_R: ["1/3未満", "1/3以上"], parts_cav2_R: ["1/3未満", "1/3以上"], parts_bark_T: ["1/3未満", "1/3以上"], parts_cav1_T: ["1/3未満", "1/3以上"], parts_cav2_T: ["1/3未満", "1/3以上"] } },
-        { id: "clr", label: "建築限界越え（枝は越えている長さL・高さGL、幹は越え幅・高さGL）", type: "grid", parts: [["C", "車道側"], ["W", "歩道側"]],
+        { id: "dmg", label: "上記3項目のうち最大被害部の周囲長比率（被害部幅／被害部周囲長）", type: "nums", fields: [{ id: "dmgWR", label: "根元 被害部幅", unit: "cm" }, { id: "dmgCR", label: "根元 被害部周囲長", unit: "cm" }, { id: "dmgWT", label: "幹 被害部幅", unit: "cm" }, { id: "dmgCT", label: "幹 被害部周囲長", unit: "cm" }] },
+        { id: "clr", label: "建築限界越え", type: "grid", parts: [["C", "車道側"], ["W", "歩道側"]],
           rows: [{ id: "trunk", label: "幹", options: ["なし", "あり"], note: true }, { id: "branch", label: "枝", options: ["なし", "あり"], note: true }] },
-        { id: "pNote", label: "部位診断の所見（被害の形状寸法・範囲・程度、要剪定の枝、周囲の状況など）", type: "text", voice: true, required: true },
-        { id: "pj", merged: true, label: "部位判定・処置", type: "grid", parts: [["R", "根元"], ["T", "幹"], ["B", "大枝"]],
+        { id: "pNote", label: "所見", type: "text", voice: true },
+        { id: "pj", section: "部位判定・処置", label: "判定・処置", type: "grid", parts: [["R", "根元"], ["T", "幹"], ["B", "骨格となる大枝"]],
           rows: [
-            { id: "judge", label: "部位判定", options: ["健全か健全に近い", "注意すべき被害が見られる", "著しい被害が見られる", "不健全"], short: ["健全", "注意", "著しい", "不健全"], def: null, required: true },
+            { id: "judge", label: "部位判定", options: ["健全か健全に近い", "注意すべき被害が見られる", "著しい被害が見られる", "不健全"], short: ["健全", "注意", "著しい", "不健全"], def: null },
             { id: "prune", label: "剪定が必要", options: ["不要", "必要"] },
             { id: "kiki", label: "機器診断が必要", options: ["不要", "必要"] },
           ] },
-        { id: "judge", section: "4 外観診断判定", label: "外観診断判定（活力判定と部位判定の悪い方）", type: "judge", required: true,
-          help: "A：樹勢・樹形の活力度が1か2で、その他に異常がないか軽微で処置不要／B1：活力度3、または今後の活力低下や腐朽の進行が予測され注意を要する・簡易な処置が必要／B2：活力度4、または幹や根の腐朽が進行し何らかの処置が必要／C：活力度5、または幹や根の腐朽が著しく回復の見込みがない、倒木や幹折れの危険がある" },
-        { id: "jReason", label: "判定理由", type: "text", voice: true, required: true },
-        { id: "kikiPart", label: "機器診断の測定部位（例：根株、G.L.1.2m）", type: "line", onlyIfAny: { pj_kiki_R: ["必要"], pj_kiki_T: ["必要"], pj_kiki_B: ["必要"] }, required: true },
-        { id: "cSafe", label: "C判定：支柱・コブラロープ等の設置等により安全が確保できる", type: "buttons", options: ["はい", "いいえ"], onlyIf: { judge: ["C"] }, required: true, help: "「はい」の場合、緑色のテープをさらに1周巻いて2段にし、その旨を速報表に記載します。" },
-        { id: "need", section: "5 処置", label: "処置の必要性", type: "buttons", options: ["なし", "あり"], required: true },
-        { id: "urgent", label: "緊急性（緊急対応の必要性）", type: "buttons", options: ["なし", "あり"], required: true },
+        { id: "gJudge", label: "外観診断判定", type: "buttons", options: ["A", "B1", "B2", "C"], labels: ["A：健全か健全に近い", "B1：注意すべき被害が見られる", "B2：著しい被害が見られる", "C：不健全"], hint: "gaikan" },
+        { id: "jReason", label: "判定理由", type: "text", voice: true },
+        { id: "kikiPart", section: "機器診断", label: "測定部位（例：G.L.1.2m、根株）", type: "line" },
+        { id: "kikiNote", label: "所見", type: "text", voice: true },
+        { id: "judge", section: "総合判定", label: "総合判定", type: "judge", required: true },
+        { id: "sReason", label: "判定理由", type: "text", voice: true },
+        { id: "need", section: "処置", label: "必要性", type: "buttons", options: ["なし", "あり"] },
+        { id: "urgent", label: "緊急性", type: "buttons", options: ["なし", "あり"] },
         { id: "obs", label: "要観察", type: "buttons", options: ["なし", "要観察（長期周期）", "要観察（短期周期）"] },
         { id: "prune", label: "剪定", type: "multi", options: ["枯枝", "腐朽枝等", "支障枝", "風圧軽減", "スタブカット", "巻き根"] },
-        { id: "tProtect", label: "樹体保護（支柱の種類等）", type: "line" },
-        { id: "tSoil", label: "植栽基盤の改善（酸素管、マルチング、施肥等）", type: "line" },
-        { id: "tRoot", label: "根上がり（対策法等）", type: "line" },
-        { id: "tPest", label: "病虫害防除（対象と方法）", type: "line" },
-        { id: "tRenew", label: "更新（留意点）", type: "line" },
-        { id: "tOther", label: "その他（癒合剤塗布等）", type: "line" },
-        { id: "tNote", label: "摘要（処置の具体的な説明）", type: "text", voice: true, requiredWhen: { urgent: ["あり"] } },
-        { id: "other", section: "6 その他・次回診断", label: "その他特記事項", type: "text", voice: true },
-        { id: "next", label: "次回診断", type: "multi", options: ["フォローアップ診断", "外観診断"] },
+        { id: "tProtect", label: "樹体保護", type: "line" },
+        { id: "tSoil", label: "植栽基盤の改善", type: "line" },
+        { id: "tRoot", label: "根上がり", type: "line" },
+        { id: "tPest", label: "病虫害防除", type: "line" },
+        { id: "tRenew", label: "更新", type: "line" },
+        { id: "tOther", label: "その他", type: "line" },
+        { id: "tNote", label: "摘要", type: "text", voice: true },
+        { id: "other", section: "その他特記事項", label: "その他特記事項", type: "text", voice: true },
+        { id: "next", section: "次回診断", label: "次回診断", type: "multi", options: ["フォローアップ診断", "外観診断"] },
         { id: "nextWhen", label: "次回再診断時期", type: "buttons", options: ["1年後", "2年後", "3年後"] },
       ],
     },
@@ -1435,6 +1449,11 @@ window.WorkStore = window.NoteStore.work;
 
   // ---------- アイコン ----------
   const ICONS = {
+    hand: '<path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.4l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"/>',
+    rot: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
+    trash: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',
+    crop: '<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>',
+    north: '<path d="M12 2 5 21l7-4 7 4z"/>',
     x: '<path d="M18 6 6 18M6 6l12 12"/>',
     filter: '<path d="M4 6h16M7 12h10M10 18h4"/>',
     layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/>',
@@ -2135,9 +2154,9 @@ window.WorkStore = window.NoteStore.work;
     }
     if (!a.judge) return out;
     const kiki = kikiParts(a).length > 0;
-    if (a.judge === "C" && a.cSafe === "はい") t("green", "C判定ですが、支柱・コブラロープ等の設置等で安全が確保できると判断。緑のテープをさらに1周巻き、2段にしてください（速報表に記載します）。", "double");
+    if (a.judge === "C" && c.cSafe) t("green", "C判定ですが、支柱・コブラロープ等の設置等で安全が確保できると判断。緑のテープをさらに1周巻き、2段にしてください（速報表に記載します）。", "double");
     else if (a.judge === "C") t("pink", "C判定です。緑のテープが残っている場合は外し、ピンクのテープを巻いてください。");
-    if (kiki && !(a.judge === "C" && a.cSafe !== "はい")) t("yellow", "機器診断が必要です。緑のテープが残っている場合は外し、黄色のテープを巻いてください。");
+    if (kiki && !(a.judge === "C" && !c.cSafe)) t("yellow", "機器診断が必要です。緑のテープが残っている場合は外し、黄色のテープを巻いてください。");
     if (!out.length) t("green", "緑のテープが残っている場合は外してください。", "remove");
     return out;
   }
@@ -2188,12 +2207,10 @@ window.WorkStore = window.NoteStore.work;
 
   function fieldHTML(it, c) {
     const v = c.ans[it.id]; let ctl = "";
-    if (it.merged) return "";
-    if (it.type === "buttons" && it.descs) ctl = `<div class="ibtns descs" data-single="${it.id}">${it.options.map((o, k) => `<button type="button" data-v="${esc(o)}"${v === o ? ' class="on"' : ""}><b>${esc(o)}</b><span>${esc(it.descs[k] || "")}</span></button>`).join("")}</div>`;
-    else if (it.type === "grid" && it.id === "parts") ctl = `<div class="pview">${partViewHTML(c)}</div>`;
+    if (it.type === "buttons" && it.labels) ctl = `<div class="ibtns lbls" data-single="${it.id}">${it.options.map((o, k) => `<button type="button" data-v="${esc(o)}"${v === o ? ' class="on"' : ""}>${esc(it.labels[k] || o)}</button>`).join("")}</div>`;
     else if (it.type === "buttons") ctl = `<div class="ibtns${it.options.length >= 5 && it.options.every((o) => o.length <= 2) ? " nums5" : ""}" data-single="${it.id}">${it.options.map((o) => `<button type="button" data-v="${esc(o)}"${v === o ? ' class="on"' : ""}>${esc(o)}</button>`).join("")}</div>`;
     else if (it.type === "select") ctl = `<select class="inp" data-sel="${it.id}"><option value="">選択してください</option>${it.options.map((o) => `<option${v === o ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
-    else if (it.type === "multi" && it.check) ctl = `<div class="checks" data-multi="${it.id}">${it.options.map((o) => `<label class="${o === "該当なし" ? "none" : ""}"><input type="checkbox" value="${esc(o)}"${(v || []).includes(o) ? " checked" : ""}><span>${esc(o)}</span></label>`).join("")}</div><div class="yn" data-yn="${it.id}"></div>`;
+    else if (it.type === "multi" && it.check) ctl = `<div class="checks" data-multi="${it.id}">${it.options.map((o) => `<label class="${o === "該当なし" ? "none" : ""}"><input type="checkbox" value="${esc(o)}"${(v || []).includes(o) ? " checked" : ""}><span>${esc(o === "該当なし" && it.noneLabel ? it.noneLabel : o)}</span></label>`).join("")}</div><div class="yn" data-yn="${it.id}"></div>`;
     else if (it.type === "multi") ctl = `<div class="pills" data-multi="${it.id}">${it.options.map((o) => `<label><input type="checkbox" value="${esc(o)}"${(v || []).includes(o) ? " checked" : ""}><span>${esc(o)}</span></label>`).join("")}</div>`;
     else if (it.type === "number") ctl = `<div class="numrow"><input class="inp" type="number" inputmode="decimal" step="${it.step || 1}" min="0" data-num="${it.id}" value="${v ?? ""}" placeholder="${it.ref && c[it.ref] != null ? "台帳 " + c[it.ref] : ""}"><span>${esc(it.unit || "")}</span></div>`;
     else if (it.type === "nums") ctl = `<div class="numsrow">${it.fields.map((f) => `<label><small>${esc(f.label)}</small><span class="numrow"><input class="inp" type="number" inputmode="decimal" step="any" min="0" data-num="${f.id}" value="${c.ans[f.id] ?? ""}" placeholder="${f.ref && c[f.ref] != null ? c[f.ref] : ""}"><span>${esc(f.unit || "")}</span></span></label>`).join("")}</div>${it.id === "dmg" ? '<div class="small muted" id="dmgRatio"></div>' : ""}`;
@@ -2266,13 +2283,12 @@ window.WorkStore = window.NoteStore.work;
       : `<div class="hero"><span class="avatar" style="background:${treeColor(c.tree)}">${esc((c.sp || "？")[0])}</span><div><div class="hero-title">${esc(c.sp)}</div><div class="hero-sub">${esc(c.cat)}・${esc(placeOf(c))}${dist}</div></div></div>
         <div class="tiles">${tile("樹高", c.h, "m")}${tile("幹周", c.g, "cm")}${tile("枝張", c.w, "m")}</div>
         <p class="imeta"><b>樹木番号 ${esc(c.tno)}</b>${c.insNo ? `・点検番号 ${esc(c.insNo)}` : ""}${c.zone ? `・${esc(LBL.zone)} ${esc(c.zone)}` : ""}${c.tmemo ? `<br>備考：${esc(c.tmemo)}` : ""}</p>`;
-    INSP.ptab = "R";
     $("#pane-detail").innerHTML = `${stageTabsHTML(c)}${head}${banner}
-      <nav class="secnav" id="secNav"></nav>
       <div id="inspForm" class="inspform">
         ${S.items.map((it) => fieldHTML(it, c)).join("")}
         ${st === "tenken" ? `<div class="field ifield" data-f="__result"><span class="lbl">判定結果<b class="req" hidden></b></span><div id="tkResult" class="tkresult"></div><div class="ferr" hidden></div></div>` : ""}
-        <div class="field ifield" data-f="photos"><span class="lbl">写真（${IC.maxPhotos}枚まで）<b class="req" hidden>必須</b></span><div class="ihelp">${esc(S.photoGuide || "")}</div><div id="iPhotos" class="thumbs"></div><span class="small muted">写真をタップすると<b>コメント</b>と<b>書き込み</b>ができます。撮影日時・点検員・樹木の情報は写真の下部に記録されます</span><div class="ferr" hidden></div></div>
+        <div class="field ifield" data-f="photos"><span class="lbl">写真（${IC.maxPhotos}枚まで）<b class="req" hidden>必須</b></span><div class="ihelp">${esc(S.photoGuide || "")}</div><div id="iPhotos" class="thumbs"></div><span class="small muted">写真をタップすると<b>コメント</b>と<b>書き込み</b>ができます</span>
+          ${st === "gaikan" ? `<div class="planbox"><b>立地平面図</b><span class="small muted">カルテの立地平面図の枠に入ります。切り取ったあと、方位や周辺の状況を書き込めます。</span><div class="btnrow"><button type="button" class="btn line" data-ia="planmap">${ic("pin")}地図から作成</button><label class="btn line file-btn">${ic("crop")}図面・写真から作成<input type="file" accept="image/*" id="planFile"></label></div></div>` : ""}<div class="ferr" hidden></div></div>
         <div class="field ifield tapefield" data-f="mark" hidden><span class="lbl">現地のテープ<b class="req" hidden>必須</b></span><div id="markInst" class="markinst"></div>
           <label class="toggle">テープの対応をした<span class="switch"><input type="checkbox" id="markDone"${c.mark ? " checked" : ""}><span></span></span></label><div class="ferr" hidden></div></div>
       </div>
@@ -2291,11 +2307,6 @@ window.WorkStore = window.NoteStore.work;
       const sh = isShown(it, c.ans); f.hidden = !sh;
       f.querySelector(".req").hidden = !(isReq(it, c.ans) || (it.type === "grid" && it.rows.some((r) => r.required)));
     }
-    // 見出しの一覧（入力の進み具合）
-    const nav = $("#secNav");
-    if (nav) { const miss0 = new Set(validate(c).map(([id]) => ({ pj: "parts", dmg: "parts" })[id] || id)); let cur = null; const secs = [];
-      for (const it of itemsOf(c)) { if (it.section) { cur = { id: it.id, label: it.section, n: 0, miss: 0 }; secs.push(cur); } if (!cur || !isShown(it, c.ans)) continue; cur.n++; if (miss0.has(it.id)) cur.miss++; }
-      nav.innerHTML = secs.filter((x) => x.n).map((x) => `<button type="button" data-secgo="${x.id}" class="${x.miss ? "" : "ok"}">${x.miss ? "" : "✓ "}${esc(x.label.replace(/^\d\)\s*/, (m) => m))}</button>`).join(""); }
     // 見出し：その見出しから次の見出しまでに表示中の項目があれば表示
     const its = itemsOf(c); let secEl = null, any = false;
     for (const it of its) { if (it.section) { if (secEl) secEl.hidden = !any; secEl = root.querySelector(`.isec[data-sec="${it.id}"]`); any = false; } if (isShown(it, c.ans)) any = true; }
@@ -2310,7 +2321,9 @@ window.WorkStore = window.NoteStore.work;
       const flag = (l, on) => `<span class="tkf${on ? " on" : ""}">${on ? "〇" : "－"} ${l}</span>`;
       tr.innerHTML = j ? `<div class="tkj" style="--jc:${j.color}"><b>${esc(j.label)}</b><small>${esc(j.desc)}</small></div><div class="tkflags">${flag("枯損木伐採", hasYes(a.cut))}${flag("枯枝・危険枝処理", hasYes(a.deadBr))}${flag("定期点検必要", hasYes(a.regular))}${flag("外観診断必要(C判定)", (a.diag || []).includes(DIAG_C))}${flag("外観診断必要(機器診断)", (a.diag || []).includes(DIAG_K))}</div><div class="small" style="margin-top:6px">判定理由：${esc(tenkenReason(a))}</div>` : `<span class="muted small">判定 1)〜4) を入力すると表示されます</span>`; }
     const h = $("#jHint");
-    if (h) { const s = suggestJudge(c), j = judgeOf(s); h.innerHTML = j ? `入力内容からの目安：<button type="button" data-ia="usehint" data-v="${j.v}">${j.v} ${esc(j.label)}</button><span class="small">（活力判定と部位判定の悪い方。最終判断は診断者が行ってください）</span>` : ""; }
+    if (h) { const s = c.ans.gJudge || suggestJudge(c), j = judgeOf(s); h.innerHTML = j ? `${c.ans.gJudge ? "外観診断判定" : "活力判定と部位判定の悪い方"}：<button type="button" data-ia="usehint" data-v="${j.v}">${j.v} ${esc(j.label)}</button>${kikiParts(c.ans).length ? '<span class="small">（機器診断が必要な場合は、機器診断の結果も踏まえて判定）</span>' : ""}` : ""; }
+    const gh = root.querySelector('[data-hint="gJudge"]');
+    if (gh) { const sg = suggestJudge(c); gh.innerHTML = sg ? `活力判定と部位判定の悪い方：<button type="button" data-hintset="gJudge" data-v="${sg}">${esc(itemOf("gJudge").labels[["A", "B1", "B2", "C"].indexOf(sg)])}</button>` : ""; }
     const vh = root.querySelector('[data-hint="vJudge"]');
     if (vh) { const n = Math.max(+c.ans.vSei || 0, +c.ans.vKei || 0), o = n ? itemOf("vJudge").options[n <= 2 ? 0 : n - 2] : ""; vh.innerHTML = o ? `樹勢・樹形からの目安：<button type="button" data-hintset="vJudge" data-v="${esc(o)}">${esc(o)}</button>` : ""; }
     const dr = $("#dmgRatio");
@@ -2341,7 +2354,7 @@ window.WorkStore = window.NoteStore.work;
     }
     if (stageOf(c) === "tenken" && !tenkenJudge(c.ans) && !miss.length) miss.push(["cut", "判定 1)〜4)"]);
     if (photoReq(c) && (c.photos || []).length < STG(c).minPhotos) miss.push(["photos", `写真（${STG(c).minPhotos}枚以上）`]);
-    if (markRule(c) && !c.mark) miss.push(["mark", "現地のテープの対応"]);
+    if (markRule(c) && !c.mark && stageOf(c) === "tenken") miss.push(["mark", "現地のテープの対応"]);
     return miss;
   }
   function showMissing(miss) {
@@ -2368,11 +2381,12 @@ window.WorkStore = window.NoteStore.work;
   // テープの案内（完了・保存の時に、未対応なら表示）
   async function markingPrompt() {
     const c = INSP.cur, m = markRule(c); if (!m) return;
-    const canNow = stageOf(c) === "tenken" && tenkenJudge(c.ans) === "外観";
+    const canNow = stageOf(c) === "tenken" && tenkenJudge(c.ans) === "外観", canSafe = stageOf(c) === "gaikan" && c.ans.judge === "C";
     const danger = m.list.some((t) => /赤|ピンク/.test(t.label));
     const res = await dialog({ tone: danger ? "danger" : "warn", icon: "warn", title: "現地のテープを確認してください",
       body: `${m.list.map((t) => `<div class="markbig" style="--mc:${t.color}"><span class="tape${t.act === "remove" ? " rm" : t.act === "double" ? " dbl" : ""}" style="--mc:${t.color}"></span><div><b>${esc(t.label)}</b><br>${esc(t.how)}</div></div>`).join("")}<p class="small">${esc(STG(c).label)}／${esc(c.sp || "")}・${esc(placeOf(c))}${c.tno ? "・" + esc(c.tno) : ""}</p>`,
-      ok: "対応した", cancel: "あとで", alt: canNow ? "直ちに外観診断を行う（緑テープなし）" : null });
+      ok: "対応した", cancel: "あとで", alt: canNow ? "直ちに外観診断を行う（緑テープなし）" : canSafe ? (c.cSafe ? "支柱等による安全確保をやめる（ピンクに戻す）" : "支柱・コブラロープ等の設置等で安全確保できる（緑2段）") : null });
+    if (res === "alt" && canSafe) { c.cSafe = !c.cSafe; c.mark = false; markDirty(); refreshFormState(); return markingPrompt(); }
     if (res === "alt") { c.diagNow = true; markDirty(); if (markRule(c)) return markingPrompt(); c.mark = true; c.markAt = new Date().toISOString(); }
     else if (res) { c.mark = true; c.markAt = new Date().toISOString(); markDirty(); }
     refreshFormState();
@@ -2389,7 +2403,7 @@ window.WorkStore = window.NoteStore.work;
     for (const f of [...files]) {
       if (c.photos.length >= IC.maxPhotos) { toast(`写真は${IC.maxPhotos}枚までです`); break; }
       try {
-        const data = await stampPhoto(f, inspStampLines(c)), date = localDate();
+        const data = await stampPhoto(f, []), date = localDate();  // 写真に文字は入れない（撮影日時などは記録側に保存）
         const ph = { data, cap: "", date, at: new Date().toISOString(), stage: stageOf(c) }; ph.name = photoName(c, date, new Set(c.photos.map((x) => x.name)));
         c.photos.push(ph);
       } catch { toast("画像を読み込めませんでした"); }
@@ -2406,6 +2420,35 @@ window.WorkStore = window.NoteStore.work;
     renderIPhotos(); refreshFormState();
   }
   // 写真を縮小し、下部に日時・点検員・樹木の情報を書き込む
+  // ---------- 立地平面図：地図や図面を切り取り、方位・周辺の状況を書き込んでカルテの枠へ ----------
+  async function addPlanPhoto(data, tool) {
+    const c = INSP.cur; if (!c) return;
+    if ((c.photos || []).length >= IC.maxPhotos) { toast(`写真は${IC.maxPhotos}枚までです`); return; }
+    const date = localDate(), ph = { data, cap: "立地平面図", date, at: new Date().toISOString(), stage: stageOf(c) };
+    ph.name = photoName(c, date, new Set(c.photos.map((x) => x.name)));
+    const ok = await imageEditor(ph, { title: "立地平面図（切り取り・方位・書き込み）", tool, color: "#111111" });
+    if (!ok && tool === "crop") { /* 編集をやめても画像は使えるように残す */ }
+    if (c.photos.some((x) => x.cap === "立地平面図") && confirm("前の立地平面図をこの図に置き換えますか？")) c.photos = c.photos.filter((x) => x.cap !== "立地平面図");
+    c.photos.push(ph); markDirty(); renderIPhotos(); refreshFormState(); toast("立地平面図を追加しました");
+  }
+  async function makePlanFromImage(file) {
+    let data; try { data = await stampPhoto(file, [], 2400, 0.9); } catch { toast("画像を読み込めませんでした"); return; }
+    await addPlanPhoto(data, "crop");
+  }
+  async function makePlanFromMap() {
+    const c = INSP.cur; if (!c || !isFinite(c.lon)) { toast("位置がわかりません"); return; }
+    toast("地図を切り取っています…", 2500);
+    map.jumpTo({ center: [c.lon, c.lat], zoom: Math.max(map.getZoom(), 19), bearing: 0, pitch: 0 });
+    await new Promise((r) => { let done = false; const fin = () => { if (!done) { done = true; r(); } }; map.once("idle", fin); setTimeout(fin, 4000); });
+    const shot = await new Promise((r) => { map.once("render", () => { try { r(map.getCanvas().toDataURL("image/png")); } catch { r(null); } }); map.triggerRepaint(); });
+    if (!shot) { toast("地図を画像にできませんでした（背景地図を切り替えて試してください）", 4500); return; }
+    // 木を中心に、横4：縦3の範囲を切り取る
+    const img = await loadImg(shot), cvs = map.getCanvas(), k = cvs.width / cvs.clientWidth, pt0 = map.project([c.lon, c.lat]);
+    const w = Math.min(img.width, img.height * 4 / 3) * 0.9, h = w * 3 / 4, x0 = Math.max(0, Math.min(img.width - w, pt0.x * k - w / 2)), y0 = Math.max(0, Math.min(img.height - h, pt0.y * k - h / 2));
+    const o = document.createElement("canvas"); o.width = Math.round(w); o.height = Math.round(h); const g = o.getContext("2d");
+    g.fillStyle = "#fff"; g.fillRect(0, 0, o.width, o.height); g.drawImage(img, x0, y0, w, h, 0, 0, o.width, o.height);
+    await addPlanPhoto(o.toDataURL("image/jpeg", 0.9), "north");
+  }
   function stampPhoto(file, lines, maxSide = 1600, q = 0.8) {
     return new Promise((res, rej) => {
       const url = URL.createObjectURL(file), img = new Image();
@@ -2457,13 +2500,14 @@ window.WorkStore = window.NoteStore.work;
       if (t.dataset.sel) setAns(t.dataset.sel, t.value);
       if (t.id === "markDone") { INSP.cur.mark = t.checked; INSP.cur.markAt = t.checked ? new Date().toISOString() : undefined; markDirty(); refreshFormState(); }
       if (t.id === "iPhotoIn" || t.id === "iPhotoLib") addPhotos(t.files);
+      if (t.id === "planFile" && t.files[0]) { const f = t.files[0]; t.value = ""; makePlanFromImage(f); }
     };
     body.onclick = async (e) => {
       const t = e.target;
       const sb = t.closest("[data-single] button");
       if (sb) { const box = sb.parentElement, id = box.dataset.single, cur = id.startsWith("__") ? INSP.cur[id.slice(2)] : INSP.cur.ans[id], v = cur === sb.dataset.v ? "" : sb.dataset.v;
         box.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.v === v));
-        if (["cSafe"].includes(id)) { INSP.cur.mark = false; delete INSP.cur.diagNow; }
+        if (id === "judge") { INSP.cur.mark = false; }
         setAns(id, v); return; }
       const jb = t.closest("[data-jv]"); if (jb) { await setJudge(INSP.cur.ans.judge === jb.dataset.jv ? "" : jb.dataset.jv); return; }
       const stb = t.closest("[data-stab]"); if (stb) { switchStage(stb.dataset.stab); return; }
@@ -2474,7 +2518,6 @@ window.WorkStore = window.NoteStore.work;
         const cur = INSP.cur.ans[k], v = cur === gb.dataset.gv && row.def === null ? "" : gb.dataset.gv;
         INSP.cur.ans[k] = v; if (v === row.options[0]) delete INSP.cur.ans[k + "_n"]; markDirty();
         if (it.id === "pj") { INSP.cur.mark = false; }
-        if (it.id === "parts" || it.id === "pj") { const pv = body.querySelector(".pview"), y = $("#sheetBody").scrollTop; pv.innerHTML = partViewHTML(INSP.cur); $("#sheetBody").scrollTop = y; refreshFormState(); return; }
         const f = body.querySelector(`.ifield[data-f="${it.id}"]`); f.querySelector(".igrid").outerHTML = gridHTML(it, INSP.cur); refreshFormState(); return; }
       const hs = t.closest("[data-hintset]"); if (hs) { const id = hs.dataset.hintset; body.querySelectorAll(`[data-single="${id}"] button`).forEach((b) => b.classList.toggle("on", b.dataset.v === hs.dataset.v)); setAns(id, hs.dataset.v); return; }
       const mic = t.closest("[data-mic]"); if (mic) { startVoice(body.querySelector(`[data-text="${mic.dataset.mic}"]`), mic); return; }
@@ -2486,6 +2529,7 @@ window.WorkStore = window.NoteStore.work;
       if (a === "done") completeInsp();
       if (a === "next") nextUninspected();
       if (a === "karte") showKarte(INSP.cur);
+      if (a === "planmap") makePlanFromMap();
       if (a === "delete") deleteRec();
       if (a === "usehint") setJudge(b.dataset.v);
     };
@@ -2521,6 +2565,7 @@ window.WorkStore = window.NoteStore.work;
     const r = INSP.cur;
     let miss = validate(r);
     if (miss.length && miss.every(([id]) => id === "mark")) { await markingPrompt(); miss = validate(r); }
+    else if (!miss.length && stageOf(r) === "gaikan" && markRule(r) && !r.mark) await markingPrompt();
     if (miss.length) { showMissing(miss); return; }
     if (userLoc && isFinite(r.lon)) {
       const d = distM(userLoc[0], userLoc[1], r.lon, r.lat);
@@ -3092,13 +3137,14 @@ window.WorkStore = window.NoteStore.work;
         xml = xml.slice(0, tagAt) + '<drawing r:id="rIdDrw1"/>' + xml.slice(tagAt);
       }
       const path = `xl/worksheets/out${k + 1}.xml`;
-      z.file(path, xml);
+      z.file(path, xml.startsWith("<?xml") ? xml : '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + xml);
       if (/<Relationship\b/.test(rels)) z.file(`xl/worksheets/_rels/out${k + 1}.xml.rels`, rels);
       ct = ct.replace("</Types>", `<Override PartName="/${path}" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`);
       wrels = wrels.replace("</Relationships>", `<Relationship Id="rIdOut${k + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/out${k + 1}.xml"/></Relationships>`);
       sheetsXml.push(`<sheet name="${XL.esc(nm)}" sheetId="${k + 1}" r:id="rIdOut${k + 1}"/>`);
       // 印刷範囲・印刷タイトル・フィルターは元のシートのものを引き継ぐ（行を足した分は広げる）
-      for (const d of dn.filter((x) => x.ls != null && +x.ls === s.k)) {
+      // 印刷範囲・印刷タイトル・フィルターだけを引き継ぐ（様式の中の名前定義には壊れた参照があり、Excelが開けなくなるため）
+      for (const d of dn.filter((x) => x.ls != null && +x.ls === s.k && /name="_xlnm\./.test(x.a) && !/#REF!/.test(x.v) && /![$A-Z]/.test(x.v))) {
         let v = d.v.replace(/^(?:'[^']*(?:''[^']*)*'|[^!]+)!/, "").replace(/,(?:'[^']*'|[^!,]+)!/g, ",");
         if (rowShift && /_FilterDatabase|Print_Area/.test(d.a)) v = v.replace(/\$([A-Z]+)\$(\d+):\$([A-Z]+)\$(\d+)/g, (m, c1, r1, c2, r2) => `$${c1}$${r1}:$${c2}$${+r2 >= sp.rows.start ? +r2 + Math.max(0, rowShift.shift) : r2}`);
         names.def = (names.def || "") + `<definedName${XL.setAttr(d.a, "localSheetId", k)}>${v.split(",").map((p) => `'${XL.esc(nm).replace(/'/g, "''")}'!${p}`).join(",")}</definedName>`;
@@ -3110,8 +3156,79 @@ window.WorkStore = window.NoteStore.work;
       .replace(/\s(activeTab|firstSheet)="\d+"/g, "");
     wbx = /<calcPr\b/.test(wbx) ? wbx.replace(/<calcPr\b([^>]*?)\/>/, (m, a) => `<calcPr${XL.setAttr(a, "fullCalcOnLoad", "1")}/>`) : wbx.replace("</workbook>", '<calcPr fullCalcOnLoad="1"/></workbook>');
     if (!/xmlns:r=/.test(wbx.slice(0, 600))) wbx = wbx.replace(/<workbook\b/, '<workbook xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"');
+    const decl = (x) => (x.startsWith("<?xml") ? x : '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + x);
+    wbx = decl(wbx); wrels = decl(wrels); ct = decl(ct);
     z.file("xl/workbook.xml", wbx); z.file("xl/_rels/workbook.xml.rels", wrels); z.file("[Content_Types].xml", ct);
     return z.generateAsync({ type: "blob", mimeType: XMIME, compression: "DEFLATE" });
+  }
+
+  // ---------- Excel のシートをそのまま画面に描く（カルテの確認用）：列幅・行の高さ・結合・罫線・文字の書式・写真 ----------
+  async function xlsxSheetHTML(blob, sheetIndex = 0) {
+    await loadZip();
+    const z = await JSZip.loadAsync(blob), rd = async (p) => (z.file(p) ? z.file(p).async("string") : "");
+    const wb = await rd("xl/workbook.xml"), wrels = await rd("xl/_rels/workbook.xml.rels"), st = await rd("xl/styles.xml");
+    const sh = [...wb.matchAll(/<sheet\b[^>]*\/>/g)][sheetIndex][0], rid = XL.attr(sh, "r:id");
+    const target = [...wrels.matchAll(/<Relationship\b[^>]*\/>/g)].map((m) => m[0]).find((x) => XL.attr(x, "Id") === rid);
+    const path = "xl/" + XL.attr(target, "Target").replace(/^\/?xl\//, ""), xml = await rd(path);
+    const S = parseSheet(xml);
+    // 書式
+    const sect = (tag) => { const m = st.match(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)</${tag}>`)); return m ? m[1] : ""; };
+    const items = (body, tag) => [...body.matchAll(new RegExp(`<${tag}\\b([^>]*?)(?:/>|>([\\s\\S]*?)</${tag}>)`, "g"))].map((m) => ({ a: m[1], b: m[2] || "" }));
+    const fonts = items(sect("fonts"), "font").map((f) => ({ sz: +(XL.attr(f.b.match(/<sz\b[^>]*>/)?.[0] || "", "val") || 11), b: /<b\/>|<b val="1"\/>|<b\b(?![^>]*val="0")[^>]*\/>/.test(f.b), i: /<i\/>/.test(f.b), u: /<u\b/.test(f.b), name: XL.attr(f.b.match(/<name\b[^>]*>/)?.[0] || "", "val") || "", rgb: XL.attr(f.b.match(/<color\b[^>]*>/)?.[0] || "", "rgb") }));
+    const fills = items(sect("fills"), "fill").map((f) => { const m = f.b.match(/<fgColor\b[^>]*>/); const rgb = m && XL.attr(m[0], "rgb"); return /patternType="solid"/.test(f.b) && rgb ? "#" + rgb.slice(-6) : ""; });
+    const bstyle = (x) => { if (!x) return ""; const sty = XL.attr(x, "style"); if (!sty) return ""; return { thin: "1px solid", hair: "1px solid", medium: "2px solid", thick: "3px solid", double: "3px double", dotted: "1px dotted", dashed: "1px dashed", mediumDashed: "2px dashed", dashDot: "1px dashed", mediumDashDot: "2px dashed", dashDotDot: "1px dotted", slantDashDot: "2px dashed" }[sty] || "1px solid"; };
+    const borders = items(sect("borders"), "border").map((f) => { const g = (k) => bstyle(f.b.match(new RegExp(`<${k}\\b[^>]*?(?:/>|>[\\s\\S]*?</${k}>)`))?.[0]); return { l: g("left"), r: g("right"), t: g("top"), b: g("bottom"), dg: /diagonalDown="1"/.test(f.a) && g("diagonal") }; });
+    const xfs = items(sect("cellXfs"), "xf").map((x) => { const al = x.b.match(/<alignment\b[^>]*>/)?.[0] || ""; return { f: +XL.attr(x.a, "fontId") || 0, fi: +XL.attr(x.a, "fillId") || 0, bo: +XL.attr(x.a, "borderId") || 0, h: XL.attr(al, "horizontal") || "", v: XL.attr(al, "vertical") || "bottom", wrap: XL.attr(al, "wrapText") === "1", rot: +XL.attr(al, "textRotation") || 0, shrink: XL.attr(al, "shrinkToFit") === "1", indent: +XL.attr(al, "indent") || 0 }; });
+    // 印刷範囲（なければ使っている範囲）
+    const pa = (wb.match(/<definedName name="_xlnm\.Print_Area" localSheetId="(\d+)">[^!]*!\$([A-Z]+)\$(\d+):\$([A-Z]+)\$(\d+)/g) || []).map((m) => m.match(/localSheetId="(\d+)">[^!]*!\$([A-Z]+)\$(\d+):\$([A-Z]+)\$(\d+)/)).find((m) => +m[1] === sheetIndex);
+    const C1 = pa ? XL.col2n(pa[2]) : 1, R1 = pa ? +pa[3] : 1, C2 = pa ? XL.col2n(pa[4]) : Math.max(...[...S.rows.values()].flatMap((r) => [...r.cells.keys()])), R2 = pa ? +pa[5] : Math.max(...S.rows.keys());
+    const colW = (c) => colPx(colWidth(S, c)), rowH = (r) => Math.round(rowPx(rowHeight(S, r)));
+    // 結合
+    const merges = [...S.tail.matchAll(/<mergeCell ref="([A-Z]+\d+):([A-Z]+\d+)"/g)].map((m) => [XL.ref(m[1]), XL.ref(m[2])]);
+    const cover = new Map(), top = new Map();
+    for (const [a, b] of merges) { top.set(a.r + ":" + a.c, [a, b]); for (let r = a.r; r <= b.r; r++) for (let c = a.c; c <= b.c; c++) if (r !== a.r || c !== a.c) cover.set(r + ":" + c, 1); }
+    const cellAt = (r, c) => S.rows.get(r)?.cells.get(c);
+    const styleOf = (r, c) => { const x = cellAt(r, c); const sidx = x ? +XL.attr(x.a || "", "s") || 0 : +XL.attr(S.rows.get(r)?.a || "", "s") || 0; return xfs[sidx] || xfs[0]; };
+    const valOf = (r, c) => { const x = cellAt(r, c); if (!x) return ""; const src = x.xml || `<c${x.a}>${x.v}</c>`; const is = src.match(/<is>([\s\S]*?)<\/is>/); if (is) return [...is[1].matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map((m) => m[1]).join(""); const v = src.match(/<v>([\s\S]*?)<\/v>/); return v ? v[1] : ""; };
+    const unesc = (t) => t.replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(+n)).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+    let html = `<table class="xs"><colgroup>${Array.from({ length: C2 - C1 + 1 }, (_, k) => `<col style="width:${colW(C1 + k)}px">`).join("")}</colgroup>`;
+    for (let r = R1; r <= R2; r++) {
+      html += `<tr style="height:${rowH(r)}px">`;
+      for (let c = C1; c <= C2; c++) {
+        if (cover.has(r + ":" + c)) continue;
+        const m = top.get(r + ":" + c), a = m ? m[0] : { r, c }, b = m ? m[1] : { r, c };
+        const rs = Math.min(b.r, R2) - r + 1, cs = Math.min(b.c, C2) - c + 1;
+        const x = styleOf(r, c), f = fonts[x.f] || fonts[0];
+        // 結合範囲の外周の罫線：左上・右上・左下のセルから取る
+        const bl = borders[x.bo] || {}, br = borders[styleOf(r, b.c).bo] || {}, bb = borders[styleOf(b.r, c).bo] || {};
+        const vtxt = unesc(valOf(r, c));
+        const css = [`border-left:${bl.l || "0"}`, `border-top:${bl.t || "0"}`, `border-right:${br.r || "0"}`, `border-bottom:${bb.b || "0"}`,
+          `font-size:${(f.sz * 1.333).toFixed(1)}px`, f.b ? "font-weight:700" : "", f.rgb && !/^FF000000$/i.test(f.rgb) ? `color:#${f.rgb.slice(-6)}` : "",
+          fills[x.fi] ? `background:${fills[x.fi]}` : "", `text-align:${x.h === "centerContinuous" ? "center" : x.h || (vtxt && !isNaN(+vtxt) ? "right" : "left")}`,
+          `vertical-align:${x.v === "center" ? "middle" : x.v === "top" ? "top" : "bottom"}`, x.wrap ? "white-space:pre-wrap" : "white-space:pre;overflow:visible;max-width:0", x.indent ? `padding-left:${x.indent * 8}px` : ""].filter(Boolean).join(";");
+        const inner = x.rot === 255 ? `<span class="xs-v">${esc(vtxt)}</span>` : !x.wrap && vtxt ? `<span class="xs-o xs-${x.h === "center" || x.h === "centerContinuous" ? "c" : x.h === "right" ? "r" : "l"}">${esc(vtxt)}</span>` : esc(vtxt);
+        html += `<td${rs > 1 ? ` rowspan="${rs}"` : ""}${cs > 1 ? ` colspan="${cs}"` : ""} style="${css}">${inner}</td>`;
+      }
+      html += "</tr>";
+    }
+    html += "</table>";
+    // 写真（図形の位置）
+    let pics = "";
+    const relsP = path.replace("worksheets/", "worksheets/_rels/") + ".rels", srels = await rd(relsP);
+    const dRel = [...srels.matchAll(/<Relationship\b[^>]*\/>/g)].map((m) => m[0]).find((x) => /\/drawing"/.test(x));
+    if (dRel) {
+      const dPath = "xl/" + XL.attr(dRel, "Target").replace(/^\.\.\//, ""), dx = await rd(dPath), drels = await rd(dPath.replace("drawings/", "drawings/_rels/") + ".rels");
+      const xOf = (col, off) => { let x = 0; for (let k = C1; k <= col; k++) x += colW(k); return x + off / EMU; }, yOf = (row, off) => { let y = 0; for (let k = R1; k <= row; k++) y += rowH(k); return y + off / EMU; };  // col・row は0から数える＝その数までの列・行の合計
+      for (const m of dx.matchAll(/<xdr:oneCellAnchor>([\s\S]*?)<\/xdr:oneCellAnchor>/g)) {
+        const t = m[1], n = (k) => +(t.match(new RegExp(`<xdr:${k}>(\\d+)</xdr:${k}>`)) || [0, 0])[1], ext = t.match(/<xdr:ext cx="(\d+)" cy="(\d+)"/), emb = t.match(/r:embed="([^"]+)"/)[1];
+        const tgt = XL.attr([...drels.matchAll(/<Relationship\b[^>]*\/>/g)].map((q) => q[0]).find((q) => XL.attr(q, "Id") === emb), "Target"), ip = "xl/" + tgt.replace(/^\.\.\//, "");
+        const b64 = await z.file(ip).async("base64"), mime = /\.png$/i.test(ip) ? "image/png" : "image/jpeg";
+        pics += `<img class="xs-pic" src="data:${mime};base64,${b64}" style="left:${xOf(n("col"), n("colOff"))}px;top:${yOf(n("row"), n("rowOff"))}px;width:${+ext[1] / EMU}px;height:${+ext[2] / EMU}px" alt="">`;
+      }
+    }
+    let W = 0; for (let c = C1; c <= C2; c++) W += colW(c);
+    let Hh = 0; for (let r = R1; r <= R2; r++) Hh += rowH(r);
+    return { html: `<div class="xs-wrap" style="width:${W}px;height:${Hh}px">${html}${pics}</div>`, W, H: Hh };
   }
 
   // ---------- 提出書類（速報表・総括表・カルテ）：アプリ内の Excel テンプレートに書き込む ----------
@@ -3134,7 +3251,7 @@ window.WorkStore = window.NoteStore.work;
   function sokuho2Row(r, k) {
     const a = r.ans, kp = kikiParts(a);
     const kiki = kp.length ? `〇　${kp.map((p) => PART_NAME[p]).join("+")}${a.kikiPart ? `（${a.kikiPart}）` : ""}` : "";
-    const txt = [a.jReason || a.pNote || "", a.judge === "C" && a.cSafe === "はい" ? "※支柱・コブラロープ等の設置等により安全が確保できると判断し、緑色のテープをさらに1周巻き2段にしております。" : ""].filter(Boolean).join("\n");
+    const txt = [a.sReason || a.jReason || a.pNote || "", a.judge === "C" && r.cSafe ? "※支柱・コブラロープ等の設置等により安全が確保できると判断し、緑色のテープをさらに1周巻き2段にしております。" : ""].filter(Boolean).join("\n");
     return [k + 1, r.inspector, insNoOf(r), r.tno || "台帳外", maru(a.judge === "C"), maru(a.urgent === "あり"), kiki, txt];
   }
   // 速報表：日付・公園ごとに1シート
@@ -3180,10 +3297,10 @@ window.WorkStore = window.NoteStore.work;
       pj("B"), one(a.pj_prune_B === "必要"), one(a.pj_kiki_B === "必要"));
     // 建築限界越え（車道側 幹・枝、歩道側 幹・枝）
     R.push(c("trunk", "C"), "", "", cn("trunk", "C"), c("branch", "C"), "", "", cn("branch", "C"), c("trunk", "W"), "", "", cn("trunk", "W"), c("branch", "W"), "", "", cn("branch", "W"));
-    R.push(a.pNote || "", JL[a.judge] || "", a.jReason || "");
+    R.push(a.pNote || "", JL[a.gJudge] || "", a.jReason || "");
     // 機器診断（測定は後日。測定部位だけ記入）
-    R.push(kp.length ? a.kikiPart || kp.map((p) => PART_NAME[p]).join("+") : "", "", "", "", "", "", "", "", "", "", "", "", kp.length ? "機器診断が必要（総合判定は機器診断後）" : "");
-    R.push(kp.length ? "" : JL[a.judge] || "", kp.length ? "" : a.jReason || "");
+    R.push(a.kikiPart || "", "", "", "", "", "", "", "", "", "", "", "", a.kikiNote || "");
+    R.push(JL[a.judge] || "", a.sReason || "");
     const pr = a.prune || [];
     R.push(a.need || "", a.urgent || "", a.obs || "なし", one(pr.length), one(pr.includes("枯枝")), one(pr.includes("腐朽枝等")), one(pr.includes("支障枝")), one(pr.includes("風圧軽減")), one(pr.includes("スタブカット")), one(pr.includes("巻き根")),
       one(a.tProtect), a.tProtect || "", one(a.tSoil), a.tSoil || "", one(a.tRoot), a.tRoot || "", one(a.tPest), a.tPest || "", one(a.tRenew), a.tRenew || "", one(a.tOther), a.tOther || "", a.tNote || "");
@@ -3197,7 +3314,7 @@ window.WorkStore = window.NoteStore.work;
     list = [...list].sort(byDone);
     const one = (b) => (b ? "〇" : "");
     const sum = list.map((r) => { const a = r.ans, kp = kikiParts(a);
-      return [r.tno || "台帳外", r.sp, numOr(a.hReal, r.h), numOr(a.gReal, r.g), numOr(a.wReal, r.w), ymdSlash(r.doneDate), a.vJudge || "", a.judge || "", kp.length ? "要" : "不要", kp.length ? "" : a.judge || "",
+      return [r.tno || "台帳外", r.sp, numOr(a.hReal, r.h), numOr(a.gReal, r.g), numOr(a.wReal, r.w), ymdSlash(r.doneDate), a.vJudge || "", a.gJudge || "", kp.length ? "要" : "不要", a.judge || "",
         one(a.urgent === "あり"), one((a.prune || []).length), one(a.tProtect), one(a.tSoil), one(a.tRoot), one(a.tPest), one(a.tRenew), one(a.tOther), ""]; });
     return fillXlsx(tpl("gaikan_sokatsu"), { sheets: [
       { from: "外観_点検結果", rows: { start: 6, data: list.length ? list.map(gaikanRow) : [[]], lineHt: 12, maxLines: 8 } },
@@ -3219,11 +3336,11 @@ window.WorkStore = window.NoteStore.work;
       G9: a.vNote || "", H11: vj.map((o) => (o === a.vJudge ? CK : NO) + o).join("\u3000\u3000\u3000\u3000\u3000"),
       M17: numOr(a.dmgWR), Q17: numOr(a.dmgCR), U17: ratio("dmgWR", "dmgCR"), X17: numOr(a.dmgWT), AB17: numOr(a.dmgCT), AF17: ratio("dmgWT", "dmgCT"),
       AL16: yn("deadb", "B"), AP16: n("deadb", "B"), AL17: yn("stub", "B"), AP17: n("stub", "B"), G29: a.pNote || "",
-      G46: ["A", "B1", "B2", "C"].map((j) => (j === a.judge ? CK : NO) + JL[j].replace("A:", "Ａ：").replace("B1:", "Ｂ１：").replace("B2:", "Ｂ２：").replace("C:", "Ｃ：")).join("\u3000\u3000"), F48: a.jReason || "",
-      L52: kp.length ? a.kikiPart || kp.map((p) => PART_NAME[p]).join("+") : "", T52: "", AC52: "", AG52: "", AK52: "", AO52: "", L53: "", T53: "", AC53: "", AG53: "", AK53: "", AO53: "",
-      F54: kp.length ? `機器診断が必要（${kp.map((p) => PART_NAME[p]).join("・")}）。` : "",
-      G60: kp.length ? ["A", "B1", "B2", "C"].map((j) => NO + JL[j].replace("A:", "Ａ：").replace("B1:", "Ｂ１：").replace("B2:", "Ｂ２：").replace("C:", "Ｃ：")).join("\u3000\u3000") : ["A", "B1", "B2", "C"].map((j) => (j === a.judge ? CK : NO) + JL[j].replace("A:", "Ａ：").replace("B1:", "Ｂ１：").replace("B2:", "Ｂ２：").replace("C:", "Ｃ：")).join("\u3000\u3000"),
-      F62: kp.length ? "" : a.jReason || "",
+      G46: ["A", "B1", "B2", "C"].map((j) => (j === a.gJudge ? CK : NO) + JL[j].replace("A:", "Ａ：").replace("B1:", "Ｂ１：").replace("B2:", "Ｂ２：").replace("C:", "Ｃ：")).join("\u3000\u3000"), F48: a.jReason || "",
+      L52: a.kikiPart || "", T52: "", AC52: "", AG52: "", AK52: "", AO52: "", L53: "", T53: "", AC53: "", AG53: "", AK53: "", AO53: "",
+      F54: a.kikiNote || "",
+      G60: ["A", "B1", "B2", "C"].map((j) => (j === a.judge ? CK : NO) + JL[j].replace("A:", "Ａ：").replace("B1:", "Ｂ１：").replace("B2:", "Ｂ２：").replace("C:", "Ｃ：")).join("\u3000\u3000"),
+      F62: a.sReason || "",
       BD3: `${a.need === "あり" ? NO : CK}なし\u3000\u3000\u3000\u3000\u3000${a.need === "あり" ? CK : NO}あり`, BY3: `${a.urgent === "あり" ? NO : CK}なし\u3000\u3000\u3000\u3000\u3000${a.urgent === "あり" ? CK : NO}あり`,
       AX4: `\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000${a.obs === "要観察（長期周期）" ? CK : NO}要観察（長期周期）\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000${a.obs === "要観察（短期周期）" ? CK : NO}要観察（短期周期）`,
       AX5: `${pr.length ? CK : NO}剪定（${["枯枝", "腐朽枝等", "支障枝", "風圧軽減", "スタブカット", "巻き根"].map((o) => (pr.includes(o) ? CK : NO) + o).join("\u3000\u3000\u3000\u3000")}\u3000）`,
@@ -3286,12 +3403,19 @@ window.WorkStore = window.NoteStore.work;
   }
   async function showKarte(r0) {
     const r = JSON.parse(JSON.stringify(r0)); if (!r.doneDate) r.doneDate = localDate(); if (!r.inspector) r.inspector = INSP.name;
-    const miss = validate(r0).map(([, l]) => l);
     const d = document.createElement("div"); d.className = "kprev";
-    d.innerHTML = `<div class="kp-head"><b>カルテの確認</b><button class="btn line minibtn" data-kp="xlsx">Excelで出力</button><button class="btn sub minibtn" data-kp="close">閉じる</button></div>
-      ${miss.length ? `<div class="kp-warn">${ic("warn")}未入力の必須項目があります：${esc(miss.slice(0, 6).join("、"))}${miss.length > 6 ? " など" : ""}</div>` : ""}${kartePreviewHTML(r)}`;
-    d.onclick = async (e) => { const b = e.target.closest("[data-kp]"); if (!b) return; if (b.dataset.kp === "close") d.remove(); if (b.dataset.kp === "xlsx") { try { toast("カルテを作成しています…"); saveBlob(await karteBlob([r]), `外観診断カルテ_${fsName(r.tno || "台帳外")}_${r.doneDate}.xlsx`); } catch (er) { toast(er.message || "作成できませんでした", 4000); } } };
+    d.innerHTML = `<div class="kp-head"><b>カルテの確認</b><button class="btn line minibtn" data-kp="zout">－</button><button class="btn line minibtn" data-kp="zin">＋</button><button class="btn line minibtn" data-kp="xlsx">Excelで出力</button><button class="btn sub minibtn" data-kp="close">閉じる</button></div><div class="kp-body"><p class="muted" style="padding:20px">カルテを作成しています…</p></div>`;
     document.body.appendChild(d);
+    let blob, k = 1, W = 1, H = 1;
+    try { blob = await karteBlob([r]); const out = await xlsxSheetHTML(blob); W = out.W; H = out.H; d.querySelector(".kp-body").innerHTML = `<div class="kp-zoom">${out.html}</div>`; }
+    catch (er) { console.error(er); d.querySelector(".kp-body").innerHTML = `<p style="padding:20px">カルテを表示できませんでした：${esc(er.message || "")}</p>`; }
+    const zoom = (nk) => { k = Math.max(0.15, Math.min(3, nk)); const z = d.querySelector(".kp-zoom"); if (!z) return; z.style.width = W * k + "px"; z.style.height = H * k + "px"; z.querySelector(".xs-wrap").style.transform = `scale(${k})`; };
+    zoom((d.clientWidth - 16) / W);
+    d.onclick = async (e) => { const b = e.target.closest("[data-kp]"); if (!b) return;
+      if (b.dataset.kp === "close") d.remove();
+      if (b.dataset.kp === "zin") zoom(k * 1.25);
+      if (b.dataset.kp === "zout") zoom(k / 1.25);
+      if (b.dataset.kp === "xlsx" && blob) saveBlob(blob, `外観診断カルテ_${fsName(r.tno || "台帳外")}_${r.doneDate}.xlsx`); };
   }
   async function karteBlob(list) {
     list = [...list].sort(byDone);
@@ -4086,213 +4210,324 @@ window.WorkStore = window.NoteStore.work;
     });
   }
 
-  // ---------- 画像の書き込み編集（診断概要図など） ----------
-  // 図形は ph.ann に {t:種類, c:色, w:太さ, p:[[x,y]…], s:文字, fs:文字サイズ, bg:文字の背景} で保存し、元の写真（ph.orig）に重ねて描く
-  const ED_TOOLS = [["select", "選択・移動", "pin"], ["arrow", "矢印", "arw"], ["darrow", "両矢印", "darw"], ["line", "線・剪定位置", "pen"], ["circle", "丸", "circ"], ["rect", "四角", "circ"], ["free", "自由線", "pen"], ["text", "文字", "txt"], ["dim", "寸法・高さ", "dim"],
-    ["kiki", "機器診断位置 R←", "arw"], ["dashin", "打診音異常", "dim"], ["rod", "鋼棒貫入（T字）", "rod"]];
+  // ---------- 画像の書き込み編集（診断概要図・立地平面図など） ----------
+  // 図形は ph.ann に {t:種類, c:色, w:太さ, p:[[x,y]…], s:文字, fs:文字サイズ, bg:文字の背景, bw:文字の折り返し幅, rot:回転, dash:破線, top/bot:打音のm} で保存
+  const ED_TOOLS = [["select", "移動・選択", "hand"], ["arrow", "矢印", "arw"], ["darrow", "両矢印", "darw"], ["line", "線", "pen"], ["circle", "丸", "circ"], ["rect", "四角", "sq"], ["free", "自由線", "pen"], ["text", "文字", "txt"], ["dim", "寸法・高さ", "dim"],
+    ["kiki", "機器診断位置", "R"], ["dashin", "打診音異常", "hatch"], ["rod", "鋼棒貫入", "rod"], ["north", "方位", "north"], ["crop", "切り取り", "crop"]];
   const ED_COLORS = ["#e53935", "#1e88e5", "#111111", "#ffffff", "#ffeb3b", "#43a047"];
   const ED_FS = [["0.75", "小"], ["1", "中"], ["1.4", "大"], ["2", "特大"]];
   const ED_BG = [["halo", "白の縁取り"], ["box", "白い背景"], ["none", "なし"]];
   const ED_KEYS = ["φ", "×", "mm", "cm", "m", "（", "）", "(", ")", "／", "～", "＝", "L=", "G.L.", "・", "、"];
   const loadImg = (src) => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; });
   const edFont = (size) => `bold ${size}px -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif`;
-  // 文字（複数行）。bg：halo=白の縁取り / box=白い背景 / none=なし。描いた範囲を返す
-  function edLabel(g, txt, x, y, size, col, bg = "halo", align = "left") {
+  // 文字を折り返し幅 bw に収まるよう自動で改行（日本語は1文字ずつ）
+  function edWrap(g, txt, bw) {
+    const out = [];
+    for (const para of String(txt).split("\n")) {
+      if (!bw) { out.push(para); continue; }
+      let cur = "";
+      for (const ch of para) { if (cur && g.measureText(cur + ch).width > bw) { out.push(cur); cur = ch; } else cur += ch; }
+      out.push(cur);
+    }
+    return out;
+  }
+  // 文字（bg：halo=白の縁取り / box=白い背景 / none=なし、rot：回転）。描いた範囲（回転前）を返す
+  function edLabel(g, txt, x, y, size, col, bg = "halo", align = "left", bw = 0, rot = 0) {
     if (!txt) return null;
     g.save(); g.font = edFont(size); g.textAlign = "left"; g.textBaseline = "middle";
-    const lines = String(txt).split("\n"), lh = size * 1.22, wMax = Math.max(...lines.map((t) => g.measureText(t).width)), h = lh * lines.length;
+    const lines = edWrap(g, txt, bw), lh = size * 1.22, wMax = Math.max(...lines.map((t) => g.measureText(t).width)), h = lh * lines.length;
     const x0 = align === "center" ? x - wMax / 2 : align === "right" ? x - wMax : x, y0 = y - h / 2, pad = size * 0.25;
+    if (rot) { g.translate(x, y); g.rotate(rot * Math.PI / 180); g.translate(-x, -y); }
     const light = col === "#ffffff" || col === "#ffeb3b";
-    if (bg === "box") { g.fillStyle = light ? "rgba(0,0,0,.78)" : "rgba(255,255,255,.92)"; g.fillRect(x0 - pad, y0 - pad, wMax + pad * 2, h + pad * 2); }
+    if (bg === "box") { g.fillStyle = light ? "rgba(0,0,0,.78)" : "rgba(255,255,255,.93)"; g.fillRect(x0 - pad, y0 - pad, wMax + pad * 2, h + pad * 2); }
     lines.forEach((t, k) => { const yy = y0 + lh * (k + 0.5);
       if (bg === "halo") { g.lineJoin = "round"; g.lineWidth = Math.max(3, size / 3.2); g.strokeStyle = light ? "rgba(0,0,0,.9)" : "#ffffff"; g.strokeText(t, x0, yy); }
       g.fillStyle = col; g.fillText(t, x0, yy); });
     g.restore();
     return [x0 - pad, y0 - pad, x0 + wMax + pad, y0 + h + pad];
   }
-  // 図形を描き、文字の範囲（選択用）を返す
+  const edUnit = (W, H) => Math.min(W, H) / 220;
   function drawShape(g, sh, W, H) {
-    const u0 = Math.min(W, H) / 220, u = u0 * (sh.w || 1), col = sh.c, fs = u0 * 6.5 * (+sh.fs || 1), bg = sh.bg || "halo";
+    const u0 = edUnit(W, H), u = u0 * (sh.w || 1), col = sh.c, fs = u0 * 6.5 * (+sh.fs || 1), bg = sh.bg || "halo";
     let box = null;
     g.save(); g.lineCap = "round"; g.lineJoin = "round"; g.strokeStyle = col; g.fillStyle = col; g.lineWidth = u;
-    const head = (x1, y1, x2, y2, L = u * 4.5) => { const a = Math.atan2(y2 - y1, x2 - x1); g.beginPath(); g.moveTo(x2, y2); g.lineTo(x2 - L * Math.cos(a - 0.45), y2 - L * Math.sin(a - 0.45)); g.lineTo(x2 - L * Math.cos(a + 0.45), y2 - L * Math.sin(a + 0.45)); g.closePath(); g.fill(); };
+    const dash = () => g.setLineDash(sh.dash ? [u * 3.2, u * 2.4] : []);
+    const head = (x1, y1, x2, y2, L = u * 4.5) => { const a = Math.atan2(y2 - y1, x2 - x1); g.setLineDash([]); g.beginPath(); g.moveTo(x2, y2); g.lineTo(x2 - L * Math.cos(a - 0.45), y2 - L * Math.sin(a - 0.45)); g.lineTo(x2 - L * Math.cos(a + 0.45), y2 - L * Math.sin(a + 0.45)); g.closePath(); g.fill(); };
     const halo = (fn, w) => { g.save(); g.strokeStyle = col === "#ffffff" ? "rgba(0,0,0,.55)" : "rgba(255,255,255,.85)"; g.lineWidth = w; fn(); g.stroke(); g.restore(); };
+    // 以前の版の図形に付いた文字（今は文字を別の図形として置く）
+    const oldLabel = (x, y, align) => { if (sh.s && sh.t !== "text") box = edLabel(g, sh.s, x, y, fs, col, bg, align); };
     const [a, b] = sh.p;
     if (sh.t === "arrow" || sh.t === "darrow") {
       const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), L = u * 3.2;
-      g.beginPath(); g.moveTo(a[0] + (sh.t === "darrow" ? L * Math.cos(ang) : 0), a[1] + (sh.t === "darrow" ? L * Math.sin(ang) : 0)); g.lineTo(b[0] - L * Math.cos(ang), b[1] - L * Math.sin(ang)); g.stroke();
+      dash(); g.beginPath(); g.moveTo(a[0] + (sh.t === "darrow" ? L * Math.cos(ang) : 0), a[1] + (sh.t === "darrow" ? L * Math.sin(ang) : 0)); g.lineTo(b[0] - L * Math.cos(ang), b[1] - L * Math.sin(ang)); g.stroke();
       head(a[0], a[1], b[0], b[1]); if (sh.t === "darrow") head(b[0], b[1], a[0], a[1]);
-      if (sh.s) box = edLabel(g, sh.s, a[0] + (a[0] <= b[0] ? -u * 2 : u * 2), a[1], fs, col, bg, a[0] <= b[0] ? "right" : "left");
+      oldLabel(a[0] + (a[0] <= b[0] ? -u * 2 : u * 2), a[1], a[0] <= b[0] ? "right" : "left");
     } else if (sh.t === "line") {
-      g.lineWidth = u * 1.6; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
-      if (sh.s) box = edLabel(g, sh.s, b[0] + u * 2, b[1], fs, col, bg);
+      dash(); g.lineWidth = u * 1.6; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); oldLabel(b[0] + u * 2, b[1], "left");
     } else if (sh.t === "circle") {
-      g.beginPath(); g.ellipse((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, Math.max(2, Math.abs(b[0] - a[0]) / 2), Math.max(2, Math.abs(b[1] - a[1]) / 2), 0, 0, Math.PI * 2); g.stroke();
+      dash(); g.beginPath(); g.ellipse((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, Math.max(2, Math.abs(b[0] - a[0]) / 2), Math.max(2, Math.abs(b[1] - a[1]) / 2), (sh.rot || 0) * Math.PI / 180, 0, Math.PI * 2); g.stroke();
     } else if (sh.t === "rect") {
-      g.strokeRect(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
+      dash(); const cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2; g.translate(cx, cy); g.rotate((sh.rot || 0) * Math.PI / 180); g.strokeRect(-Math.abs(b[0] - a[0]) / 2, -Math.abs(b[1] - a[1]) / 2, Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
     } else if (sh.t === "free") {
-      g.beginPath(); sh.p.forEach(([x, y], k) => k ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
+      dash(); g.beginPath(); sh.p.forEach(([x, y], k) => k ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
     } else if (sh.t === "text") {
-      box = edLabel(g, sh.s, a[0], a[1], fs, col, bg, "left");
+      box = edLabel(g, sh.s, a[0], a[1], fs, col, bg, "left", sh.bw || 0, sh.rot || 0);
     } else if (sh.t === "kiki") {
-      // 機器診断の位置：四角で囲んだ R と、測定位置を指す矢印（左に高さなど）
+      // 機器診断の位置：四角で囲んだ R と、測定位置を指す矢印
       const s = u * 7, ang = Math.atan2(b[1] - a[1], b[0] - a[0]), bx = a[0] - s / 2, by = a[1] - s / 2;
       g.fillStyle = "#ffffff"; g.fillRect(bx, by, s, s); g.lineWidth = u * 0.9; g.strokeRect(bx, by, s, s);
       g.fillStyle = col; g.font = edFont(s * 0.78); g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("R", a[0], a[1] + s * 0.04);
       const sx = a[0] + Math.cos(ang) * s * 0.6, sy = a[1] + Math.sin(ang) * s * 0.6;
-      g.lineWidth = u * 1.2; g.beginPath(); g.moveTo(sx, sy); g.lineTo(b[0] - u * 3 * Math.cos(ang), b[1] - u * 3 * Math.sin(ang)); g.stroke(); head(sx, sy, b[0], b[1]);
-      if (sh.s) { const left = Math.cos(ang) >= 0; box = edLabel(g, sh.s, left ? bx - u * 1.5 : bx + s + u * 1.5, a[1], fs, col, bg, left ? "right" : "left"); }
+      dash(); g.lineWidth = u * 1.2; g.beginPath(); g.moveTo(sx, sy); g.lineTo(b[0] - u * 3 * Math.cos(ang), b[1] - u * 3 * Math.sin(ang)); g.stroke(); head(sx, sy, b[0], b[1]);
+      oldLabel(Math.cos(ang) >= 0 ? bx - u * 1.5 : bx + s + u * 1.5, a[1], Math.cos(ang) >= 0 ? "right" : "left");
     } else if (sh.t === "dashin") {
-      // 打診音異常：範囲を示す箱型のスケール（中に斜線）
+      // 打診音異常：箱型のスケール（中に斜線）。上端・下端に高さ（◯m）
       const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), len = Math.hypot(b[0] - a[0], b[1] - a[1]), wd = u * 4.2;
       g.translate(a[0], a[1]); g.rotate(ang);
-      g.fillStyle = "rgba(255,255,255,.85)"; g.fillRect(0, -wd / 2, len, wd);
+      g.fillStyle = "rgba(255,255,255,.88)"; g.fillRect(0, -wd / 2, len, wd);
       g.save(); g.beginPath(); g.rect(0, -wd / 2, len, wd); g.clip(); g.lineWidth = u * 0.7;
       for (let x = -wd; x < len + wd; x += wd * 0.55) { g.beginPath(); g.moveTo(x, wd / 2); g.lineTo(x + wd, -wd / 2); g.stroke(); }
       g.restore(); g.lineWidth = u * 0.9; g.strokeRect(0, -wd / 2, len, wd);
       g.setTransform(1, 0, 0, 1, 0, 0);
-      if (sh.s) { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, nx = -Math.sin(ang), ny = Math.cos(ang), side = nx >= 0 ? -1 : 1; box = edLabel(g, sh.s, mx + nx * side * (wd + u * 2), my + ny * side * (wd + u * 2), fs, col, bg, side * nx < 0 ? "right" : "left"); }
+      const ux = Math.cos(ang), uy = Math.sin(ang), off = fs * 0.75 + u;
+      const b1 = sh.top ? edLabel(g, sh.top, a[0] - ux * off, a[1] - uy * off, fs, col, bg, "center") : null;
+      const b2 = sh.bot ? edLabel(g, sh.bot, b[0] + ux * off, b[1] + uy * off, fs, col, bg, "center") : null;
+      const bs = [b1, b2].filter(Boolean); if (bs.length) box = [Math.min(...bs.map((x) => x[0])), Math.min(...bs.map((x) => x[1])), Math.max(...bs.map((x) => x[2])), Math.max(...bs.map((x) => x[3]))];
+      oldLabel((a[0] + b[0]) / 2 + wd * 2, (a[1] + b[1]) / 2, "left");
     } else if (sh.t === "rod") {
       // 鋼棒貫入異常：T字（先端＝差し込んだ位置、横棒＝持ち手）
       const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), nx = -Math.sin(ang), ny = Math.cos(ang), T = u * 4.5;
       const path = () => { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.moveTo(b[0] - nx * T, b[1] - ny * T); g.lineTo(b[0] + nx * T, b[1] + ny * T); };
       halo(path, u * 3.4); g.lineWidth = u * 1.9; g.lineCap = "butt"; path(); g.stroke();
-      if (sh.s) box = edLabel(g, sh.s, b[0] + (b[0] >= a[0] ? u * 3 : -u * 3), b[1] - T - fs * 0.6, fs, col, bg, b[0] >= a[0] ? "left" : "right");
+      oldLabel(b[0] + (b[0] >= a[0] ? u * 3 : -u * 3), b[1] - T - fs * 0.6, b[0] >= a[0] ? "left" : "right");
     } else if (sh.t === "dim") {
       const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), nx = -Math.sin(ang), ny = Math.cos(ang), T = u * 4.5;
       const path = () => { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); for (const q of [a, b]) { g.moveTo(q[0] - nx * T, q[1] - ny * T); g.lineTo(q[0] + nx * T, q[1] + ny * T); } };
-      halo(path, u * 2.6); g.lineWidth = u * 1.1; path(); g.stroke();
+      halo(path, u * 2.6); dash(); g.lineWidth = u * 1.1; path(); g.stroke();
       head((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, a[0], a[1]); head((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, b[0], b[1]);
-      const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, off = u * 7, side = nx > 0 || (nx === 0 && ny < 0) ? 1 : -1;
-      box = edLabel(g, sh.s, mx + nx * off * side, my + ny * off * side, fs, col, bg, Math.abs(nx) > 0.7 ? (side > 0 ? "left" : "right") : "center");
+      const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, side = nx > 0 || (nx === 0 && ny < 0) ? 1 : -1;
+      oldLabel(mx + nx * u * 7 * side, my + ny * u * 7 * side, Math.abs(nx) > 0.7 ? (side > 0 ? "left" : "right") : "center");
+    } else if (sh.t === "north") {
+      // 方位：北を指す矢印と「N」
+      const [x, y] = a, L = u * 22 * (+sh.fs || 1);
+      g.translate(x, y); g.rotate((sh.rot || 0) * Math.PI / 180);
+      g.fillStyle = "#ffffff"; g.beginPath(); g.arc(0, 0, L * 0.72, 0, Math.PI * 2); g.globalAlpha = 0.75; g.fill(); g.globalAlpha = 1;
+      g.fillStyle = col; g.beginPath(); g.moveTo(0, -L * 0.55); g.lineTo(L * 0.28, L * 0.45); g.lineTo(0, L * 0.25); g.lineTo(-L * 0.28, L * 0.45); g.closePath(); g.fill();
+      g.font = edFont(L * 0.42); g.textAlign = "center"; g.textBaseline = "bottom"; g.fillText("N", 0, -L * 0.52);
+      box = [x - L * 0.75, y - L * 1.1, x + L * 0.75, y + L * 0.75];
     }
     g.restore();
     return box;
   }
-  // 選択の当たり判定：図形の線の近く、または文字の範囲
-  function shapeHit(g, sh, W, H, x, y, tol) {
-    const box = (() => { const c = document.createElement("canvas").getContext("2d"); return drawShapeBox(c, sh, W, H); })();
-    if (box && x >= box[0] - tol && x <= box[2] + tol && y >= box[1] - tol && y <= box[3] + tol) return true;
+  const edScratch = document.createElement("canvas").getContext("2d");
+  function shapeBounds(sh, W, H) {
+    edScratch.canvas.width = 1; edScratch.canvas.height = 1;
+    const tb = drawShape(edScratch, sh, W, H), xs = sh.p.map((p) => p[0]), ys = sh.p.map((p) => p[1]);
+    let b = sh.t === "text" || sh.t === "north" ? tb : [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    if (tb && b !== tb) b = [Math.min(b[0], tb[0]), Math.min(b[1], tb[1]), Math.max(b[2], tb[2]), Math.max(b[3], tb[3])];
+    return b || [xs[0], ys[0], xs[0], ys[0]];
+  }
+  function shapeHit(sh, W, H, x, y, tol) {
+    const bx = shapeBounds(sh, W, H);
+    if (["text", "north", "circle", "rect"].includes(sh.t)) return x >= bx[0] - tol && x <= bx[2] + tol && y >= bx[1] - tol && y <= bx[3] + tol;
     const seg = (p, q) => { const dx = q[0] - p[0], dy = q[1] - p[1], L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - p[0]) * dx + (y - p[1]) * dy) / L2)); return Math.hypot(x - p[0] - t * dx, y - p[1] - t * dy); };
     const P = sh.p;
     if (sh.t === "free") return P.some((p, k) => k && seg(P[k - 1], p) < tol);
-    if (sh.t === "text") return false;
-    if (sh.t === "circle" || sh.t === "rect") { const [a, b] = P; return x >= Math.min(a[0], b[0]) - tol && x <= Math.max(a[0], b[0]) + tol && y >= Math.min(a[1], b[1]) - tol && y <= Math.max(a[1], b[1]) + tol; }
-    return P.length >= 2 ? seg(P[0], P[1]) < tol * 1.4 : Math.hypot(x - P[0][0], y - P[0][1]) < tol * 2;
+    return P.length >= 2 ? seg(P[0], P[1]) < tol * 1.4 || (x >= bx[0] && x <= bx[2] && y >= bx[1] && y <= bx[3] && sh.t === "dashin") : false;
   }
-  function drawShapeBox(c, sh, W, H) { c.canvas.width = 1; c.canvas.height = 1; return drawShape(c, sh, W, H); }
-  function shapeBounds(sh, W, H) {
-    const c = document.createElement("canvas").getContext("2d"), tb = drawShapeBox(c, sh, W, H);
-    const xs = sh.p.map((p) => p[0]), ys = sh.p.map((p) => p[1]);
-    let b = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
-    if (tb) b = [Math.min(b[0], tb[0]), Math.min(b[1], tb[1]), Math.max(b[2], tb[2]), Math.max(b[3], tb[3])];
-    return b;
+  // 入力欄がいくつかある小さな画面（打診音異常など）
+  function fieldsPrompt({ title, fields, ok = "決定" }) {
+    return new Promise((res) => {
+      const d = document.createElement("div"); d.className = "modal-wrap"; d.style.zIndex = 95;
+      d.innerHTML = `<div class="modal" role="dialog" aria-modal="true" style="text-align:left"><h3 style="text-align:center">${esc(title)}</h3>
+        ${fields.map((f, k) => `<label class="field" style="margin-bottom:8px"><span class="lbl">${esc(f.label)}</span><input class="inp" data-k="${k}" value="${esc(f.value || "")}" placeholder="${esc(f.placeholder || "")}">${f.presets ? `<span class="chips phpre" style="margin-top:4px">${f.presets.map((t) => `<button type="button" class="chip" data-fk="${k}" data-pre="${esc(t)}">${esc(t)}</button>`).join("")}</span>` : ""}</label>`).join("")}
+        <div class="tpkeys">${ED_KEYS.map((k) => `<button type="button" data-key="${esc(k)}">${esc(k)}</button>`).join("")}</div>
+        <div class="modal-btns"><button class="btn sub" data-r="0">やめる</button><button class="btn main" data-r="1">${ok}</button></div></div>`;
+      document.body.appendChild(d);
+      let last = d.querySelector("input"); setTimeout(() => last.focus(), 50);
+      d.querySelectorAll("input").forEach((x) => x.addEventListener("focus", () => { last = x; }));
+      d.querySelector(".tpkeys").addEventListener("pointerdown", (e) => { if (e.target.closest("[data-key]")) e.preventDefault(); });
+      d.addEventListener("click", (e) => {
+        const kb = e.target.closest("[data-key]"); if (kb) { const k = kb.dataset.key, st = last.selectionStart ?? last.value.length, en = last.selectionEnd ?? st; last.value = last.value.slice(0, st) + k + last.value.slice(en); last.focus(); try { last.setSelectionRange(st + k.length, st + k.length); } catch { } return; }
+        const pb = e.target.closest("[data-pre]"); if (pb) { const x = d.querySelector(`input[data-k="${pb.dataset.fk}"]`); x.value = pb.dataset.pre; last = x; x.focus(); return; }
+        const r = e.target.closest("[data-r]"); if (!r) return;
+        const vals = [...d.querySelectorAll("input")].map((x) => x.value.trim()); d.remove(); res(r.dataset.r === "1" ? vals : null);
+      });
+    });
   }
-  async function imageEditor(ph) {
-    const base = await loadImg(ph.orig || ph.data);
-    const W = base.naturalWidth, H = base.naturalHeight;
-    let shapes = JSON.parse(JSON.stringify(ph.ann || [])), tool = "arrow", color = ED_COLORS[0], width = 1, fsz = "1", bgm = "halo", cur = null, sel = -1;
-    const hist = [JSON.stringify(shapes)]; let hi = 0, syncUI = () => { };
-    const commit = () => { const j = JSON.stringify(shapes); if (j === hist[hi]) return; hist.splice(hi + 1); hist.push(j); hi = hist.length - 1; syncUI(); };
+  async function imageEditor(ph, opt = {}) {
+    let base = await loadImg(ph.orig || ph.data);
+    let W = base.naturalWidth, H = base.naturalHeight;
+    let shapes = JSON.parse(JSON.stringify(ph.ann || [])), tool = opt.tool || "arrow", color = opt.color || ED_COLORS[0], width = 1, fsz = "1", bgm = "halo", dashed = false, cur = null, sel = [];
+    const bases = [base.src]; const hist = [{ s: JSON.stringify(shapes), b: 0 }]; let hi = 0, bi = 0, syncUI = () => { };
+    const commit = () => { const j = JSON.stringify(shapes); if (j === hist[hi].s && bi === hist[hi].b) return; hist.splice(hi + 1); hist.push({ s: j, b: bi }); hi = hist.length - 1; syncUI(); };
+    const toolIcon = (k, icn) => icn === "R" ? '<span class="ie-r">R</span>' : icn === "hatch" ? '<span class="ie-hatch"></span>' : icn === "sq" ? '<span class="ie-sq"></span>' : ic(icn);
     return new Promise((res) => {
       const d = document.createElement("div"); d.className = "imged";
-      d.innerHTML = `<div class="ie-top"><button class="ie-btn" data-e="cancel">キャンセル</button><b>写真に書き込み</b><button class="ie-btn main" data-e="save">保存</button></div>
-        <div class="ie-sub"><button class="ie-btn" data-e="undo" title="元に戻す">↶ 戻る</button><button class="ie-btn" data-e="redo" title="やり直す">↷ 進む</button><span class="ie-sp"></span>
+      d.innerHTML = `<div class="ie-top"><button class="ie-btn" data-e="cancel">キャンセル</button><b>${esc(opt.title || "写真に書き込み")}</b><button class="ie-btn main" data-e="save">保存</button></div>
+        <div class="ie-sub"><button class="ie-btn" data-e="undo">↶ 戻る</button><button class="ie-btn" data-e="redo">↷ 進む</button>
+          <button class="ie-btn" data-e="rotl" title="左に回転">⟲</button><button class="ie-btn" data-e="rotr" title="右に回転">⟳</button><button class="ie-btn danger" data-e="del">${ic("trash")}削除</button><span class="ie-sp"></span>
           <button class="ie-btn" data-e="zin" aria-label="拡大">＋</button><button class="ie-btn" data-e="zout" aria-label="縮小">－</button><button class="ie-btn" data-e="zfit">全体</button><span class="ie-zv" id="ieZ">100%</span></div>
         <div class="ie-stage"><canvas width="${W}" height="${H}"></canvas><div class="ie-hint" id="ieHint"></div></div>
         <div class="ie-bar">
-          <div class="ie-selbar" id="ieSel" hidden><span>選んだ図形：</span><button class="ie-btn" data-e="edittext">文字を直す</button><button class="ie-btn" data-e="front">前面へ</button><button class="ie-btn danger" data-e="del">削除</button><button class="ie-btn" data-e="desel">選択解除</button></div>
-          <div class="ie-tools">${ED_TOOLS.map(([k, l, icn]) => `<button data-tool="${k}"${k === tool ? ' class="on"' : ""}>${k === "kiki" ? '<span class="ie-r">R</span>' : k === "dashin" ? '<span class="ie-hatch"></span>' : k === "rect" ? '<span class="ie-sq"></span>' : ic(icn)}<span>${l}</span></button>`).join("")}</div>
+          <div class="ie-selbar" id="ieSel" hidden><span id="ieSelN"></span><button class="ie-btn" data-e="edittext">文字を直す</button><button class="ie-btn" data-e="bwm">文字の幅－</button><button class="ie-btn" data-e="bwp">文字の幅＋</button><button class="ie-btn" data-e="front">前面へ</button><button class="ie-btn" data-e="desel">選択解除</button></div>
+          <div class="ie-cropbar" id="ieCrop" hidden><span>切り取る範囲を囲んでください</span><button class="ie-btn main" data-e="docrop">この範囲で切り取る</button></div>
+          <div class="ie-tools">${ED_TOOLS.map(([k, l, icn]) => `<button data-tool="${k}"${k === tool ? ' class="on"' : ""}>${toolIcon(k, icn)}<span>${l}</span></button>`).join("")}</div>
           <div class="ie-opts"><span class="ie-colors">${ED_COLORS.map((c) => `<button data-col="${c}" style="--c:${c}"${c === color ? ' class="on"' : ""} aria-label="色"></button>`).join("")}</span>
-            <span class="ie-lbl">線</span><span class="seg mini2" id="ieW"><button data-w="0.7">細</button><button data-w="1" class="on">中</button><button data-w="1.5">太</button></span></div>
+            <span class="ie-lbl">線</span><span class="seg mini2" id="ieW"><button data-w="0.7">細</button><button data-w="1" class="on">中</button><button data-w="1.5">太</button></span>
+            <span class="seg mini2" id="ieDash"><button data-dash="0" class="on">実線</button><button data-dash="1">破線</button></span></div>
           <div class="ie-opts"><span class="ie-lbl">文字</span><span class="seg mini2" id="ieFs">${ED_FS.map(([v, l]) => `<button data-fs="${v}"${v === fsz ? ' class="on"' : ""}>${l}</button>`).join("")}</span>
             <span class="seg mini2" id="ieBg">${ED_BG.map(([v, l]) => `<button data-bg="${v}"${v === bgm ? ' class="on"' : ""}>${l}</button>`).join("")}</span></div>
         </div>`;
       document.body.appendChild(d);
       const cv = d.querySelector("canvas"), g = cv.getContext("2d"), stage = d.querySelector(".ie-stage");
-      const hints = { select: "図形や文字をタップして選び、ドラッグで移動します（2本指で拡大・移動）", arrow: "矢印の根元から先端へなぞってください", darrow: "両端をつなぐようになぞってください", line: "線を引きます（剪定位置は赤で枝を横切るように）", circle: "囲む範囲を斜めになぞってください", rect: "囲む範囲を斜めになぞってください", free: "指で自由に線を描きます",
-        text: "文字を置く位置をタップしてください", dim: "測る範囲の端から端へなぞり、数値を入力します", kiki: "R の位置から、機器診断の測定位置へなぞってください（矢印の先＝測定位置）", dashin: "打診音異常の範囲を端から端へなぞってください（箱型の斜線スケール）", rod: "鋼棒を差し込んだ位置から外側へなぞってください（T字）" };
-      const setHint = () => { d.querySelector("#ieHint").textContent = hints[tool]; };
-      // 表示の拡大・移動（z：倍率、tx・ty：ずらし）
-      let fitK = 1, z = 1, tx = 0, ty = 0;
+      const hints = { select: "図形をタップして選ぶ／何もない所をなぞって範囲選択。ドラッグで移動、⟲⟳で回転（2本指で拡大・移動）", arrow: "矢印の根元から先端へなぞってください", darrow: "両端をつなぐようになぞってください", line: "線を引きます", circle: "囲む範囲を斜めになぞってください", rect: "囲む範囲を斜めになぞってください", free: "指で自由に線を描きます",
+        text: "文字を置く位置をタップしてください（長い文は自動で折り返します）", dim: "測る範囲の端から端へなぞってください", kiki: "R の位置から、機器診断の測定位置へなぞってください（矢印の先＝測定位置）", dashin: "打診音異常の範囲を上端から下端へなぞってください", rod: "鋼棒を差し込んだ位置から外側へなぞってください（T字）", north: "方位を置く位置をタップし、⟲⟳で北の向きに合わせます", crop: "残したい範囲を囲み、「この範囲で切り取る」を押します" };
+      const setHint = () => { d.querySelector("#ieHint").textContent = hints[tool]; d.querySelector("#ieCrop").hidden = tool !== "crop"; };
+      let fitK = 1, z = 1, tx = 0, ty = 0, crop = null, marq = null;
       const applyView = () => { cv.style.width = Math.floor(W * fitK) + "px"; cv.style.height = Math.floor(H * fitK) + "px"; cv.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`; d.querySelector("#ieZ").textContent = Math.round(z * 100) + "%"; };
       const fit = () => { const sw = stage.clientWidth - 8, sh = stage.clientHeight - 8; fitK = Math.min(sw / W, sh / H); z = 1; tx = (stage.clientWidth - W * fitK) / 2; ty = (stage.clientHeight - H * fitK) / 2; applyView(); };
       const zoomAt = (nz, cx, cy) => { nz = Math.max(1, Math.min(8, nz)); const k = nz / z; tx = cx - (cx - tx) * k; ty = cy - (cy - ty) * k; z = nz; if (z === 1) { tx = (stage.clientWidth - W * fitK) / 2; ty = (stage.clientHeight - H * fitK) / 2; } applyView(); };
       const draw = () => {
         g.clearRect(0, 0, W, H); g.drawImage(base, 0, 0, W, H);
         shapes.forEach((s) => drawShape(g, s, W, H)); if (cur) drawShape(g, cur, W, H);
-        if (sel >= 0 && shapes[sel]) { const b = shapeBounds(shapes[sel], W, H), m = Math.min(W, H) / 100; g.save(); g.setLineDash([m * 1.6, m]); g.lineWidth = Math.max(2, m * 0.5); g.strokeStyle = "#00e5ff"; g.strokeRect(b[0] - m, b[1] - m, b[2] - b[0] + m * 2, b[3] - b[1] + m * 2); g.restore(); }
+        const m = Math.min(W, H) / 100;
+        for (const k of sel) { if (!shapes[k]) continue; const b = shapeBounds(shapes[k], W, H); g.save(); g.setLineDash([m * 1.6, m]); g.lineWidth = Math.max(2, m * 0.5); g.strokeStyle = "#00e5ff"; g.strokeRect(b[0] - m, b[1] - m, b[2] - b[0] + m * 2, b[3] - b[1] + m * 2); g.restore(); }
+        const rr = marq || crop; if (rr) { g.save(); g.setLineDash([m * 2, m]); g.lineWidth = Math.max(2, m * 0.6); g.strokeStyle = crop ? "#ffeb3b" : "#00e5ff"; const [p, q] = rr; g.strokeRect(Math.min(p[0], q[0]), Math.min(p[1], q[1]), Math.abs(q[0] - p[0]), Math.abs(q[1] - p[1]));
+          if (crop) { g.fillStyle = "rgba(0,0,0,.45)"; const x0 = Math.min(p[0], q[0]), y0 = Math.min(p[1], q[1]), x1 = Math.max(p[0], q[0]), y1 = Math.max(p[1], q[1]); g.fillRect(0, 0, W, y0); g.fillRect(0, y1, W, H - y1); g.fillRect(0, y0, x0, y1 - y0); g.fillRect(x1, y0, W - x1, y1 - y0); } g.restore(); }
       };
       syncUI = () => {
         d.querySelector('[data-e="undo"]').disabled = hi <= 0; d.querySelector('[data-e="redo"]').disabled = hi >= hist.length - 1;
-        const s = shapes[sel]; d.querySelector("#ieSel").hidden = !s; if (s) d.querySelector('[data-e="edittext"]').hidden = !["text", "dim", "rod", "kiki", "dashin", "arrow", "line"].includes(s.t);
+        sel = sel.filter((k) => shapes[k]); const n = sel.length;
+        d.querySelector('[data-e="del"]').disabled = !n; d.querySelector('[data-e="rotl"]').disabled = !n; d.querySelector('[data-e="rotr"]').disabled = !n;
+        d.querySelector("#ieSel").hidden = !n; d.querySelector("#ieSelN").textContent = n ? `${n}個を選択中：` : "";
+        const one = n === 1 ? shapes[sel[0]] : null;
+        d.querySelector('[data-e="edittext"]').hidden = !(one && one.t === "text"); d.querySelector('[data-e="bwm"]').hidden = d.querySelector('[data-e="bwp"]').hidden = !(one && one.t === "text");
       };
       const pt = (e) => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * W / r.width), Math.round((e.clientY - r.top) * H / r.height)]; };
       fit(); const ro = new ResizeObserver(fit); ro.observe(stage);
       draw(); setHint(); syncUI();
-      // 指の操作：1本＝描く・選ぶ・動かす、2本＝拡大縮小と移動
       const ptrs = new Map(); let pinch = null, drag = null, down = false;
       const sr = () => stage.getBoundingClientRect();
+      // 選んだ図形の中心
+      const selCenter = () => { const bs = sel.map((k) => shapeBounds(shapes[k], W, H)); return [(Math.min(...bs.map((b) => b[0])) + Math.max(...bs.map((b) => b[2]))) / 2, (Math.min(...bs.map((b) => b[1])) + Math.max(...bs.map((b) => b[3]))) / 2]; };
+      const textWidth = () => Math.round(Math.max(W, H) * 0.34);
+      const measure = (t, fs) => { edScratch.font = edFont(fs); return Math.max(...String(t).split("\n").map((x) => edScratch.measureText(x).width)); };
       cv.addEventListener("pointerdown", (e) => {
         e.preventDefault(); cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
-        if (ptrs.size === 2) { cur = null; drag = null; down = false; const [p1, p2] = [...ptrs.values()], r = sr(); pinch = { d0: Math.hypot(p1[0] - p2[0], p1[1] - p2[1]), z0: z, m0: [(p1[0] + p2[0]) / 2 - r.left, (p1[1] + p2[1]) / 2 - r.top], tx0: tx, ty0: ty }; draw(); return; }
+        if (ptrs.size === 2) { cur = null; drag = null; marq = null; down = false; const [p1, p2] = [...ptrs.values()], r = sr(); pinch = { d0: Math.hypot(p1[0] - p2[0], p1[1] - p2[1]), z0: z, m0: [(p1[0] + p2[0]) / 2 - r.left, (p1[1] + p2[1]) / 2 - r.top], tx0: tx, ty0: ty }; draw(); return; }
         const p = pt(e);
+        if (tool === "crop") { crop = [p, p]; down = true; draw(); return; }
         if (tool === "select") {
           const tol = Math.min(W, H) / 45 / z; let hit = -1;
-          for (let k = shapes.length - 1; k >= 0; k--) if (shapeHit(g, shapes[k], W, H, p[0], p[1], tol)) { hit = k; break; }
-          sel = hit; syncUI(); draw();
-          if (hit >= 0) drag = { k: hit, p0: p, orig: JSON.parse(JSON.stringify(shapes[hit].p)) };
-          else { const r = sr(); drag = { pan: true, c0: [e.clientX, e.clientY], tx0: tx, ty0: ty }; void r; }
-          return;
+          for (let k = shapes.length - 1; k >= 0; k--) if (shapeHit(shapes[k], W, H, p[0], p[1], tol)) { hit = k; break; }
+          if (hit >= 0) { if (!sel.includes(hit)) sel = [hit]; drag = { p0: p, orig: sel.map((k) => JSON.parse(JSON.stringify(shapes[k].p))) }; }
+          else { sel = []; marq = [p, p]; }
+          syncUI(); draw(); return;
         }
-        down = true; cur = { t: tool, c: color, w: width, fs: fsz, bg: bgm, p: tool === "free" ? [p] : [p, p] }; if (tool === "text") cur.p = [p]; draw();
+        if (tool === "north") { const s = { t: "north", c: color === "#ffffff" ? "#111111" : color, w: 1, fs: fsz, p: [p], rot: 0 }; shapes.push(s); sel = [shapes.length - 1]; commit(); syncUI(); draw(); return; }
+        down = true; cur = { t: tool, c: color, w: width, fs: fsz, bg: bgm, dash: dashed, p: tool === "free" ? [p] : [p, p] }; if (tool === "text") cur.p = [p]; draw();
       });
       cv.addEventListener("pointermove", (e) => {
         if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, [e.clientX, e.clientY]);
         if (pinch && ptrs.size >= 2) { const [p1, p2] = [...ptrs.values()], r = sr(), m = [(p1[0] + p2[0]) / 2 - r.left, (p1[1] + p2[1]) / 2 - r.top], nz = Math.max(1, Math.min(8, pinch.z0 * Math.hypot(p1[0] - p2[0], p1[1] - p2[1]) / pinch.d0)), k = nz / pinch.z0;
           z = nz; tx = m[0] - (pinch.m0[0] - pinch.tx0) * k; ty = m[1] - (pinch.m0[1] - pinch.ty0) * k; applyView(); return; }
-        if (drag && drag.pan) { if (z > 1) { tx = drag.tx0 + e.clientX - drag.c0[0]; ty = drag.ty0 + e.clientY - drag.c0[1]; applyView(); } return; }
-        if (drag) { const p = pt(e), dx = p[0] - drag.p0[0], dy = p[1] - drag.p0[1]; shapes[drag.k].p = drag.orig.map(([x, y]) => [x + dx, y + dy]); draw(); return; }
-        if (!down || !cur) return; const p = pt(e); if (cur.t === "free") cur.p.push(p); else if (cur.p.length === 2) cur.p[1] = p; draw();
+        const p = pt(e);
+        if (crop && down) { crop[1] = p; draw(); return; }
+        if (marq) { marq[1] = p; draw(); return; }
+        if (drag) { const dx = p[0] - drag.p0[0], dy = p[1] - drag.p0[1]; sel.forEach((k, i) => { shapes[k].p = drag.orig[i].map(([x, y]) => [x + dx, y + dy]); }); draw(); return; }
+        if (!down || !cur) return; if (cur.t === "free") cur.p.push(p); else if (cur.p.length === 2) cur.p[1] = p; draw();
       });
-      const PROMPT = { text: ["書き込む文字", "textPresets", "異常の内容、範囲・高さなど"], dim: ["寸法・高さ（数値）", "dimPresets", "例：高さ 1.2m"], rod: ["鋼棒貫入異常（任意）", "rodPresets", "例：鋼棒貫入異常（芯達）32/60cm"], kiki: ["機器診断の位置（任意）", "kikiPresets", "例：G.L.1.2m、根株"], dashin: ["打診音異常（任意）", "dashinPresets", "例：打音(大) G.L.0〜1.8m"] };
+      // 図形のあとに置く文字（図形とは別の文字として置き、あとから個別に動かせる）
+      const addText = (txt, x, y, extra = {}) => { if (!txt) return; shapes.push({ t: "text", c: extra.c || color, w: 1, fs: fsz, bg: bgm, bw: textWidth(), p: [[Math.round(x), Math.round(y)]], s: txt }); };
+      const PROMPT = { dim: ["寸法・高さ（数値）", "dimPresets", "例：高さ 1.2m"], rod: ["鋼棒貫入異常の記載（任意）", "rodPresets", "例：鋼棒貫入異常（芯達）32/60cm"], kiki: ["機器診断の位置の記載（任意）", "kikiPresets", "例：G.L.1.2m、根株"] };
       const up = async (e) => {
         ptrs.delete(e.pointerId);
         if (pinch) { if (ptrs.size < 2) pinch = null; return; }
-        if (drag) { const moved = !drag.pan; drag = null; if (moved) commit(); return; }
+        if (crop && down) { down = false; return; }
+        if (marq) { const [p, q] = marq, x0 = Math.min(p[0], q[0]), y0 = Math.min(p[1], q[1]), x1 = Math.max(p[0], q[0]), y1 = Math.max(p[1], q[1]); marq = null;
+          if (x1 - x0 > 4 || y1 - y0 > 4) sel = shapes.map((s, k) => [s, k]).filter(([s]) => { const b = shapeBounds(s, W, H); return b[0] < x1 && b[2] > x0 && b[1] < y1 && b[3] > y0; }).map(([, k]) => k);
+          syncUI(); draw(); return; }
+        if (drag) { drag = null; commit(); return; }
         if (!down || !cur) return; down = false; const s = cur; cur = null;
         const len = s.p.length === 2 ? Math.hypot(s.p[1][0] - s.p[0][0], s.p[1][1] - s.p[0][1]) : 0, min = Math.min(W, H) / 40 / z;
         if (!["text", "free"].includes(s.t) && len < min) { draw(); toast("もう少し長くなぞってください"); return; }
         if (s.t === "free" && s.p.length < 2) { draw(); return; }
-        if (PROMPT[s.t]) { const [ttl, pk, phd] = PROMPT[s.t]; const t = await textPrompt({ title: ttl, presets: CFG.inspect[pk] || [], placeholder: phd, keys: ED_KEYS, ok: "置く" }); if (t == null || (s.t === "text" && !t)) { draw(); return; } s.s = t; }
-        shapes.push(s); sel = -1; commit(); draw();
+        const u0 = edUnit(W, H), [a, b] = s.p;
+        if (s.t === "text") { const t = await textPrompt({ title: "書き込む文字", presets: CFG.inspect.textPresets || [], placeholder: "異常の内容、範囲・高さなど", keys: ED_KEYS, ok: "置く" }); if (!t) { draw(); return; } s.s = t; s.bw = textWidth(); shapes.push(s); commit(); draw(); return; }
+        if (s.t === "dashin") {
+          const v = await fieldsPrompt({ title: "打診音異常", fields: [{ label: "見出し（スケールの上）", value: "打音(大)", presets: CFG.inspect.dashinPresets }, { label: "上端の高さ", placeholder: "例：1.8m", presets: ["1.8m", "1.5m", "1.2m", "1.0m"] }, { label: "下端の高さ", placeholder: "例：0.0m", presets: ["0.0m", "0.3m", "0.5m"] }, { label: "中央の記載（特に打音が大きい箇所）", placeholder: "例：1.2〜1.6m 極大", presets: ["〜m 極大"] }], ok: "置く" });
+          if (!v) { draw(); return; }
+          s.top = v[1]; s.bot = v[2]; shapes.push(s);
+          const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), ux = Math.cos(ang), uy = Math.sin(ang), fs = u0 * 6.5 * (+fsz || 1);
+          if (v[0]) addText(v[0], a[0] - ux * fs * 2.4 - measure(v[0], fs) / 2, a[1] - uy * fs * 2.4);
+          if (v[3]) addText(v[3], (a[0] + b[0]) / 2 + u0 * 6, (a[1] + b[1]) / 2);
+          commit(); draw(); return;
+        }
+        if (PROMPT[s.t]) {
+          const [ttl, pk, phd] = PROMPT[s.t]; const t = await textPrompt({ title: ttl, presets: CFG.inspect[pk] || [], placeholder: phd, keys: ED_KEYS, ok: "置く" }); if (t == null) { draw(); return; }
+          shapes.push(s);
+          if (t) { const fs = u0 * 6.5 * (+fsz || 1);
+            if (s.t === "kiki") addText(t, Math.max(2, a[0] - u0 * 5.5 - Math.min(measure(t, fs), textWidth())), a[1]);
+            else if (s.t === "rod") addText(t, b[0] + u0 * 4, b[1] - fs * 1.2);
+            else addText(t, (a[0] + b[0]) / 2 + u0 * 6, (a[1] + b[1]) / 2 - fs); }
+          commit(); draw(); return;
+        }
+        shapes.push(s); commit(); draw();
       };
-      cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); pinch = null; drag = null; down = false; cur = null; draw(); });
+      cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); pinch = null; drag = null; marq = null; down = false; cur = null; draw(); });
       stage.addEventListener("wheel", (e) => { e.preventDefault(); const r = sr(); zoomAt(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
-      const restyle = (k, v) => { if (tool === "select" && sel >= 0 && shapes[sel]) { shapes[sel][k] = v; commit(); draw(); } };
+      const restyle = (k, v) => { if (tool === "select" && sel.length) { sel.forEach((i) => { shapes[i][k] = v; }); commit(); draw(); } };
+      const rotate = (deg) => {
+        const [cx, cy] = selCenter(), r = deg * Math.PI / 180, cs = Math.cos(r), sn = Math.sin(r);
+        for (const k of sel) { const s = shapes[k];
+          if (s.t === "text" || s.t === "north") s.rot = ((s.rot || 0) + deg) % 360;
+          if (s.t === "circle" || s.t === "rect") { s.rot = ((s.rot || 0) + deg) % 360; const mx = (s.p[0][0] + s.p[1][0]) / 2, my = (s.p[0][1] + s.p[1][1]) / 2, nx = cx + (mx - cx) * cs - (my - cy) * sn, ny = cy + (mx - cx) * sn + (my - cy) * cs; s.p = s.p.map(([x, y]) => [x + nx - mx, y + ny - my]); continue; }
+          if (sel.length === 1 && (s.t === "text" || s.t === "north")) continue;
+          s.p = s.p.map(([x, y]) => [Math.round(cx + (x - cx) * cs - (y - cy) * sn), Math.round(cy + (x - cx) * sn + (y - cy) * cs)]); }
+        commit(); draw();
+      };
+      // 切り取り：写真を残す範囲だけにする（書き込みも一緒にずらす）
+      const doCrop = async () => {
+        if (!crop) { toast("切り取る範囲を囲んでください"); return; }
+        const [p, q] = crop, x0 = Math.max(0, Math.min(p[0], q[0])), y0 = Math.max(0, Math.min(p[1], q[1])), x1 = Math.min(W, Math.max(p[0], q[0])), y1 = Math.min(H, Math.max(p[1], q[1]));
+        if (x1 - x0 < 20 || y1 - y0 < 20) { toast("範囲が小さすぎます"); return; }
+        const c2 = document.createElement("canvas"); c2.width = x1 - x0; c2.height = y1 - y0; c2.getContext("2d").drawImage(base, x0, y0, x1 - x0, y1 - y0, 0, 0, x1 - x0, y1 - y0);
+        base = await loadImg(c2.toDataURL("image/jpeg", 0.92)); W = c2.width; H = c2.height; cv.width = W; cv.height = H;
+        shapes.forEach((s) => { s.p = s.p.map(([x, y]) => [x - x0, y - y0]); });
+        bases.push(base.src); bi = bases.length - 1; crop = null; commit(); fit(); draw();
+        tool = "select"; d.querySelectorAll("[data-tool]").forEach((b) => b.classList.toggle("on", b.dataset.tool === tool)); setHint();
+      };
+      const setBase = async (k) => { if (k === bi) return; bi = k; base = await loadImg(bases[k]); W = base.naturalWidth; H = base.naturalHeight; cv.width = W; cv.height = H; fit(); };
       d.addEventListener("click", async (e) => {
-        const tb = e.target.closest("[data-tool]"); if (tb) { tool = tb.dataset.tool; if (tool !== "select") { sel = -1; syncUI(); draw(); } d.querySelectorAll("[data-tool]").forEach((b) => b.classList.toggle("on", b === tb)); setHint(); return; }
+        const tb = e.target.closest("[data-tool]"); if (tb) { tool = tb.dataset.tool; crop = null; if (tool !== "select") sel = []; syncUI(); draw(); d.querySelectorAll("[data-tool]").forEach((b) => b.classList.toggle("on", b === tb)); setHint(); return; }
         const cb = e.target.closest("[data-col]"); if (cb) { color = cb.dataset.col; d.querySelectorAll("[data-col]").forEach((b) => b.classList.toggle("on", b === cb)); restyle("c", color); return; }
         const wb = e.target.closest("#ieW button"); if (wb) { width = +wb.dataset.w; d.querySelectorAll("#ieW button").forEach((b) => b.classList.toggle("on", b === wb)); restyle("w", width); return; }
+        const db = e.target.closest("#ieDash button"); if (db) { dashed = db.dataset.dash === "1"; d.querySelectorAll("#ieDash button").forEach((b) => b.classList.toggle("on", b === db)); restyle("dash", dashed); return; }
         const fb = e.target.closest("#ieFs button"); if (fb) { fsz = fb.dataset.fs; d.querySelectorAll("#ieFs button").forEach((b) => b.classList.toggle("on", b === fb)); restyle("fs", fsz); return; }
         const bb = e.target.closest("#ieBg button"); if (bb) { bgm = bb.dataset.bg; d.querySelectorAll("#ieBg button").forEach((b) => b.classList.toggle("on", b === bb)); restyle("bg", bgm); return; }
-        const b = e.target.closest("[data-e]"); if (!b) return;
-        const r = sr();
-        if (b.dataset.e === "undo" && hi > 0) { hi--; shapes = JSON.parse(hist[hi]); sel = -1; syncUI(); draw(); }
-        if (b.dataset.e === "redo" && hi < hist.length - 1) { hi++; shapes = JSON.parse(hist[hi]); sel = -1; syncUI(); draw(); }
-        if (b.dataset.e === "zin") zoomAt(z * 1.4, r.width / 2, r.height / 2);
-        if (b.dataset.e === "zout") zoomAt(z / 1.4, r.width / 2, r.height / 2);
-        if (b.dataset.e === "zfit") fit();
-        if (b.dataset.e === "del" && sel >= 0) { shapes.splice(sel, 1); sel = -1; commit(); draw(); }
-        if (b.dataset.e === "desel") { sel = -1; syncUI(); draw(); }
-        if (b.dataset.e === "front" && sel >= 0) { const [s] = shapes.splice(sel, 1); shapes.push(s); sel = shapes.length - 1; commit(); draw(); }
-        if (b.dataset.e === "edittext" && sel >= 0) { const s = shapes[sel], P = PROMPT[s.t] || ["文字", "textPresets", ""]; const t = await textPrompt({ title: P[0], value: s.s || "", presets: CFG.inspect[P[1]] || [], placeholder: P[2], keys: ED_KEYS }); if (t != null) { if (!t && s.t === "text") shapes.splice(sel, 1), sel = -1; else s.s = t; commit(); draw(); } }
-        if (b.dataset.e === "cancel") { if (JSON.stringify(shapes) !== JSON.stringify(ph.ann || []) && !confirm("書き込みを保存せずに閉じますか？")) return; ro.disconnect(); d.remove(); res(false); }
-        if (b.dataset.e === "save") {
-          cur = null; sel = -1; draw();
-          if (!ph.orig) ph.orig = ph.data;
-          ph.ann = shapes; ph.data = shapes.length ? cv.toDataURL("image/jpeg", 0.85) : ph.orig;
-          if (!shapes.length) { delete ph.orig; ph.ann = []; }
+        const b = e.target.closest("[data-e]"); if (!b || b.disabled) return;
+        const r = sr(), act = b.dataset.e;
+        if (act === "undo" && hi > 0) { hi--; shapes = JSON.parse(hist[hi].s); await setBase(hist[hi].b); sel = []; syncUI(); draw(); }
+        if (act === "redo" && hi < hist.length - 1) { hi++; shapes = JSON.parse(hist[hi].s); await setBase(hist[hi].b); sel = []; syncUI(); draw(); }
+        if (act === "zin") zoomAt(z * 1.4, r.width / 2, r.height / 2);
+        if (act === "zout") zoomAt(z / 1.4, r.width / 2, r.height / 2);
+        if (act === "zfit") fit();
+        if (act === "rotl") rotate(-15);
+        if (act === "rotr") rotate(15);
+        if (act === "docrop") await doCrop();
+        if (act === "del" && sel.length) { shapes = shapes.filter((_, k) => !sel.includes(k)); sel = []; commit(); draw(); }
+        if (act === "desel") { sel = []; syncUI(); draw(); }
+        if (act === "front" && sel.length) { const mv = sel.map((k) => shapes[k]); shapes = shapes.filter((_, k) => !sel.includes(k)).concat(mv); sel = mv.map((_, i) => shapes.length - mv.length + i); commit(); draw(); }
+        if ((act === "bwm" || act === "bwp") && sel.length === 1) { const s = shapes[sel[0]]; s.bw = Math.max(Math.round(Math.max(W, H) * 0.08), Math.round((s.bw || textWidth()) * (act === "bwp" ? 1.25 : 0.8))); commit(); draw(); }
+        if (act === "edittext" && sel.length === 1) { const s = shapes[sel[0]]; const t = await textPrompt({ title: "文字を直す", value: s.s || "", presets: CFG.inspect.textPresets || [], keys: ED_KEYS }); if (t != null) { if (!t) { shapes.splice(sel[0], 1); sel = []; } else s.s = t; commit(); draw(); } }
+        if (act === "cancel") { if ((hist.length > 1 || hi > 0) && !confirm("書き込みを保存せずに閉じますか？")) return; ro.disconnect(); d.remove(); res(false); }
+        if (act === "save") {
+          cur = null; sel = []; crop = null; draw();
+          const cropped = bi > 0;
+          if (cropped) ph.orig = base.src; else if (!ph.orig) ph.orig = ph.data;
+          ph.ann = shapes; ph.data = shapes.length || cropped ? cv.toDataURL("image/jpeg", 0.88) : ph.orig;
+          if (!shapes.length && !cropped) { delete ph.orig; ph.ann = []; }
           ph.edited = new Date().toISOString(); ro.disconnect(); d.remove(); res(true);
         }
       });

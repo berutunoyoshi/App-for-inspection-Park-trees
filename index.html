@@ -1242,7 +1242,7 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
  * 設定：事業（公園など）に合わせて変更できます
  * ===================================================================== */
 window.APP_CONFIG = {
-  version: "1.11.0（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
+  version: "1.11.1（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
   appTitle: "樹木点検",              // アプリの名前（画面・ブラウザのタブ）
   reportTitle: "樹木点検",           // 速報・一覧表のタイトル（「〇〇の速報」「〇〇結果一覧」）
   filePrefix: "樹木点検",            // 書き出すファイル名の先頭
@@ -4898,8 +4898,22 @@ window.WorkStore = window.NoteStore.work;
         if (first && !ls.get("off-ready-shown", false)) { ls.set("off-ready-shown", true); toast("オフラインでも使えるように準備しました", 3500); }
       });
       const ask = async () => { try { (await navigator.serviceWorker.ready).active?.postMessage("status"); } catch { } };
-      navigator.serviceWorker.register("sw.js").then(() => { OFF.sw = true; ask(); setTimeout(ask, 4000); setTimeout(ask, 15000); }).catch(() => { OFF.sw = false; refreshOffUI(); });
-      navigator.serviceWorker.addEventListener("controllerchange", () => setTimeout(ask, 500));
+      // 更新の確認：起動時・アプリに戻ったとき・1時間ごとに新しい版がないか確かめる
+      const hadCtrl = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((reg) => {
+        OFF.sw = true; ask(); setTimeout(ask, 4000); setTimeout(ask, 15000);
+        const check = () => { if (navigator.onLine) reg.update().catch(() => { }); };
+        document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
+        setInterval(check, 3600000);
+      }).catch(() => { OFF.sw = false; refreshOffUI(); });
+      // 新しい版に切り替わったら読み込み直す（入力中なら確認してから）
+      let reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", async () => {
+        setTimeout(ask, 500);
+        if (!hadCtrl || reloading) return;
+        if (INSP.dirty && !(await dialog({ icon: "info", title: "新しい版があります", body: "<p>アプリが更新されました。入力中の内容は保存されていません。今すぐ読み込み直しますか？</p>", ok: "読み込み直す", cancel: "あとで" }))) return;
+        reloading = true; toast("新しい版に更新します…", 2000); setTimeout(() => location.reload(), 600);
+      });
     }
     document.addEventListener("click", (e) => {
       const bm = e.target.closest(".offbm button"); if (bm) { OFF.bm = bm.dataset.v; refreshOffUI(); return; }

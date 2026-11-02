@@ -3,7 +3,7 @@
  * - 樹木データは公開せず、各端末のアプリ内（IndexedDB）に読み込みます。ここでは事前保存しません
  * - 地図タイル（地理院タイル）は「オフライン用の地図を保存」で保存した範囲と、表示したことのある範囲を使います
  * アプリを更新したときは VERSION を変えると、古い保存データが入れ替わります。 */
-const VERSION = "1.11.0";
+const VERSION = "1.11.1";
 const APP = "app-" + VERSION, DATA = "data-v2", LIB = "lib-v1", TILES = "tiles-saved", AUTO = "tiles-auto";
 const APP_FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 const LIBS = [
@@ -17,7 +17,8 @@ const AUTO_MAX = 4000;
 
 self.addEventListener("install", (e) => {
   e.waitUntil((async () => {
-    const a = await caches.open(APP); await a.addAll(APP_FILES);
+    // ブラウザの一時保存を使わず、必ずサーバーから最新を取る
+    const a = await caches.open(APP); await a.addAll(APP_FILES.map((u) => new Request(u, { cache: "reload" })));
     const l = await caches.open(LIB);
     await Promise.allSettled(LIBS.map(async (u) => { if (!(await l.match(u))) { const r = await fetch(u, { mode: "cors" }); if (r.ok) await l.put(u, r); } }));
     await self.skipWaiting();
@@ -52,7 +53,8 @@ async function trimAuto(c) {
 async function networkFirst(req, store, ms, fallback) {
   const c = await caches.open(store);
   try {
-    const res = await Promise.race([fetch(req), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
+    // アプリ本体はサーバーに更新を確かめてから使う（GitHub Pages の一時保存で古い版が出ないように）
+    const res = await Promise.race([fetch(req, { cache: "no-cache" }), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
     if (res.ok) c.put(req, res.clone());
     return res;
   } catch (err) {
@@ -76,6 +78,6 @@ self.addEventListener("fetch", (e) => {
   if (url.origin !== self.location.origin) return;
   // APP_CONFIG.treesUrls を指定したときだけ使われる（公開してよいデータのみ）
   if (url.pathname.endsWith("/trees.json")) { e.respondWith(staleWhileRevalidate(req, DATA)); return; }
-  if (req.mode === "navigate") { e.respondWith(networkFirst(req, APP, 4000, "index.html")); return; }
+  if (req.mode === "navigate") { e.respondWith(networkFirst(req, APP, 6000, "index.html")); return; }
   e.respondWith(networkFirst(req, APP, 4000));
 });

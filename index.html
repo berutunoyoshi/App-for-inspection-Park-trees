@@ -266,7 +266,7 @@ details.attrs summary::-webkit-details-marker { display: none; }
 
 /* ===== その他 ===== */
 .toast {
-  position: fixed; z-index: 50; left: 50%; top: calc(var(--safe-t) + 70px); transform: translateX(-50%); max-width: calc(100vw - 32px);
+  position: fixed; z-index: 210; left: 50%; top: calc(var(--safe-t) + 70px); transform: translateX(-50%); max-width: calc(100vw - 32px);
   background: rgba(23,36,27,.92); color: #fff; padding: 10px 16px; border-radius: 14px; font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow-2); text-align: center;
 }
 .addbar { position: fixed; z-index: 40; left: 12px; right: 12px; top: calc(var(--safe-t) + 10px); background: var(--accent); color: var(--accent-fg); border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-2); font-weight: 700; }
@@ -274,7 +274,7 @@ details.attrs summary::-webkit-details-marker { display: none; }
 .addbar button { border: 0; background: rgba(255,255,255,.2); color: inherit; border-radius: 10px; padding: 8px 12px; font-weight: 700; }
 .adding .topbar, .adding .fabs, .adding .legend, .adding .countpill { opacity: 0; pointer-events: none; }
 .crosshair { position: fixed; z-index: 15; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; pointer-events: none; color: var(--danger); }
-.lightbox { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.9); display: grid; place-items: center; }
+.lightbox { position: fixed; inset: 0; z-index: 205; background: rgba(0,0,0,.9); display: grid; place-items: center; }
 .lightbox img { max-width: 96vw; max-height: 90vh; border-radius: 6px; }
 .loading { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: var(--green-800); color: #fff; text-align: center; padding: 24px; }
 .loading .logo { width: 72px; height: 72px; }
@@ -315,6 +315,49 @@ body.sheet-full .fabs, body.sheet-full .countpill, body.sheet-full .legend, body
 .namechips button { border: 0; border-radius: 16px; padding: 6px 12px; background: rgba(255,255,255,.18); color: #fff; font-weight: 700; font-size: 13px; }
 .mode-start { width: 100%; height: 52px; border: 0; border-radius: 14px; margin-top: 14px; background: #f5b041; color: #3a2400; font-size: 17px; font-weight: 800; }
 .mode-back { border: 0; background: none; color: #fff; opacity: .85; margin-top: 10px; font-weight: 700; padding: 8px; }
+/* スタート画面：準備の状況・アプリの設定 */
+.loading:has(#inspLogin:not([hidden])) { justify-content: flex-start; overflow-y: auto; padding-top: calc(var(--safe-t) + 40px); padding-bottom: calc(var(--safe-b) + 24px); }
+.prep { margin-top: 22px; text-align: left; }
+.prep-t { font-size: 12px; font-weight: 700; opacity: .75; margin-bottom: 6px; }
+.prep-wait { font-size: 13px; opacity: .7; }
+.prep-i { display: flex; align-items: center; gap: 10px; width: 100%; border: 0; background: rgba(255,255,255,.10); color: #fff; border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; font: inherit; font-size: 13px; text-align: left; }
+.prep-i svg.ic { width: 18px; height: 18px; flex: none; color: #8fd19e; }
+.prep-i span { flex: none; opacity: .85; }
+.prep-i b { margin-left: auto; text-align: right; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.prep-i.ng { background: rgba(245,176,65,.22); box-shadow: inset 3px 0 0 #f5b041; }
+.prep-i.ng svg.ic { color: #f5b041; }
+.prep-i:disabled { opacity: 1; }
+.mode-set { width: 100%; height: 46px; border: 1.5px solid rgba(255,255,255,.55); border-radius: 14px; margin-top: 8px; background: transparent; color: #fff; font-size: 15px; font-weight: 700; }
+.mode-set:disabled { opacity: .45; }
+/* スタート画面・アプリの設定の上に確認画面を出す */
+body:has(#inspLogin:not([hidden])) .modal-wrap, body:has(#appSet:not([hidden])) .modal-wrap { z-index: 200; }
+.appset { position: fixed; inset: 0; z-index: 150; background: var(--bg); color: var(--fg); display: flex; flex-direction: column; }
+.as-head { display: flex; align-items: center; gap: 6px; padding: calc(var(--safe-t) + 8px) 10px 8px; border-bottom: 1px solid var(--line); }
+.as-head h2 { flex: 1; margin: 0; font-size: 17px; text-align: center; }
+.as-btn { width: 44px; height: 44px; border: 0; border-radius: 12px; background: var(--surface-2); color: var(--fg); font-size: 22px; line-height: 1; }
+.as-btn[hidden] { display: block !important; visibility: hidden; }
+.as-body { flex: 1; overflow-y: auto; padding: 16px 16px calc(var(--safe-b) + 24px); width: min(640px, 100%); margin: 0 auto; }
+/* 設定の一覧（押すと詳しい画面へ） */
+.mlist { background: var(--surface-2); border-radius: var(--r-md); overflow: hidden; margin-bottom: 12px; }
+.mrow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; border: 0; background: none; color: inherit; font: inherit; text-align: left; padding: 10px 14px; }
+.mrow + .mrow { border-top: 1px solid var(--line); }
+.mrow > svg.ic { width: 20px; height: 20px; flex: none; color: var(--accent); }
+.mrow-t { flex: 1; min-width: 0; }
+.mrow-t b { display: block; font-size: 14.5px; }
+.mrow-t small { display: block; color: var(--muted); font-size: 12px; margin-top: 1px; }
+.mrow .chev { color: var(--muted); font-size: 20px; line-height: 1; }
+.subhead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.subhead b { font-size: 15px; }
+/* 確認すること */
+.al { display: flex; align-items: center; gap: 10px; border-radius: var(--r-md); padding: 10px 12px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; background: var(--surface-2); }
+.al > svg.ic { width: 18px; height: 18px; flex: none; }
+.al > span { flex: 1; min-width: 0; }
+.al .btn { flex: none; }
+.al.ok > svg.ic { color: var(--green-600); }
+.al.info > svg.ic { color: var(--muted); }
+.al.warn { background: #fff4e5; color: #7a4100; } .al.warn > svg.ic { color: #ef6c00; }
+.al.danger { background: #ffebee; color: #8e1b1b; } .al.danger > svg.ic { color: var(--danger); }
+@media (prefers-color-scheme: dark) { .al.warn { background: #3a2a14; color: #ffd8a8; } .al.danger { background: #3a1d1b; color: #ffb4a9; } }
 
 /* ===== 点検モード ===== */
 body.insp .chiprow, body.insp #selBtn, body.insp #measBtn, body.insp #stepBar, body.insp #selBar, body.insp #planBar,
@@ -592,8 +635,16 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
       <p id="inspNameErr" class="mode-err" hidden>名前を入力してください</p>
       <div id="nameChips" class="namechips"></div>
       <button id="inspStart" class="mode-start">点検を開始</button>
+      <div id="prepBox" class="prep"></div>
+      <button id="appSetBtn" type="button" class="mode-set" disabled>アプリの設定</button>
     </div>
   </div>
+</div>
+
+<!-- アプリの設定（スタート画面から開く） -->
+<div id="appSet" class="appset" role="dialog" aria-modal="true" aria-labelledby="asTitle" hidden>
+  <div class="as-head"><button id="asBack" type="button" class="as-btn" aria-label="戻る" hidden>‹</button><h2 id="asTitle">アプリの設定</h2><button id="asClose" type="button" class="as-btn" aria-label="閉じる">×</button></div>
+  <div id="asBody" class="as-body"></div>
 </div>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -1039,7 +1090,7 @@ window.APP_CONFIG = {
   // ===== 点検モードの設定 =====
   inspect: {
     workPhotoEvery: 10,        // 作業記録写真の撮影間隔（本）。設定画面でも変更可
-    reportTo: "",              // 速報の送信先メールアドレス（初期値）。設定画面でも変更可
+    reportTo: "",              // 速報の送信先メールアドレス（初期値）。スタート画面の「アプリの設定」で変更可
     farWarnM: 50,              // 現在地と対象木がこれ以上離れていたら完了時に確認
     maxPhotos: 6,              // 1本あたりの写真の上限
     allowDraft: true,          // 下書き保存を使う
@@ -1377,7 +1428,7 @@ window.WorkStore = window.NoteStore.work;
 
   // ---------- シート ----------
   function openSheet(name, title) {
-    pane = name;
+    const prevPane = pane; pane = name;
     $$(".pane").forEach((p) => p.classList.toggle("on", p.id === "pane-" + name));
     $$(".bottomnav button").forEach((b) => b.classList.toggle("active", b.dataset.pane === name));
     $("#sheetTitle").textContent = title || TITLES[name] || "";
@@ -1389,7 +1440,7 @@ window.WorkStore = window.NoteStore.work;
     if (name === "insplist") renderInspList();
     if (name === "worklog") renderWorklog();
     if (name === "report") renderReport();
-    if (name === "inspmenu") { renderInspMenu(); refreshOffUI(); }
+    if (name === "inspmenu") { if (prevPane !== "inspmenu") IM.page = ""; renderInspMenu(); refreshOffUI(); }
     if (name === "archive") renderArchive();
     if (name !== "detail") clearSelection();
   }
@@ -1591,11 +1642,7 @@ window.WorkStore = window.NoteStore.work;
     for (const r of INSP.recs.values()) linkRec(r);
     refreshTreesSource(); fillFilterForm(); applyInspStates(); applyFilters(); updateInspHead();
   }
-  // 配布用の樹木データ（tree-list 形式の JSON）で書き出す
-  function treesJsonBlob(list, title) {
-    const trees = list.map((t) => { const o = { tno: t.tno, sp: t.sp, cat: t.cat, h: t.h, g: t.g, w: t.w, lat: +(+t.lat).toFixed(7), lon: +(+t.lon).toFixed(7), area: t.area, zone: t.zone, place: t.place, memo: t.memo }; for (const k of Object.keys(o)) if (o[k] == null || o[k] === "") delete o[k]; return o; });
-    return new Blob([JSON.stringify({ type: "tree-list", version: 2, title: title || CFG.appTitle, generated: localDate(), count: trees.length, trees }, null, 0)], { type: "application/json" });
-  }
+
 
   // =====================================================================
   // 点検モード
@@ -1669,7 +1716,7 @@ window.WorkStore = window.NoteStore.work;
   function askInspector() {
     const savedName = ss.get(SKEY.name);
     if (savedName) return Promise.resolve(savedName);
-    $("#inspLogin").hidden = false;
+    $("#inspLogin").hidden = false; renderPrep();
     return new Promise((res) => {
       const names = ls.get("insp-names", []);
       $("#inspName").value = names[0] || "";
@@ -1689,7 +1736,7 @@ window.WorkStore = window.NoteStore.work;
   }
   // 点検員を交代する（名前の入力画面に戻る）
   function changeInspector() {
-    if (INSP.dirty && !confirm("入力中の点検内容は保存されていません。破棄して点検員を交代しますか？")) return;
+    if (INSP.dirty && !confirm("入力中の点検内容は保存されていません。破棄してスタート画面に戻りますか？")) return;
     ss.set(SKEY.name, null); location.reload();
   }
 
@@ -1708,8 +1755,7 @@ window.WorkStore = window.NoteStore.work;
       "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 3, 15, 8, 18, 14], "circle-color": ["get", "c"],
       "circle-stroke-width": 2.5, "circle-stroke-color": ["case", ["==", ["get", "d"], 1], "#263238", "#ef6c00"] } }, "trees-sel-core");
     applyInspStates(); renderLegend(); updateInspHead(); applyFilters();
-    toast(N ? `${name} さん、点検を開始します。木をタップすると点検を入力できます` : "樹木データがありません。「設定・データ」から読み込んでください", 5000);
-    if (!N) setTimeout(() => { if (!pane) openSheet("inspmenu"); }, 600);  // 最初は樹木データの読み込み画面を開く
+    toast(N ? `${name} さん、点検を開始します。木をタップすると点検を入力できます` : "樹木データがありません。スタート画面の「アプリの設定」から読み込んでください", 5000);
     setTimeout(backupReminder, 1200);
   }
   // 点の色分け：status＝点検状況（未点検・下書き・判定）／sp＝樹種（点検状況は輪の色で表示）
@@ -2228,6 +2274,7 @@ window.WorkStore = window.NoteStore.work;
     const cd = list.filter((r) => ["C", "D"].includes(r.judge));
     if (cd.length) XLSX.utils.book_append_sheet(wb, sheet(inspRows(cd), 0), "要対応（C・D）");
     if (meta.work) XLSX.utils.book_append_sheet(wb, sheet(workRows(meta.work, meta.miss || []), 0), "作業記録");
+    if (meta.extra) meta.extra(wb);
     return new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: XMIME });
   }
   let zipPromise = null;
@@ -2281,7 +2328,7 @@ window.WorkStore = window.NoteStore.work;
       <p class="small muted" style="margin-top:0">点検日と提出する木を選び、速報（Excel）を作成してメールで送信します。</p>
       <div class="grid2"><label class="field"><span class="lbl">点検日</span><select id="rpDate" class="inp">${dates.map((d) => `<option value="${d}"${d === RP.date ? " selected" : ""}>${d === today ? "今日（" + dateJ(d) + "）" : dateJ(d)}</option>`).join("")}</select></label>
         <label class="field"><span class="lbl">対象</span><select id="rpWho" class="inp"><option value="me"${RP.who === "me" ? " selected" : ""}>自分（${esc(INSP.name)}）</option><option value="all"${RP.who === "all" ? " selected" : ""}>この端末の全員分</option></select></label></div>
-      <label class="field"><span class="lbl">送信先メールアドレス</span><input id="rpTo" class="inp" type="email" inputmode="email" autocomplete="email" placeholder="例：kanri@example.jp" value="${esc(setting("mailTo") || "")}"></label>
+      <div class="al ${setting("mailTo") ? "info" : "warn"}">${ic("send")}<span>送信先：<b>${esc(setting("mailTo") || "未設定")}</b><br><small>変更はスタート画面の「アプリの設定 → 速報の送信先」で行います</small></span></div>
       <div class="field"><span class="lbl">写真の添付（ZIP）</span><div class="seg" id="rpAtt">${[["none", "なし"], ["cd", "C・D判定のみ"], ["all", "すべて"]].map(([v, l]) => `<button data-v="${v}"${att === v ? ' class="on"' : ""}>${l}</button>`).join("")}</div></div>
       <div class="listhead"><span>${list.length}本中 <b>${chosen.length}本</b>を選択</span><span><button class="btn line minibtn" data-rp="all">全選択</button> <button class="btn line minibtn" data-rp="none">解除</button></span></div>
       ${chosen.length ? `<div class="jsum">${IC.judges.map((j) => `<span><i style="background:${j.color}"></i>${j.v} ${chosen.filter((r) => r.judge === j.v).length}</span>`).join("")}<span><i style="background:${NOJ.color}"></i>${NOJ.label} ${chosen.filter((r) => !judgeOf(r.judge)).length}</span></div>` : ""}
@@ -2316,7 +2363,7 @@ window.WorkStore = window.NoteStore.work;
     if (act === "all") { RP.sel = new Set(reportList().map((r) => r.id)); renderReport(); return; }
     if (act === "none") { RP.sel = new Set(); renderReport(); return; }
     if (!list.length) { toast("提出する木を選んでください"); return; }
-    const meta = reportMeta(list), to = $("#rpTo").value.trim();
+    const meta = reportMeta(list), to = (setting("mailTo") || "").trim();
     toast("速報ファイルを作成しています…", 2500);
     let files; try { files = await reportFiles(list, meta); } catch (e) { toast(e.message || "ファイルを作成できませんでした", 4000); return; }
     if (act === "save") { for (const f of files) saveBlob(f, f.name); toast("速報ファイルを保存しました"); return; }
@@ -2373,69 +2420,209 @@ window.WorkStore = window.NoteStore.work;
   }
 
   // ---------- 設定・データ（集約） ----------
-  function backupHTML() {
-    const lb = lastBackup(), u = unbackedItems();
-    return `<div class="card${u.n ? " warnbox" : ""}" id="imBackup">
-      <div style="display:flex;align-items:center;gap:8px">${ic(u.n ? "warn" : "check")}<b style="flex:1">バックアップ</b></div>
-      <p class="small" style="margin:6px 0">最後のバックアップ：<b>${lb ? esc(dtOf(lb)) : "まだありません"}</b><br>${u.n ? `未バックアップ：<b>点検 ${u.recs.length}本・作業記録 ${u.work.length}件</b>` : lb ? "すべてバックアップ済みです" : "まだ点検記録はありません"}</p>
-      <div class="btnrow"><button class="btn${u.n ? "" : " sub"}" data-im="backup">${ic("check")}全データをファイルに保存</button>${navigator.share ? `<button class="btn sub" data-im="backupshare">${ic("share")}共有で保存</button>` : ""}</div>
-      <p class="small muted" style="margin-bottom:0">点検記録・写真・作業記録・保管庫をまとめた1つのファイル（JSON）です。端末の「ファイル」やパソコンに保存しておくと、別の端末に「取り込み」で戻せます。<br><span id="imStorage"></span></p></div>`;
+  // =====================================================================
+  // 設定・データ（点検中）：最初に「対応が必要なこと」、その下に項目の一覧。項目を押すと詳しい画面へ
+  // アプリ全体の設定（樹木データ・速報の送信先・撮影間隔・端末の情報）はスタート画面の「アプリの設定」
+  // =====================================================================
+  const IM = { page: "", scope: "today" };
+  const IM_PAGES = { save: "データを保存・提出", backup: "バックアップ", import: "他の端末のデータを取り込む", offline: "オフライン地図", archive: "保管庫・点検回" };
+  const rowHTML = ({ attr, icon, title, sub = "", badge = "", tone = "" }) =>
+    `<button type="button" class="mrow" ${attr}>${ic(icon)}<span class="mrow-t"><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</span>${badge ? `<span class="tag${tone ? " " + tone : ""}">${badge}</span>` : ""}<span class="chev" aria-hidden="true">›</span></button>`;
+  const alertHTML = (tone, icon, text, attr, label) => `<div class="al ${tone}">${ic(icon)}<span>${text}</span>${attr ? `<button type="button" class="btn minibtn ${tone === "ok" ? "line" : "sub"}" ${attr}>${label}</button>` : ""}</div>`;
+  function menuAlerts() {
+    const out = [], u = unbackedItems(), miss = missingWork().length, today = localDate();
+    if (!N) out.push(alertHTML("danger", "warn", "樹木データが読み込まれていません", 'data-im="start"', "スタート画面へ"));
+    if (u.n) { const old = [...u.recs.map((r) => r.updated), ...u.work.map((w) => w.updated || w.takenAt)].some((d) => d && localDate(new Date(d)) !== today);
+      out.push(alertHTML(old ? "warn" : "info", old ? "warn" : "info", `未バックアップ：点検 ${u.recs.length}本・作業記録 ${u.work.length}件${old ? "（前日以前の分あり）" : ""}`, 'data-imp="backup"', "バックアップ")); }
+    if (miss) out.push(alertHTML("warn", "camera", `作業記録の撮り忘れ ${miss}件`, 'data-im="worklog"', "撮影する"));
+    if (OFF.supported && !offAreas().length) out.push(alertHTML("info", "mapview", "現地で使う範囲の地図が保存されていません", 'data-imp="offline"', "保存する"));
+    if (!setting("mailTo")) out.push(alertHTML("info", "send", "速報の送信先が未設定です（スタート画面の「アプリの設定」）", "", ""));
+    return out.length ? out.join("") : alertHTML("ok", "check", "対応が必要な項目はありません", "", "");
+  }
+  function renderInspMenu() {
+    const el = $("#pane-inspmenu"), page = IM.page;
+    if (!page) {
+      const recs = [...INSP.recs.values()].filter((r) => r.status !== "new"), today = recs.filter((r) => r.inspector === INSP.name && recDate(r) === localDate()).length;
+      const u = unbackedItems(), lb = lastBackup(), areas = OFF.supported ? offAreas().length : 0;
+      el.innerHTML = `
+        <div class="card" style="display:flex;align-items:center;gap:10px">${ic("user")}<span style="flex:1">点検員：<b>${esc(INSP.name)}</b><br><small class="muted">端末ID ${esc(INSP.device)}・この端末の点検 ${recs.length}本</small></span><button class="btn line minibtn" data-im="start">交代</button></div>
+        <div class="sec-title">確認すること</div>
+        <div class="alerts">${menuAlerts()}</div>
+        <div class="sec-title">毎日の作業</div>
+        <div class="mlist">
+          ${rowHTML({ attr: 'data-imp="save"', icon: "share", title: "データを保存・提出", sub: `点検結果（Excel）と写真をまとめたZIP・本日 ${today}本` })}
+          ${rowHTML({ attr: 'data-imp="backup"', icon: "check", title: "バックアップ", sub: lb ? `最後：${esc(dtOf(lb))}` : "まだしていません", badge: u.n ? `未 ${u.n}件` : "済", tone: u.n ? "red" : "" })}
+          ${rowHTML({ attr: 'data-im="addtree"', icon: "plus", title: "台帳にない木を点検", sub: "地図で位置を指定して点検します" })}
+        </div>
+        <div class="sec-title">準備・とりまとめ</div>
+        <div class="mlist">
+          ${rowHTML({ attr: 'data-imp="offline"', icon: "mapview", title: "オフライン地図", sub: "通信のない場所で背景地図を表示", badge: OFF.supported ? `${areas}範囲` : "", tone: OFF.supported && !areas ? "gray" : "" })}
+          ${rowHTML({ attr: 'data-imp="import"', icon: "plus", title: "他の端末のデータを取り込む", sub: "点検員から届いたZIPを統合（とりまとめ担当）" })}
+          ${rowHTML({ attr: 'data-imp="archive"', icon: "bookmark", title: "保管庫・点検回", sub: "削除・変更前の記録の確認と復元、新しい点検回" })}
+        </div>
+        <p class="small muted" style="margin-top:14px">樹木データ・速報の送信先・作業記録の撮影間隔は、スタート画面の「アプリの設定」で変更します。</p>
+        <button class="btn line block" data-im="start">スタート画面に戻る</button>`;
+      return;
+    }
+    const head = `<div class="subhead"><button type="button" class="btn line minibtn" data-imp="">‹ 戻る</button><b>${IM_PAGES[page]}</b></div>`;
+    if (page === "save") {
+      const sc = (v, l) => `<button data-v="${v}"${IM.scope === v ? ' class="on"' : ""}>${l}</button>`;
+      el.innerHTML = `${head}
+        <div class="field"><span class="lbl">範囲</span><div class="seg" id="imScope">${sc("today", "自分の本日分")}${sc("mine", "自分の全期間")}${sc("all", "端末の全データ")}</div></div>
+        ${canPickDir() ? `<div class="btnrow"><button class="btn" data-im="savedir">${ic("check")}フォルダに保存</button><button class="btn sub" data-im="savezip">ZIPで保存</button></div><button class="btn line block" data-im="pickdir" style="margin-top:8px">保存先フォルダを選び直す（今：${esc(INSP.dirName || "未選択")}）</button>`
+          : `<button class="btn block" data-im="saveshare">${ic("share")}保存先・送り先を選ぶ</button><button class="btn sub block" data-im="savezip" style="margin-top:8px">この端末にダウンロード</button>`}
+        <div class="notebox"><b>保存される内容（ZIPファイル1つ）</b><br>・点検データ／点検結果_〇〇.xlsx … 点検結果の一覧。とりまとめ担当がそのまま取り込めます<br>・写真／日付／ … 日付_点検場所_樹木番号_樹種名_連番.jpg<br>・作業記録／日付／ … 作業記録の写真<br>
+          ZIPは1つのファイルなので、スマートフォンからもそのままメールに添付したり、共有フォルダにアップロードしたりできます。</div>`;
+    }
+    if (page === "backup") {
+      const lb = lastBackup(), u = unbackedItems();
+      el.innerHTML = `${head}
+        <div class="al ${u.n ? "warn" : "ok"}">${ic(u.n ? "warn" : "check")}<span>最後のバックアップ：<b>${lb ? esc(dtOf(lb)) : "まだありません"}</b><br>${u.n ? `未バックアップ：点検 ${u.recs.length}本・作業記録 ${u.work.length}件` : lb ? "すべてバックアップ済みです" : "まだ点検記録はありません"}</span></div>
+        ${navigator.share ? `<button class="btn block" data-im="backupshare">${ic("share")}保存先を選んでバックアップ</button><button class="btn sub block" data-im="backupzip" style="margin-top:8px">この端末にダウンロード</button>` : `<button class="btn block" data-im="backupzip">${ic("check")}バックアップを保存（ZIP）</button>`}
+        <div class="notebox"><b>バックアップの内容</b><br>この端末の全データ（点検記録・写真・作業記録・保管庫）を、Excelと写真のZIPファイル1つにまとめます。端末の「ファイル」・ドライブ・パソコンなど、この端末の外に保存してください。端末が壊れたときは、新しい端末で「他の端末のデータを取り込む」からこのZIPを選ぶと元に戻せます。<br><span id="imStorage"></span></div>`;
+      fillStorageInfo();
+    }
+    if (page === "import") {
+      el.innerHTML = `${head}
+        <p class="small" style="margin-top:0">点検員から届いたZIP（データの保存・提出やバックアップで作ったもの）を選ぶと、この端末の記録に統合します。複数選べます。</p>
+        <label class="btn block file-btn">${ic("plus")}ZIPファイルを選ぶ<input id="imImp" type="file" accept=".zip,application/zip,.xlsx,${XMIME},.jpg,.jpeg,image/jpeg,.json" multiple></label>
+        ${!isMobileDev() ? `<label class="btn sub block file-btn" style="margin-top:8px">保存したフォルダを選ぶ（パソコン）<input id="imImpDir" type="file" webkitdirectory multiple></label>` : ""}
+        <div class="notebox"><b>取り込みのしくみ</b><br>・同じ木の記録が両方にあるときは、更新日時の新しい方を表示し、もう一方は保管庫に残します（保管庫で入れ替えできます）<br>・ZIPを展開した場合は、点検データの Excel と写真をまとめて選ぶか、フォルダごと選んでください<br>・取り込んでも、この端末の記録が消えることはありません</div>
+        <button class="btn line block" data-im="xlsxall" style="margin-top:12px">全点検結果をExcelで保存（一覧のみ）</button>`;
+    }
+    if (page === "offline") { el.innerHTML = `${head}<div class="offhost"></div>`; refreshOffUI(); }
+    if (page === "archive") {
+      const recs = [...INSP.recs.values()].filter((r) => r.status !== "new");
+      el.innerHTML = `${head}
+        <p class="small" style="margin-top:0">点検データは削除されません。削除した記録・外した写真・変更前の内容・取り込みで置き換わった記録は、保管庫に残っています。</p>
+        <button class="btn block" data-im="archive">${ic("bookmark")}保管庫を開く</button>
+        <div class="sec-title">新しい点検回</div>
+        <p class="small muted" style="margin-top:0">次の年度の点検などで、すべての木を未点検に戻します。今の記録（点検 ${recs.length}本・作業記録 ${INSP.work.length}件）は保管庫に移り、消えません。先にバックアップが必要です。</p>
+        <button class="btn line block" data-im="round">新しい点検回を始める</button>`;
+    }
   }
   async function fillStorageInfo() {
-    const el = $("#imStorage"); if (!el || !navigator.storage) return;
+    const el = $("#imStorage") || $("#asStorage"); if (!el || !navigator.storage) return;
     try {
       const [est, per] = await Promise.all([navigator.storage.estimate?.(), navigator.storage.persisted?.()]);
       const mb = (b) => (b / 1048576).toFixed(b < 10485760 ? 1 : 0);
-      el.innerHTML = `端末内の使用量：${est ? `${mb(est.usage || 0)}MB／上限の目安 ${mb(est.quota || 0)}MB` : "不明"}・自動削除の保護：${per ? "有効" : "<b>無効</b>（ホーム画面に追加して使うと有効になりやすくなります）"}`;
+      el.innerHTML = `端末内の使用量：${est ? `${mb(est.usage || 0)}MB／上限の目安 ${mb(est.quota || 0)}MB` : "不明"}<br>自動削除の保護：${per ? "有効" : "<b>無効</b>（ホーム画面に追加して使うと有効になりやすくなります）"}`;
     } catch { }
   }
-  function ledgerHTML() {
-    const nl = N - baseCount;
-    const info = baseCount ? `<b>${esc(dataInfo.title || "樹木データ")}</b>：${fmt(baseCount)}本${dataInfo.loadedAt ? `（${esc(dtOf(dataInfo.loadedAt))} 読込${dataInfo.srcFile ? "・" + esc(dataInfo.srcFile) : ""}）` : dataInfo.src ? `（${esc(dataInfo.src)}）` : ""}` : "<b>樹木データが読み込まれていません</b>";
-    return `<p class="small" style="margin-top:0">${info}${nl ? `<br>この端末で追加：${fmt(nl)}本` : ""}</p>
-      <label class="btn${baseCount ? " sub" : ""} block file-btn">${ic("tree")}樹木データを読み込む（Excel・JSON）<input id="imLedger" type="file" accept=".xlsx,.xls,.json,application/json,${XMIME}"></label>
-      <p class="small muted">配布された樹木データを、この端末に読み込みます（読み込み直すと置き換え）。樹木データはインターネット上に公開されず、この端末の中だけに保存されます。点検記録は樹木番号で結び付くため、置き換えても消えません。</p>
-      <div class="btnrow"><button class="btn sub" data-im="tpl">テンプレートをダウンロード</button><label class="btn sub file-btn">Excelから樹木を追加<input id="imTrees" type="file" accept=".xlsx,.xls,${XMIME}"></label></div>
-      <details class="attrs"><summary>管理者向け：配布用の樹木データ</summary>
-        <p class="small muted">Excel（テンプレート）から配布用の樹木データ（JSON）を作成できます。作成したファイルは GitHub には置かず、メール・共有フォルダなどで各点検員に渡し、各端末で「樹木データを読み込む」から読み込みます。樹木番号が空欄の木には T-0001… を付けるため、全員に同じファイルを配ってください。</p>
-        <div class="btnrow"><label class="btn sub file-btn">Excelから配布用データを作成<input id="imTreesJson" type="file" accept=".xlsx,.xls,${XMIME}"></label><button class="btn sub" data-im="treesout">この端末の樹木を書き出し</button></div>
-        <button class="btn line block" data-im="clearlocal"${nl ? "" : " disabled"}>この端末で追加した樹木を外す（保管庫へ）</button></details>`;
+  function menuNav(p) { IM.page = p; renderInspMenu(); $("#sheetBody").scrollTop = 0; }
+  // 樹木データ・追加樹木などを変えたあと、開いている画面を描き直す
+  function refreshSettingsUI() { if (pane === "inspmenu") renderInspMenu(); if (!$("#appSet").hidden) renderAppSet(); renderPrep(); }
+
+  // =====================================================================
+  // スタート画面：準備の状況とアプリの設定
+  // =====================================================================
+  const AS = { page: "", ready: false };
+  const AS_PAGES = { trees: "樹木データ", mail: "速報の送信先", every: "作業記録の撮影間隔", device: "この端末の情報" };
+  const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  function treesInfo() { return baseCount ? `${fmt(baseCount)}本${dataInfo.title ? "（" + esc(dataInfo.title) + "）" : ""}` : ""; }
+  function renderPrep() {
+    const el = $("#prepBox"); if (!el) return;
+    if (!AS.ready) { el.innerHTML = `<p class="prep-wait">準備しています…</p>`; $("#appSetBtn").disabled = true; return; }
+    $("#appSetBtn").disabled = false;
+    const mail = setting("mailTo"), every = +setting("every");
+    const item = (ok, label, val, page) => `<button type="button" class="prep-i${ok ? "" : " ng"}"${page ? ` data-as="${page}"` : " disabled"}>${ic(ok ? "check" : "warn")}<span>${label}</span><b>${val}</b></button>`;
+    el.innerHTML = `<div class="prep-t">準備の状況</div>
+      ${item(!!N, "樹木データ", N ? treesInfo() || fmt(N) + "本" : "未読込（読み込んでください）", "trees")}
+      ${item(!!mail, "速報の送信先", mail ? esc(mail) : "未設定", "mail")}
+      ${item(true, "作業記録の撮影", every ? `${every}本ごと` : "案内なし", "every")}
+      ${item(!OFF.supported || OFF.ready, "オフライン", !OFF.supported ? "使えない表示方法" : OFF.ready ? "アプリ保存済み" : "保存中…", "device")}`;
   }
-  function renderInspMenu() {
-    const recs = [...INSP.recs.values()], done = recs.filter(isDone).length, drafts = recs.filter((r) => r.status === "draft").length, whos = new Set(recs.map((r) => r.inspector).filter(Boolean));
-    $("#pane-inspmenu").innerHTML = `
-      <div class="card" style="display:flex;align-items:center;gap:10px">${ic("user")}<span style="flex:1">点検員：<b>${esc(INSP.name)}</b><br><small class="muted">端末ID ${esc(INSP.device)}</small></span><button class="btn line minibtn" data-im="rename">変更</button></div>
-      ${N ? "" : `<div class="sec-title">樹木データ</div>${ledgerHTML()}`}
-      ${backupHTML()}
-      <div class="sec-title">点検の設定</div>
-      <label class="field"><span class="lbl">作業記録の撮影間隔（◯本ごと・0で案内なし）</span><input id="imEvery" class="inp" type="number" inputmode="numeric" min="0" max="200" value="${+setting("every")}"></label>
-      <label class="field"><span class="lbl">速報の送信先メールアドレス</span><input id="imMail" class="inp" type="email" inputmode="email" value="${esc(setting("mailTo") || "")}" placeholder="例：kanri@example.jp"></label>
-      <div class="sec-title">台帳にない木</div>
-      <button class="btn sub block" data-im="addtree">${ic("plus")}台帳にない木を点検する（位置を指定）</button>
-      <div class="sec-title">オフラインで使う</div>
-      <div class="offhost"></div>
-      <div class="sec-title">データの保存（フォルダ分け）</div>
-      <p class="small muted" style="margin-top:0">点検結果一覧（Excel）・取り込み用データ・撮影写真・作業記録を、フォルダに分けて保存します。</p>
-      <div class="field"><span class="lbl">保存する範囲</span><div class="seg" id="imScope"><button data-v="today" class="on">自分の本日分</button><button data-v="mine">自分の全期間</button><button data-v="all">端末の全データ</button></div></div>
-      ${canPickDir() ? `<div class="btnrow"><button class="btn" data-im="savedir">${ic("check")}フォルダに保存</button><button class="btn sub" data-im="pickdir">保存先を選び直す</button></div><p class="small muted">保存先：${esc(INSP.dirName || "（初回に選択）")}</p>`
-        : `<div class="btnrow"><button class="btn" data-im="saveshare">${ic("share")}保存先を選んで保存</button><button class="btn sub" data-im="savezip">ダウンロード</button></div>`}
-      <div class="notebox" style="margin-top:6px"><b>保存されるフォルダ</b><br>・点検データ／ … 点検結果一覧（Excel）・取り込み用データ（JSON）<br>・写真／日付／ … 日付_点検場所_樹木ナンバー_樹種名_連番.jpg<br>・作業記録／日付／ … 作業記録の写真<br>
-        ${canPickDir() ? "選んだフォルダの中に、上のフォルダを作って保存します（同じ名前のファイルは上書き）。" : "スマートフォンでは、フォルダ構成をまとめたZIPファイルで保存します。「保存先を選んで保存」でiPhoneは「“ファイル”に保存」、Androidはドライブやファイル管理アプリを選ぶと、所定のフォルダに保存できます。ZIPを開くとフォルダに分かれています。"}</div>
-      ${N ? `<div class="sec-title">樹木データ</div>${ledgerHTML()}` : ""}
-      <div class="sec-title">データの集約 <span class="muted small">複数の点検員の結果をまとめる</span></div>
-      <p class="small muted" style="margin-top:0">点検データはこの端末のブラウザ内に保存されています。各点検員が「書き出し」たファイルを、取りまとめ担当者が「取り込み」で統合します。同じ木に別の記録があるときは更新日時の新しい方を表示し、もう一方は保管庫に残します（保管庫から入れ替え可）。</p>
-      <p class="small muted">書き出す範囲は上の「保存する範囲」と同じです。</p>
-      <div class="btnrow"><button class="btn sub" data-im="exp">ファイルに保存</button><button class="btn sub" data-im="expshare">${ic("share")}共有で送る</button></div>
-      <label class="btn line block file-btn">取り込み（複数ファイル可）<input id="imImp" type="file" accept=".json,application/json" multiple></label>
-      <button class="btn sub block" data-im="xlsxall" style="margin-top:8px">全点検結果をExcelで保存</button>
-      <p class="small muted">この端末のデータ：点検 ${recs.filter((r) => r.status !== "new").length}本（完了 ${done}・下書き ${drafts}）・作業記録 ${INSP.work.length}件・点検員 ${whos.size}名</p>
-      <div class="sec-title">その他</div>
-      <button class="btn line block" data-im="mode">点検員を交代する</button>
-      <div class="sec-title">保管庫 <span class="muted small">削除・変更・置き換えの前の内容</span></div>
-      <p class="small muted" style="margin-top:0">点検データは削除されず、ここに残ります。内容の確認と元に戻すことができます。</p>
-      <button class="btn sub block" data-im="archive">保管庫を開く</button>
-      <button class="btn line block" data-im="round" style="margin-top:8px">新しい点検回を始める（今の記録を保管庫へ）</button>`;
-    fillStorageInfo();
+  function openAppSet(page = "") { AS.page = page; $("#appSet").hidden = false; renderAppSet(); }
+  function renderAppSet() {
+    const body = $("#asBody"), page = AS.page;
+    $("#asTitle").textContent = page ? AS_PAGES[page] : "アプリの設定";
+    $("#asBack").hidden = !page;
+    if (!page) {
+      const mail = setting("mailTo"), every = +setting("every");
+      body.innerHTML = `<p class="small muted" style="margin-top:0">この端末で使うアプリ全体の設定です。点検中の操作（データの保存・提出、バックアップ、取り込み、オフライン地図、保管庫）は、点検を開始したあとの「設定・データ」にあります。</p>
+        <div class="mlist">
+          ${rowHTML({ attr: 'data-as="trees"', icon: "tree", title: "樹木データ", sub: N ? treesInfo() || fmt(N) + "本" : "読み込まれていません", badge: N ? "" : "要対応", tone: "red" })}
+          ${rowHTML({ attr: 'data-as="mail"', icon: "send", title: "速報の送信先", sub: mail ? esc(mail) : "未設定", badge: mail ? "" : "未設定", tone: "gray" })}
+          ${rowHTML({ attr: 'data-as="every"', icon: "camera", title: "作業記録の撮影間隔", sub: every ? `${every}本ごとにカメラを起動` : "案内しない" })}
+          ${rowHTML({ attr: 'data-as="device"', icon: "info", title: "この端末の情報", sub: `端末ID ${esc(INSP.device || "")}・使用量・オフラインの状態` })}
+        </div>`;
+      return;
+    }
+    if (page === "trees") {
+      const nl = N - baseCount;
+      body.innerHTML = `<div class="al ${baseCount ? "ok" : "danger"}">${ic(baseCount ? "check" : "warn")}<span>${baseCount ? `<b>${esc(dataInfo.title || "樹木データ")}</b>：${fmt(baseCount)}本${dataInfo.loadedAt ? `<br><small>${esc(dtOf(dataInfo.loadedAt))} 読込${dataInfo.srcFile ? "・" + esc(dataInfo.srcFile) : ""}</small>` : ""}` : "<b>樹木データが読み込まれていません</b>"}${nl ? `<br><small>この端末で追加：${fmt(nl)}本</small>` : ""}</span></div>
+        <label class="btn block file-btn">${ic("tree")}樹木データを読み込む（Excel）<input id="asLedger" type="file" accept=".xlsx,.xls,${XMIME}"></label>
+        <p class="small muted">配布された樹木データのExcel（テンプレートの形式）を選びます。読み込み直すと置き換わり、前のデータは保管庫に残ります。樹木データはインターネット上に公開されず、この端末の中だけに保存されます。点検記録は樹木番号で結び付くため消えません。</p>
+        <div class="sec-title">樹木を追加する</div>
+        <label class="btn sub block file-btn">Excelから樹木を追加<input id="asTrees" type="file" accept=".xlsx,.xls,${XMIME}"></label>
+        <p class="small muted">今の樹木データはそのままで、この端末だけに木を追加します。</p>
+        <div class="sec-title">管理者向け</div>
+        <div class="mlist">
+          ${rowHTML({ attr: 'data-asa="tpl"', icon: "plus", title: "テンプレートをダウンロード", sub: "樹木データを作るためのExcel" })}
+          ${rowHTML({ attr: 'data-asa="treesout"', icon: "share", title: "この端末の樹木をExcelに書き出し", sub: "読み込み済み＋追加分。配布用のExcelとして使えます" })}
+          ${nl ? rowHTML({ attr: 'data-asa="clearlocal"', icon: "x", title: "この端末で追加した樹木を外す", sub: `${fmt(nl)}本（保管庫に残ります）` }) : ""}
+        </div>
+        <p class="small muted">樹木データのExcelは GitHub には置かず、メールや庁内の共有フォルダなど公開されない方法で配ってください。樹木番号が空欄の木には読み込み時に T-0001… を付けるため、全員に同じファイルを配ります。</p>`;
+    }
+    if (page === "mail") {
+      body.innerHTML = `<label class="field"><span class="lbl">速報の送信先メールアドレス</span><input id="asMail" class="inp" type="email" inputmode="email" autocomplete="email" value="${esc(setting("mailTo") || "")}" placeholder="例：kanri@example.jp"></label>
+        <p id="asMailErr" class="small" style="color:var(--danger)" hidden>メールアドレスの形式を確認してください</p>
+        <button class="btn block" data-asa="mailsave">保存</button>
+        <p class="small muted">速報の「メールを作成」で使う宛先です。点検中の画面では変更できません。</p>`;
+    }
+    if (page === "every") {
+      body.innerHTML = `<label class="field"><span class="lbl">作業記録の撮影間隔（◯本ごと・0で案内なし）</span><input id="asEvery" class="inp" type="number" inputmode="numeric" min="0" max="200" value="${+setting("every")}"></label>
+        <button class="btn block" data-asa="everysave">保存</button>
+        <p class="small muted">点検を完了した本数がこの数になるごとに、作業状況の写真を撮るようカメラを起動します。</p>`;
+    }
+    if (page === "device") {
+      body.innerHTML = `<div class="card"><p style="margin:0">端末ID：<b>${esc(INSP.device || "")}</b></p><p class="small muted" style="margin:4px 0 0">点検記録に入る、この端末の番号です。とりまとめの際に、どの端末の記録か分かります。</p></div>
+        <div class="card"><b>オフライン</b><p class="small" style="margin:4px 0 0">${!OFF.supported ? "この表示方法ではオフライン用の保存ができません（https で公開したページを開いてください）" : OFF.ready ? "アプリは保存済みです。通信がなくても起動できます。背景地図は点検開始後の「設定・データ → オフライン地図」で保存します。" : "アプリを保存しています（通信のある場所で1度開くと完了します）"}</p></div>
+        <div class="card"><b>ホーム画面</b><p class="small" style="margin:4px 0 0">${isStandalone() ? "ホーム画面から起動しています。" : "ホーム画面に追加して使うと、点検データが自動で消されにくくなります（iPad：共有 →「ホーム画面に追加」／Android：メニュー →「アプリをインストール」）。"}</p></div>
+        <div class="card"><b>保存しているデータ</b><p class="small" style="margin:4px 0 0" id="asStorage"></p></div>`;
+      fillStorageInfo();
+    }
+  }
+  async function appSetAction(a) {
+    if (a === "tpl") downloadTreeTemplate();
+    if (a === "treesout") { if (!N) { toast("樹木データがありません"); return; } await treesXlsx(); }
+    if (a === "clearlocal") {
+      if (!(await dialog({ tone: "warn", icon: "warn", title: "追加した樹木を外しますか？", body: `<p>この端末で Excel から追加した樹木 ${fmt(N - baseCount)}本を地図から外します。点検記録はそのまま残り、外した樹木は保管庫から戻せます。</p>`, ok: "外す", cancel: "やめる" }))) return;
+      await archive("local", { id: "local", trees: await NoteStore.local.get() });
+      await NoteStore.local.put([]); await reloadTrees(); refreshSettingsUI(); refreshOffUI(); toast("追加した樹木を外しました（保管庫に残っています）");
+    }
+    if (a === "mailsave") {
+      const v = $("#asMail").value.trim();
+      if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { $("#asMailErr").hidden = false; return; }
+      setSetting("mailTo", v); toast(v ? "送信先を保存しました" : "送信先を空欄にしました"); AS.page = ""; renderAppSet(); renderPrep();
+    }
+    if (a === "everysave") {
+      const v = Math.max(0, Math.min(200, Math.round(+$("#asEvery").value || 0))); setSetting("every", v);
+      toast(v ? `作業記録の撮影を${v}本ごとにしました` : "作業記録の撮影案内をオフにしました"); AS.page = ""; renderAppSet(); renderPrep(); updateInspHead();
+    }
+  }
+  // 樹木データを、テンプレートと同じ形式のExcelに書き出す（配布用に使える）
+  async function treesXlsx() {
+    try { await loadXLSX(); } catch (e) { toast(e.message, 4000); return; }
+    const wb = XLSX.utils.book_new(), rows = [TREE_COLS.map((c) => c[1]), ...T.map((t) => TREE_COLS.map(([k]) => t[k] ?? ""))];
+    const ws = XLSX.utils.aoa_to_sheet(rows); ws["!cols"] = TREE_COLS.map((c) => ({ wch: Math.max(10, c[1].length * 2 + 2) }));
+    XLSX.utils.book_append_sheet(wb, ws, "樹木一覧");
+    saveBlob(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: XMIME }), `樹木データ_${fsName(dataInfo.title || CFG.reportTitle)}_${localDate()}.xlsx`);
+    toast(`${fmt(N)}本をExcelに書き出しました`);
+  }
+  function initAppSet() {
+    $("#appSetBtn").onclick = () => openAppSet("");
+    $("#prepBox").onclick = (e) => { const b = e.target.closest("[data-as]"); if (b) openAppSet(b.dataset.as); };
+    $("#asClose").onclick = () => { $("#appSet").hidden = true; renderPrep(); };
+    $("#asBack").onclick = () => { AS.page = ""; renderAppSet(); };
+    const body = $("#asBody");
+    body.onclick = (e) => { const p = e.target.closest("[data-as]"); if (p) { AS.page = p.dataset.as; renderAppSet(); body.scrollTop = 0; return; } const a = e.target.closest("[data-asa]"); if (a) appSetAction(a.dataset.asa); };
+    body.onchange = (e) => {
+      const t = e.target;
+      if (t.id === "asLedger" && t.files[0]) { importTreesXlsx(t.files[0], "ledger"); t.value = ""; }
+      if (t.id === "asTrees" && t.files[0]) { importTreesXlsx(t.files[0], "add"); t.value = ""; }
+    };
+    body.onkeydown = (e) => { if (e.key === "Enter" && e.target.id === "asMail") appSetAction("mailsave"); };
   }
   function exportScope(scope) {
     const today = localDate();
@@ -2443,31 +2630,154 @@ window.WorkStore = window.NoteStore.work;
     const work = INSP.work.filter((w) => scope === "all" || (w.inspector === INSP.name && (scope === "mine" || w.date === today)));
     return { recs, work };
   }
-  async function exportInsp(how, forceScope) {
-    const scope = forceScope || $("#imScope .on")?.dataset.v || "today", { recs, work } = exportScope(scope);
-    const arc = scope === "all" ? await NoteStore.archive.all() : [];
-    if (!recs.length && !work.length && !arc.length) { toast("書き出す点検データがありません"); return; }
-    const doc = { type: "tree-inspection", version: 3, exportedAt: new Date().toISOString(), exportedBy: INSP.name, device: INSP.device, scope, records: recs, work, archive: arc };
-    const name = forceScope ? `バックアップ_${safeName(INSP.name)}_${INSP.device}_${localDate()}_${pad2(new Date().getHours())}${pad2(new Date().getMinutes())}.json` : `点検データ_${safeName(INSP.name)}_${localDate()}${scope === "today" ? "" : "_" + scope}.json`;
-    if (scope === "all") markBackup();
-    const file = new File([JSON.stringify(doc)], name, { type: "application/json" });
-    if (scope === "all" && pane === "inspmenu") renderInspMenu();
-    if (how === "share") { const r = await sendFiles([file], `点検データ（${INSP.name}・${dateJ(localDate())}）`, `点検データ（${recs.length}本・作業記録${work.length}件）を送付します。`, setting("mailTo")); if (r !== "cancel") toast("点検データを書き出しました"); }
-    else { saveBlob(file, name); toast(`点検 ${recs.length}本・作業記録 ${work.length}件を書き出しました`); }
-  }
   // 取り込んだ記録を、樹木番号で地図の木に結び付ける（番号が見つからない記録は「台帳にない木」として表示）
   function resolveTree(r) {
     if (!String(r.id).startsWith("t:") && r.tree != null && r.tno == null) r.tree = null;  // 旧形式
     linkRec(r);
   }
+
+  // =====================================================================
+  // 点検データのファイル：Excel（一覧＋取り込み用）と写真（JPG）を、フォルダ分けして1つのZIPに
+  //   点検データ/点検結果_〇〇.xlsx … 見る用のシート＋アプリで取り込むための非表示シート
+  //   写真/日付/…jpg・写真/編集前/日付/…jpg・作業記録/日付/…jpg・保管庫/…（バックアップのみ）
+  // =====================================================================
+  const PKG = { type: "tree-inspection", version: 4, cell: 30000 };
+  const PKG_SHEETS = { rec: "取込用_点検", work: "取込用_作業記録", arc: "取込用_保管庫", info: "取込用_情報" };
+  async function buildPackage(scope, { withArchive = false } = {}) {
+    const { recs, work } = exportScope(scope), today = localDate();
+    const arc = withArchive ? await NoteStore.archive.all() : [];
+    const list = recs.slice().sort((a, b) => (a.doneAt || a.updated || "").localeCompare(b.doneAt || b.updated || ""));
+    const who = scope === "all" ? [...new Set(list.map((r) => r.inspector).filter(Boolean))].join("、") || INSP.name : INSP.name;
+    const files = [], used = new Set();
+    const uniq = (p) => { if (!used.has(p)) { used.add(p); return p; } const m = p.match(/^(.*?)(\.[^./]*)?$/); let k = 2, q; do q = `${m[1]}(${k++})${m[2] || ""}`; while (used.has(q)); used.add(q); return q; };
+    const img = (path, data) => { if (!data) return ""; const p = uniq(path); files.push({ path: p, blob: dataUrlBlob(data) }); return p; };
+    // 写真の画像はファイルにして、記録には保存先（file・origFile）だけを書く
+    const packPh = (ph, path) => { const { data, orig, ...m } = ph; m.file = img(path, data); if (orig) m.origFile = img(path.replace(/^(写真|保管庫)\//, "$1/編集前/"), orig); return m; };
+    const packRec = (r, base) => { const c = JSON.parse(JSON.stringify(r)); delete c.tree; c.photos = (r.photos || []).map((ph) => packPh(ph, base(ph))); return c; };
+    const packWork = (w, path) => { const c = JSON.parse(JSON.stringify(w)); delete c.tree; if (w.ph) c.ph = packPh(w.ph, path); return c; };
+    const recRows = list.map((r) => [r.id, r.tno || "", r.sp || "", r.status === "done" ? "完了" : "下書き", r.judge || "", r.inspector || "", dtOf(r.updated), (r.photos || []).length, packRec(r, phPath)]);
+    const workRowsX = work.map((w) => [w.id, w.date || "", w.inspector || "", w.seq ? w.seq + "本目" : "任意", packWork(w, workPath(w))]);
+    const arcRows = arc.map((a) => {
+      const c = { ...a }, dir = `保管庫/${a.id.replace(/[^\w-]/g, "_")}/`;
+      if (a.type === "photo") c.item = packPh(a.item, dir + (a.item.name || "写真.jpg"));
+      else if (a.type === "work") c.item = packWork(a.item, dir + (a.item.ph?.name || "作業記録.jpg"));
+      else if (a.type === "rec") c.item = packRec(a.item, (ph) => dir + (ph.name || "写真.jpg"));
+      return [a.id, ARC_KIND[a.kind] || a.kind, dtOf(a.at), a.by || "", c];
+    });
+    await loadXLSX();
+    const blob = await inspWorkbook(list, { title: `${CFG.reportTitle}結果一覧`, sheet: "点検結果", dateLabel: scope === "today" ? dateJ(today) : "全期間", who, work, miss: missingWork((w, d) => list.some((r) => r.inspector === w && recDate(r) === d)),
+      extra: (wb) => {
+        const add = (name, head, rows) => {
+          // 内容（JSON）はセルの文字数の上限を超えないよう、データ1・データ2…に分けて入れる
+          const n = Math.max(1, ...rows.map((r) => Math.ceil(JSON.stringify(r[r.length - 1]).length / PKG.cell)));
+          const aoa = [[...head, ...Array.from({ length: n }, (_, k) => `データ${k + 1}（変更しないでください）`)],
+            ...rows.map((r) => { const s = JSON.stringify(r[r.length - 1]), parts = []; for (let k = 0; k < s.length; k += PKG.cell) parts.push(s.slice(k, k + PKG.cell)); return [...r.slice(0, -1), ...parts]; })];
+          XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), name);
+        };
+        add(PKG_SHEETS.rec, ["記録ID", "樹木番号", "樹種", "状態", "判定", "点検員", "更新日時", "写真"], recRows);
+        add(PKG_SHEETS.work, ["記録ID", "日付", "点検員", "撮影"], workRowsX);
+        if (withArchive) add(PKG_SHEETS.arc, ["ID", "種類", "日時", "作業者"], arcRows);
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["項目", "内容"], ["形式", PKG.type], ["版", PKG.version], ["書き出し日時", new Date().toISOString()], ["書き出した人", INSP.name], ["端末ID", INSP.device], ["範囲", scope], ["保管庫", withArchive ? "含む" : "含まない"],
+          ["説明", "「取込用」のシートはアプリで取り込むためのデータです。内容を変更しないでください。写真は同じZIP（フォルダ）の「写真」「作業記録」に入っています。"]]), PKG_SHEETS.info);
+        // 取り込み用のシートは非表示にする（Excelで開いたときに見るのは点検結果・作業記録）
+        wb.Workbook = wb.Workbook || {}; wb.Workbook.Sheets = wb.SheetNames.map((n) => ({ Hidden: n.startsWith("取込用_") ? 1 : 0 }));
+      } });
+    const xname = `点検データ/点検結果_${fsName(who)}_${today}${withArchive ? "_バックアップ" : ""}.xlsx`;
+    files.unshift({ path: xname, blob });
+    return { files, recs: list, work, arc, who, nPh: files.filter((f) => /^写真\/(?!編集前)/.test(f.path)).length, nW: files.filter((f) => f.path.startsWith("作業記録/")).length };
+  }
+  async function pkgZip(files, root) {
+    await loadZip();
+    const z = new JSZip(), dir = z.folder(root);
+    for (const f of files) dir.file(f.path, f.blob);
+    return z.generateAsync({ type: "blob" });
+  }
+  const stamp = () => { const d = new Date(); return `${localDate(d)}_${pad2(d.getHours())}${pad2(d.getMinutes())}`; };
+  // 保存・提出：how = "share"（共有メニューで保存先・送信先を選ぶ）／"zip"（ダウンロード）／"dir"・"pick"（パソコン：フォルダに保存）
+  async function saveData(how, { scope, backup = false } = {}) {
+    scope = backup ? "all" : scope || IM.scope || "today";
+    toast("ファイルを準備しています…", 2500);
+    let set; try { set = await buildPackage(scope, { withArchive: backup }); } catch (e) { toast(e.message || "準備できませんでした", 4000); return; }
+    if (!set.recs.length && !set.work.length && !set.arc.length) { toast("保存する点検データがありません"); return; }
+    const summary = `点検 ${set.recs.length}本・写真 ${set.nPh}枚・作業記録 ${set.work.length}件${backup ? `・保管庫 ${set.arc.length}件` : ""}`;
+    const done = () => { if (scope === "all") markBackup(); if (pane === "inspmenu") renderInspMenu(); };
+    if (how === "dir" || how === "pick") {
+      try {
+        const root = await getRootDir(how === "pick"); INSP.dirName = root.name;
+        for (const f of set.files) await writeToDir(root, f.path, f.blob);
+        done();
+        dialog({ icon: "check", title: "フォルダに保存しました", body: `<p>保存先：<b>${esc(root.name)}</b></p><p class="small">${summary}</p><p class="small muted">取り込むときは「他の端末のデータを取り込む → フォルダを選ぶ」でこのフォルダを選びます。</p>` });
+      } catch (e) { if (e && e.name === "AbortError") return; toast((e && e.message) || "保存できませんでした", 4500); }
+      return;
+    }
+    const base = backup ? `${CFG.filePrefix}_バックアップ_${fsName(INSP.name)}_${INSP.device}_${stamp()}` : `${CFG.filePrefix}_${fsName(set.who)}_${scope === "today" ? localDate() : stamp()}`;
+    let zip; try { zip = await pkgZip(set.files, base); } catch (e) { toast(e.message, 4000); return; }
+    const file = new File([zip], base + ".zip", { type: "application/zip" });
+    if (how === "share" && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      const ok = await dialog({ icon: "share", title: backup ? "バックアップの準備ができました" : "保存・提出の準備ができました", body: `<p class="small">${summary}</p><p class="small">次の画面で保存先・送り先を選びます。<br>・端末に保存：iPhone は<b>「“ファイル”に保存」</b>、Android は<b>ドライブ・ファイル管理アプリ</b><br>・提出：メールやチャットのアプリを選ぶ</p><p class="small muted">ZIPファイル1つにまとまっているため、スマートフォンからもそのままアップロード・添付できます。</p>`, ok: "保存先・送り先を選ぶ", cancel: "やめる",
+        onOk: () => { navigator.share({ files: [file], title: file.name }).then(done).catch(() => { }); } });
+      if (ok) toast("保存先・送り先を選んでください", 2500);
+      return;
+    }
+    saveBlob(file, file.name); done();
+    toast(`${file.name} を保存しました（${summary}）`, 4500);
+  }
+
+  // ---------- 取り込み：ZIP／Excel＋写真／フォルダ（旧形式の JSON も読めます） ----------
+  // ZIPから取り出した画像は種類が付かないため、JPEG として読み直す
+  const blobUrl = (b) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(/^image\//.test(b.type) ? b : new Blob([b], { type: "image/jpeg" })); });
+  async function readPackages(files) {
+    const entries = new Map();  // パス → ファイルを取り出す関数
+    for (const f of files) {
+      if (/\.zip$/i.test(f.name) || f.type === "application/zip" || f.type === "application/x-zip-compressed") {
+        await loadZip(); let z; try { z = await JSZip.loadAsync(f); } catch { entries.set(f.name + "#bad", null); continue; }
+        z.forEach((p, e) => { if (!e.dir && !/(^|\/)(__MACOSX|\._)/.test(p)) entries.set(p.normalize("NFC"), () => e.async("blob")); });
+      } else entries.set((f.webkitRelativePath || f.name).normalize("NFC"), async () => f);
+    }
+    const keys = [...entries.keys()];
+    const find = (p) => { if (!p) return null; p = p.normalize("NFC"); if (entries.get(p)) return entries.get(p);
+      const k = keys.find((x) => x === p || x.endsWith("/" + p)) || keys.find((x) => x.split("/").pop() === p.split("/").pop()); return k ? entries.get(k) : null; };
+    const docs = []; let bad = keys.filter((k) => entries.get(k) === null).length, miss = 0;
+    const unPh = async (m) => {
+      const get = find(m.file); if (!get) { miss++; return null; }
+      const ph = { ...m, data: await blobUrl(await get()) }; delete ph.file;
+      if (m.origFile) { const g2 = find(m.origFile); if (g2) ph.orig = await blobUrl(await g2()); delete ph.origFile; }
+      return ph;
+    };
+    const unRec = async (r) => { const out = []; for (const m of r.photos || []) { const ph = m.file ? await unPh(m) : m.data ? m : null; if (ph) out.push(ph); } r.photos = out; return r; };
+    const unWork = async (w) => { if (w.ph && w.ph.file) w.ph = (await unPh(w.ph)) || { cap: w.ph.cap || "", name: w.ph.name, data: "" }; return w; };
+    for (const k of keys) {
+      const get = entries.get(k); if (!get) continue;
+      if (/\.json$/i.test(k)) { try { const d = JSON.parse(await (await get()).text()); if (d && /^(tree-inspection|street-tree-inspection)$/.test(d.type)) docs.push({ ...d, src: k.split("/").pop() }); else bad++; } catch { bad++; } continue; }
+      if (!/\.xlsx?$/i.test(k)) continue;
+      await loadXLSX();
+      let wb; try { wb = XLSX.read(await (await get()).arrayBuffer(), { type: "array" }); } catch { bad++; continue; }
+      const info = wb.Sheets[PKG_SHEETS.info]; if (!info) continue;  // 点検データのExcelではない（樹木データなど）
+      const im = Object.fromEntries(XLSX.utils.sheet_to_json(info, { header: 1 }).map((r) => [r[0], r[1]]));
+      if (im["形式"] !== PKG.type) continue;
+      const rows = (name, nHead) => { const ws = wb.Sheets[name]; if (!ws) return []; return XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" }).slice(1).map((r) => { try { return JSON.parse(r.slice(nHead).join("")); } catch { bad++; return null; } }).filter(Boolean); };
+      const doc = { type: PKG.type, version: im["版"], exportedBy: im["書き出した人"], device: im["端末ID"], scope: im["範囲"], src: k.split("/").pop(), records: [], work: [], archive: [] };
+      for (const r of rows(PKG_SHEETS.rec, 8)) doc.records.push(await unRec(r));
+      for (const w of rows(PKG_SHEETS.work, 4)) doc.work.push(await unWork(w));
+      for (const a of rows(PKG_SHEETS.arc, 4)) {
+        if (a.type === "photo" && a.item.file) { const ph = await unPh(a.item); if (!ph) continue; a.item = ph; }
+        else if (a.type === "rec") await unRec(a.item); else if (a.type === "work") await unWork(a.item);
+        doc.archive.push(a);
+      }
+      docs.push(doc);
+    }
+    return { docs, bad, miss };
+  }
   async function importInsp(files) {
     files = [...files];  // 呼び出し側で入力欄を空にしても読めるよう、先に控える
-    let add = 0, upd = 0, same = 0, kept = 0, wadd = 0, aadd = 0, bad = 0; const conflicts = [];
+    if (!files.length) return;
+    toast("取り込むファイルを読んでいます…", 2500);
+    let pk; try { pk = await readPackages(files); } catch (e) { toast(e.message || "ファイルを読み込めませんでした", 4500); return; }
+    if (!pk.docs.length) { dialog({ tone: "warn", icon: "warn", title: "点検データが見つかりません", body: `<p>選んだファイルに、このアプリで保存した点検データ（「点検データ」フォルダの Excel）がありません。</p><p class="small muted">保存・提出やバックアップで作った ZIP をそのまま選ぶか、フォルダごと選んでください。</p>` }); return; }
+    let add = 0, upd = 0, same = 0, kept = 0, wadd = 0, aadd = 0; const conflicts = [];
     const arcIds = new Set((await NoteStore.archive.all()).map((a) => a.id));
-    for (const f of [...files]) {
-      let doc; try { doc = JSON.parse(await f.text()); } catch { bad++; continue; }
-      if (!doc || !/^(tree-inspection|street-tree-inspection)$/.test(doc.type)) { bad++; continue; }
-      const src = `${doc.exportedBy || ""}${doc.device ? "・端末" + doc.device : ""}（${f.name}）`;
+    for (const doc of pk.docs) {
+      const src = `${doc.exportedBy || ""}${doc.device ? "・端末" + doc.device : ""}（${doc.src}）`;
       for (const r of doc.records || []) {
         if (!r || !r.ans || !isFinite(r.lon)) continue;
         normRec(r);
@@ -2486,43 +2796,30 @@ window.WorkStore = window.NoteStore.work;
       for (const a of doc.archive || []) if (a && a.id && !arcIds.has(a.id)) { await NoteStore.archive.put(a); arcIds.add(a.id); aadd++; }
     }
     applyInspStates(); updateInspHead(); applyFilters(); if (pane === "inspmenu") renderInspMenu();
-    dialog({ icon: "check", title: "取り込みが完了しました", body: `<ul><li>点検記録：追加 ${add}本・更新 ${upd}本・変更なし ${same}本${kept ? `・この端末の方が新しい ${kept}本` : ""}</li><li>作業記録：追加 ${wadd}件</li>${aadd ? `<li>保管庫：追加 ${aadd}件</li>` : ""}${upd + kept ? `<li>同じ木の別の記録 ${upd + kept}件は保管庫に残しました</li>` : ""}${bad ? `<li>読み込めなかったファイル：${bad}件</li>` : ""}</ul>
+    dialog({ icon: "check", title: "取り込みが完了しました", body: `<ul><li>点検記録：追加 ${add}本・更新 ${upd}本・変更なし ${same}本${kept ? `・この端末の方が新しい ${kept}本` : ""}</li><li>作業記録：追加 ${wadd}件</li>${aadd ? `<li>保管庫：追加 ${aadd}件</li>` : ""}${upd + kept ? `<li>同じ木の別の記録 ${upd + kept}件は保管庫に残しました</li>` : ""}${pk.miss ? `<li style="color:#c62828">見つからなかった写真：${pk.miss}枚（ZIPやフォルダごと選んでください）</li>` : ""}${pk.bad ? `<li>読み込めなかったファイル：${pk.bad}件</li>` : ""}</ul>
       ${conflicts.length ? `<p><b>同じ木を別の点検員が点検：${conflicts.length}本</b>（新しい方を表示中。保管庫で入れ替えできます）</p><ul class="misslist small" style="max-height:24vh;overflow:auto">${conflicts.slice(0, 50).map((c) => `<li>${esc(c)}</li>`).join("")}</ul>` : ""}` });
   }
   async function inspMenuAction(a) {
-    if (a === "rename") {
-      const nm = (prompt("点検員の名前", INSP.name) || "").trim(); if (!nm || nm === INSP.name) return;
-      INSP.name = nm; ss.set(SKEY.name, nm); ls.set("insp-names", [nm, ...ls.get("insp-names", []).filter((n) => n !== nm)].slice(0, 8));
-      updateInspHead(); renderInspMenu(); toast(`点検員を「${nm}」に変更しました（これからの点検に記録されます）`, 3500);
-    }
+    if (a === "start") { changeInspector(); return; }
+    if (a === "worklog") { openSheet("worklog"); return; }
     if (a === "addtree") startInspAdd();
-    if (a === "savedir") saveFolders("dir");
-    if (a === "pickdir") saveFolders("pick");
-    if (a === "saveshare") saveFolders("share");
-    if (a === "savezip") saveFolders("zip");
-    if (a === "tpl") downloadTreeTemplate();
-    if (a === "exp") exportInsp("save");
-    if (a === "backup") exportInsp("save", "all");
-    if (a === "backupshare") exportInsp("share", "all");
+    if (a === "savedir") saveData("dir");
+    if (a === "pickdir") saveData("pick");
+    if (a === "saveshare") saveData("share");
+    if (a === "savezip") saveData("zip");
+    if (a === "backupshare") saveData("share", { backup: true });
+    if (a === "backupzip") saveData("zip", { backup: true });
     if (a === "archive") openSheet("archive");
-    if (a === "expshare") exportInsp("share");
     if (a === "xlsxall") {
       const list = [...INSP.recs.values()].filter((r) => r.status !== "new").sort((a, b) => (a.doneAt || a.updated || "").localeCompare(b.doneAt || b.updated || ""));
       if (!list.length) { toast("点検記録がありません"); return; }
       try { saveBlob(await inspWorkbook(list, { title: `${CFG.reportTitle}結果一覧`, sheet: "点検結果", dateLabel: "すべて", who: [...new Set(list.map((r) => r.inspector))].join("、"), work: INSP.work, miss: missingWork() }), `${CFG.filePrefix}結果_${localDate()}.xlsx`); }
       catch (e) { toast(e.message, 4000); }
     }
-    if (a === "mode") changeInspector();
-    if (a === "treesout") { if (!N) { toast("樹木データがありません"); return; } saveBlob(treesJsonBlob(T, dataInfo.title), "trees.json"); toast(`${fmt(N)}本を trees.json に書き出しました`); }
-    if (a === "clearlocal") {
-      if (!(await dialog({ tone: "warn", icon: "warn", title: "追加した樹木を外しますか？", body: `<p>この端末で Excel から追加した樹木 ${fmt(N - baseCount)}本を地図から外します。点検記録はそのまま残り、外した樹木は保管庫から戻せます。</p>`, ok: "外す", cancel: "やめる" }))) return;
-      await archive("local", { id: "local", trees: await NoteStore.local.get() });
-      await NoteStore.local.put([]); await reloadTrees(); renderInspMenu(); refreshOffUI(); toast("追加した樹木を外しました（保管庫に残っています）");
-    }
     if (a === "round") {
       const recs = [...INSP.recs.values()].filter((r) => r.status !== "new");
       if (!recs.length && !INSP.work.length) { toast("点検データがありません"); return; }
-      if (unbackedItems().n) { dialog({ tone: "warn", icon: "warn", title: "先にバックアップしてください", body: "<p>まだバックアップしていない記録があります。上の「バックアップ」で全データを保存してから、新しい点検回を始めてください。</p>" }); return; }
+      if (unbackedItems().n) { const go = await dialog({ tone: "warn", icon: "warn", title: "先にバックアップしてください", body: "<p>まだバックアップしていない記録があります。バックアップしてから、新しい点検回を始めてください。</p>", ok: "バックアップへ", cancel: "閉じる" }); if (go) menuNav("backup"); return; }
       const label = `〜${dateJ(localDate())}の点検`;
       if (!(await dialog({ tone: "warn", icon: "warn", title: "新しい点検回を始めますか？", body: `<p>今の点検記録 ${recs.length}本・作業記録 ${INSP.work.length}件を「${esc(label)}」として保管庫に移し、すべての木を未点検に戻します。</p><p class="small muted">記録は削除されず、保管庫でいつでも確認・復元できます。</p>`, ok: "始める", cancel: "やめる" }))) return;
       for (const r of recs) { await archive("round", r, { round: label }); await InspStore.remove(r.id); }
@@ -2641,7 +2938,6 @@ window.WorkStore = window.NoteStore.work;
       const t = e.target;
       if (t.id === "rpDate") { RP.date = t.value; RP.sel = null; renderReport(); }
       if (t.id === "rpWho") { RP.who = t.value; RP.sel = null; renderReport(); }
-      if (t.id === "rpTo") setSetting("mailTo", t.value.trim());
       if (t.dataset.rsel) { t.checked ? RP.sel.add(t.dataset.rsel) : RP.sel.delete(t.dataset.rsel); const y = $("#sheetBody").scrollTop; renderReport(); $("#sheetBody").scrollTop = y; }
     };
     rp.onclick = (e) => {
@@ -2652,15 +2948,11 @@ window.WorkStore = window.NoteStore.work;
     const im = $("#pane-inspmenu");
     im.onchange = (e) => {
       const t = e.target;
-      if (t.id === "imEvery") { const v = Math.max(0, Math.min(200, Math.round(+t.value || 0))); setSetting("every", v); t.value = v; updateInspHead(); toast(v ? `作業記録の撮影を${v}本ごとにしました` : "作業記録の撮影案内をオフにしました"); }
-      if (t.id === "imMail") setSetting("mailTo", t.value.trim());
-      if (t.id === "imImp" && t.files.length) { importInsp(t.files); t.value = ""; }
-      if (t.id === "imTrees" && t.files[0]) { importTreesXlsx(t.files[0], "add"); t.value = ""; }
-      if (t.id === "imLedger" && t.files[0]) { importLedger(t.files[0]); t.value = ""; }
-      if (t.id === "imTreesJson" && t.files[0]) { importTreesXlsx(t.files[0], "json"); t.value = ""; }
+      if ((t.id === "imImp" || t.id === "imImpDir") && t.files.length) { importInsp(t.files); t.value = ""; }
     };
     im.onclick = (e) => {
-      const s = e.target.closest("#imScope button"); if (s) { $$("#imScope button").forEach((x) => x.classList.toggle("on", x === s)); return; }
+      const s = e.target.closest("#imScope button"); if (s) { IM.scope = s.dataset.v; $$("#imScope button").forEach((x) => x.classList.toggle("on", x === s)); return; }
+      const pg = e.target.closest("[data-imp]"); if (pg) { menuNav(pg.dataset.imp); return; }
       const b = e.target.closest("[data-im]"); if (b) inspMenuAction(b.dataset.im);
     };
   }
@@ -2854,17 +3146,6 @@ window.WorkStore = window.NoteStore.work;
   const dataUrlBlob = (u) => { const [h, b] = u.split(","), mime = (h.match(/data:([^;]+)/) || [])[1] || "image/jpeg", bin = atob(b), a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: mime }); };
   const canPickDir = () => typeof window.showDirectoryPicker === "function" && !isMobileDev();
   // 保存するファイルの一覧（相対パスと中身）
-  async function buildSaveSet(scope) {
-    const { recs, work } = exportScope(scope), today = localDate();
-    const list = recs.slice().sort((a, b) => (a.doneAt || a.updated || "").localeCompare(b.doneAt || b.updated || ""));
-    const who = scope === "all" ? [...new Set(list.map((r) => r.inspector).filter(Boolean))].join("、") || INSP.name : INSP.name;
-    const files = [];
-    if (list.length) files.push({ path: `点検データ/点検結果一覧_${fsName(who)}_${today}.xlsx`, blob: await inspWorkbook(list, { title: `${CFG.reportTitle}結果一覧`, sheet: "点検結果", dateLabel: scope === "today" ? dateJ(today) : "全期間", who, work, miss: missingWork((w, d) => list.some((r) => r.inspector === w && recDate(r) === d)) }) });
-    files.push({ path: `点検データ/点検データ_${fsName(who)}_${today}.json`, blob: new Blob([JSON.stringify({ type: "tree-inspection", version: 2, exportedAt: new Date().toISOString(), exportedBy: INSP.name, scope, records: recs, work })], { type: "application/json" }) });
-    for (const r of list) for (const ph of r.photos || []) files.push({ path: phPath(ph), blob: dataUrlBlob(ph.data) });
-    for (const w of work) if (w.ph?.data) files.push({ path: workPath(w), blob: dataUrlBlob(w.ph.data) });
-    return { files, recs: list, work, who };
-  }
   // 保存先フォルダ（パソコンの Chrome・Edge のみ）
   async function getRootDir(pick) {
     let h = pick ? null : await NoteStore.kv.get("rootDir");
@@ -2877,41 +3158,6 @@ window.WorkStore = window.NoteStore.work;
     for (const p of parts) dir = await dir.getDirectoryHandle(p, { create: true });
     const fh = await dir.getFileHandle(name, { create: true }), wr = await fh.createWritable(); await wr.write(blob); await wr.close();
   }
-  async function saveFolders(how) {
-    const scope = $("#imScope .on")?.dataset.v || "today";
-    toast("保存するファイルを準備しています…", 2500);
-    let set; try { set = await buildSaveSet(scope); } catch (e) { toast(e.message || "準備できませんでした", 4000); return; }
-    if (!set.recs.length && !set.work.length) { toast("保存する点検データがありません"); return; }
-    const nPh = set.files.filter((f) => f.path.startsWith("写真/")).length, nW = set.files.filter((f) => f.path.startsWith("作業記録/")).length;
-    if (how === "dir" || how === "pick") {
-      try {
-        const root = await getRootDir(how === "pick"); INSP.dirName = root.name;
-        for (const f of set.files) await writeToDir(root, f.path, f.blob);
-        if (scope === "all") markBackup();
-        renderInspMenu();
-        dialog({ icon: "check", title: "フォルダに保存しました", body: `<p>保存先：<b>${esc(root.name)}</b></p><ul class="small"><li>点検データ：点検結果一覧（Excel）・取り込み用データ</li><li>写真：${nPh}枚（写真/日付/）</li><li>作業記録：${nW}枚（作業記録/日付/）</li></ul>` });
-      } catch (e) { if (e && e.name === "AbortError") return; toast((e && e.message) || "保存できませんでした", 4500); }
-      return;
-    }
-    // スマホ：フォルダ構成をそのまま入れた ZIP
-    let zip; try { zip = await folderZip(set.files); } catch (e) { toast(e.message, 4000); return; }
-    const name = `${CFG.filePrefix}_${fsName(set.who)}_${localDate()}.zip`, file = new File([zip], name, { type: "application/zip" });
-    if (how === "share" && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      const ok = await dialog({ icon: "share", title: "保存の準備ができました", body: `<p class="small">「保存先を選ぶ」→ 共有メニューで <b>「ファイル」に保存</b>（iPhone）や <b>ドライブ</b> などを選び、所定のフォルダを指定してください。ZIPを開くと「点検データ」「写真」「作業記録」のフォルダに分かれています。</p>`, ok: "保存先を選ぶ", cancel: "やめる",
-        onOk: () => { navigator.share({ files: [file], title: name }).then(() => { if (scope === "all") { markBackup(); renderInspMenu(); } }).catch(() => { }); } });
-      if (ok) toast("保存先を選んでください", 2500);
-      return;
-    }
-    saveBlob(file, name); if (scope === "all") { markBackup(); renderInspMenu(); }
-    toast(`${name} を保存しました（写真${nPh}枚・作業記録${nW}枚）`, 4500);
-  }
-  async function folderZip(files) {
-    await loadZip();
-    const z = new JSZip(), root = z.folder(`${CFG.filePrefix}_${localDate()}`);
-    for (const f of files) root.file(f.path, f.blob);
-    return z.generateAsync({ type: "blob" });
-  }
-
   // =====================================================================
   // Excel から樹木を追加（テンプレートのダウンロード・読み込み）
   // =====================================================================
@@ -2959,21 +3205,6 @@ window.WorkStore = window.NoteStore.work;
     return map;
   }
   const numCell = (v) => { if (v == null || v === "") return null; const n = +String(v).replace(/[,，]/g, "").replace(/[０-９．－]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)); return isFinite(n) ? n : NaN; };
-  // 樹木データ（台帳）を読み込む：Excel（テンプレート）または配布用 JSON
-  async function importLedger(file) {
-    if (!/\.json$/i.test(file.name) && file.type !== "application/json") { await importTreesXlsx(file, "ledger"); return; }
-    let j; try { j = JSON.parse(await file.text()); } catch { toast("樹木データ（JSON）を読み込めませんでした", 4000); return; }
-    if (!j || !Array.isArray(j.trees)) { toast("樹木データの形式ではありません（配布用の樹木データを選んでください）", 4500); return; }
-    const ok = [], errs = [], seen = new Set();
-    j.trees.forEach((t, k) => {
-      const e = [], tno = String(t.tno ?? "").trim();
-      if (!tno) e.push("樹木番号が空欄"); else if (seen.has(tno)) e.push(`樹木番号「${tno}」が重複`);
-      if (!t.sp) e.push("樹種が空欄");
-      if (!(isFinite(t.lat) && isFinite(t.lon) && t.lat > 20 && t.lat < 46 && t.lon > 122 && t.lon < 154)) e.push("位置が不正");
-      if (e.length) errs.push([k + 1, tno || t.sp || "", e.join("・")]); else { seen.add(tno); ok.push({ ...t, tno }); }
-    });
-    await setLedger(ok, { title: j.title || file.name.replace(/\.json$/i, ""), generated: j.generated || "", srcFile: file.name }, errs, "件目");
-  }
   async function setLedger(trees, meta, errs = [], unit = "行目") {
     const prev = await NoteStore.ledger.get(), nos = new Set(trees.map((t) => t.tno)), local = new Set((await NoteStore.local.get()).map((t) => t.tno));
     const lost = [...INSP.recs.values()].filter((r) => String(r.id).startsWith("t:") && r.status !== "new" && !nos.has(r.tno) && !local.has(r.tno)).length;
@@ -2985,12 +3216,12 @@ window.WorkStore = window.NoteStore.work;
     if (!go || !trees.length) return;
     if (prev) await archive("ledger", prev);
     await NoteStore.ledger.put({ ...meta, trees, loadedAt: new Date().toISOString(), loadedBy: INSP.name });
-    await reloadTrees(); if (pane === "inspmenu") renderInspMenu();
+    await reloadTrees(); refreshSettingsUI();
     const bb = new maplibregl.LngLatBounds(); trees.forEach((t) => bb.extend([t.lon, t.lat]));
-    if (pane) peekMap(); map.fitBounds(bb, { padding: 80, maxZoom: 18 });
+    if (INSP.on) { if (pane) peekMap(); map.fitBounds(bb, { padding: 80, maxZoom: 18 }); } else map.fitBounds(bb, { padding: 60, maxZoom: 18, duration: 0 });
     toast(`樹木データ ${trees.length}本を読み込みました`, 3500);
   }
-  // mode："add"＝この端末に追加 ／ "ledger"＝この端末の樹木データ（台帳）として置き換え ／ "json"＝配布用の樹木データを作成（端末には追加しない）
+  // mode："add"＝この端末に追加 ／ "ledger"＝この端末の樹木データ（台帳）として置き換え
   async function importTreesXlsx(file, mode = "add") {
     try { await loadXLSX(); } catch (e) { toast(e.message, 4000); return; }
     let wb; try { wb = XLSX.read(await file.arrayBuffer(), { type: "array" }); } catch { toast("Excelファイルを読み込めませんでした", 4000); return; }
@@ -3029,16 +3260,15 @@ window.WorkStore = window.NoteStore.work;
       ok.push({ tno, sp, cat, h, g, w, lat: +lat.toFixed(7), lon: +lon.toFixed(7), area: String(get("area") ?? "").trim(), zone: String(get("zone") ?? "").trim(), place: String(get("place") ?? "").trim(), memo: String(get("memo") ?? "").trim() });
     }
     if (mode === "ledger") { await setLedger(ok, { title: file.name.replace(/\.xlsx?$/i, ""), generated: localDate(), srcFile: file.name }, errs); return; }
-    const go = await dialog({ icon: ok.length ? "tree" : "warn", tone: ok.length ? "" : "warn", title: mode === "json" ? "配布用の樹木データを作成" : "Excelから樹木を追加",
+    const go = await dialog({ icon: ok.length ? "tree" : "warn", tone: ok.length ? "" : "warn", title: "Excelから樹木を追加",
       body: `<p>追加できる木：<b>${ok.length}本</b>${errs.length ? `／追加できない行：<b style="color:#c62828">${errs.length}行</b>` : ""}</p>
         ${errs.length ? `<ul class="misslist small" style="max-height:30vh;overflow:auto">${errs.slice(0, 100).map(([l, n, m]) => `<li>${l}行目 ${esc(n)}：${esc(m)}</li>`).join("")}</ul>` : ""}
-        ${ok.length ? (mode === "json" ? `<p class="small muted">作成したファイルを各点検員に渡し、各端末の「樹木データを読み込む」で読み込んでもらいます（GitHub には置かないでください。この端末には追加しません）。</p>` : `<p class="small muted">追加した木はこの端末に保存され、地図・点検に表示されます。</p>`) : ""}`,
-      ok: ok.length ? (mode === "json" ? `${ok.length}本で作成` : `${ok.length}本を追加`) : "閉じる", cancel: ok.length ? "やめる" : null });
+        ${ok.length ? `<p class="small muted">追加した木はこの端末に保存され、地図・点検に表示されます。</p>` : ""}`,
+      ok: ok.length ? `${ok.length}本を追加` : "閉じる", cancel: ok.length ? "やめる" : null });
     if (!go || !ok.length) return;
-    if (mode === "json") { const ttl = file.name.replace(/\.xlsx?$/i, ""); saveBlob(treesJsonBlob(ok, ttl), `樹木データ_${fsName(ttl)}_${localDate()}.json`); toast(`${ok.length}本の配布用データを作成しました`, 3500); return; }
     await addLocalTrees(ok.map((t) => ({ ...t, added: new Date().toISOString(), srcFile: file.name })));
     const bb = new maplibregl.LngLatBounds(); ok.forEach((t) => bb.extend([t.lon, t.lat]));
-    if (pane) peekMap(); map.fitBounds(bb, { padding: 80, maxZoom: 18 });
+    refreshSettingsUI(); if (INSP.on) { if (pane) peekMap(); map.fitBounds(bb, { padding: 80, maxZoom: 18 }); }
     toast(`${ok.length}本を追加しました`, 3500);
   }
   // 平面直角座標（JGD2011）→ 緯度経度（国土地理院の計算式）
@@ -3088,7 +3318,7 @@ window.WorkStore = window.NoteStore.work;
     if (OFF.supported) {
       navigator.serviceWorker.addEventListener("message", (e) => {
         if (e.data?.type !== "status") return;
-        const first = !OFF.ready && e.data.ready; OFF.ready = e.data.ready; OFF.version = e.data.version; refreshOffUI();
+        const first = !OFF.ready && e.data.ready; OFF.ready = e.data.ready; OFF.version = e.data.version; refreshOffUI(); renderPrep();
         if (first && !ls.get("off-ready-shown", false)) { ls.set("off-ready-shown", true); toast("オフラインでも使えるように準備しました", 3500); }
       });
       const ask = async () => { try { (await navigator.serviceWorker.ready).active?.postMessage("status"); } catch { } };
@@ -3188,7 +3418,8 @@ window.WorkStore = window.NoteStore.work;
       const ready = createMap();
       await loadTrees();
       await ready;
-      addLayers(); initUI(); initInsp(); initOffline(); fillFilterForm();
+      addLayers(); initUI(); initInsp(); initOffline(); initAppSet(); fillFilterForm();
+      INSP.device = await ensureDevice(); AS.ready = true; renderPrep();
       $("#spList").innerHTML = [...new Set([...topSpecies, ...[...MASTER.values()].map((v) => v.std)])].map((s) => `<option value="${esc(s)}">`).join("");
       if (!$("#inspLogin").hidden) { $("#loadMsg").hidden = true; document.querySelector(".bar-load").hidden = true; }
       const name = await nameP;
@@ -3198,7 +3429,6 @@ window.WorkStore = window.NoteStore.work;
       const t = hashTree(); if (t != null) selectTree(t, true);
       const ld = $("#loading"); ld.style.transition = "opacity .35s"; ld.style.opacity = 0; setTimeout(() => ld.remove(), 400);
       if (!NoteStore.isPersistent) toast("このブラウザでは点検データを保存できません（閉じると消えます）", 5000);
-      if (!N) setTimeout(() => openSheet("inspmenu"), 600);
     } catch (e) {
       console.error(e);
       $("#loadMsg").hidden = false; $("#inspLogin").hidden = true;

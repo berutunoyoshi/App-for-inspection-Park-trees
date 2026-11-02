@@ -1,11 +1,11 @@
 /* オフラインで使うためのサービスワーカー
- * - アプリ本体・樹木データ・ライブラリを端末に保存し、通信がなくても起動できるようにします
+ * - アプリ本体・ライブラリを端末に保存し、通信がなくても起動できるようにします
+ * - 樹木データは公開せず、各端末のアプリ内（IndexedDB）に読み込みます。ここでは事前保存しません
  * - 地図タイル（地理院タイル）は「オフライン用の地図を保存」で保存した範囲と、表示したことのある範囲を使います
  * アプリを更新したときは VERSION を変えると、古い保存データが入れ替わります。 */
-const VERSION = "2026-10-31-1";
-const APP = "app-" + VERSION, DATA = "data-v1", LIB = "lib-v1", TILES = "tiles-saved", AUTO = "tiles-auto";
+const VERSION = "2026-11-01-1";
+const APP = "app-" + VERSION, DATA = "data-v2", LIB = "lib-v1", TILES = "tiles-saved", AUTO = "tiles-auto";
 const APP_FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
-const DATA_FILES = ["data/trees.json"];
 const LIBS = [
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css",
@@ -18,7 +18,6 @@ const AUTO_MAX = 4000;
 self.addEventListener("install", (e) => {
   e.waitUntil((async () => {
     const a = await caches.open(APP); await a.addAll(APP_FILES);
-    const d = await caches.open(DATA); if (!(await d.match(DATA_FILES[0]))) await d.addAll(DATA_FILES);
     const l = await caches.open(LIB);
     await Promise.allSettled(LIBS.map(async (u) => { if (!(await l.match(u))) { const r = await fetch(u, { mode: "cors" }); if (r.ok) await l.put(u, r); } }));
     await self.skipWaiting();
@@ -26,13 +25,14 @@ self.addEventListener("install", (e) => {
 });
 self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k.startsWith("app-") && k !== APP) await caches.delete(k);
+    // 古い版のアプリと、以前の版で保存した樹木データ（data-v1）を消す
+    for (const k of await caches.keys()) if ((k.startsWith("app-") && k !== APP) || k === "data-v1") await caches.delete(k);
     await self.clients.claim();
   })());
 });
 self.addEventListener("message", (e) => {
   if (e.data === "status") e.waitUntil((async () => {
-    const ok = !!(await caches.match("index.html")) && !!(await caches.match(DATA_FILES[0])) && !!(await caches.match(LIBS[0]));
+    const ok = !!(await caches.match("index.html")) && !!(await caches.match(LIBS[0]));
     e.source && e.source.postMessage({ type: "status", ready: ok, version: VERSION });
   })());
 });
@@ -74,6 +74,7 @@ self.addEventListener("fetch", (e) => {
   if (url.hostname === "cyberjapandata.gsi.go.jp" && url.pathname.startsWith("/xyz/")) { e.respondWith(cacheFirst(req, AUTO)); return; }
   if (LIB_HOSTS.includes(url.hostname)) { e.respondWith(cacheFirst(req, LIB)); return; }
   if (url.origin !== self.location.origin) return;
+  // APP_CONFIG.treesUrls を指定したときだけ使われる（公開してよいデータのみ）
   if (url.pathname.endsWith("/trees.json")) { e.respondWith(staleWhileRevalidate(req, DATA)); return; }
   if (req.mode === "navigate") { e.respondWith(networkFirst(req, APP, 4000, "index.html")); return; }
   e.respondWith(networkFirst(req, APP, 4000));

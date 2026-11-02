@@ -623,6 +623,17 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .ie-zv { font-size: 12px; color: #bbb; min-width: 3.4em; text-align: right; }
 .ie-stage { display: block; }
 .ie-stage canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.planmap { position: fixed; inset: 0; z-index: 95; background: #111; color: #fff; display: flex; flex-direction: column; padding: var(--safe-t) 0 var(--safe-b); }
+.pm-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; }
+.pm-stage { flex: 1; position: relative; min-height: 0; }
+#pmMap { position: absolute; inset: 0; }
+.pm-frame { position: absolute; left: 50%; top: 50%; width: min(92%, calc((100% - 16px) * 4 / 3)); aspect-ratio: 4 / 3; max-height: 92%; transform: translate(-50%, -50%); border: 3px solid #ffeb3b; box-shadow: 0 0 0 9999px rgba(0,0,0,.35); pointer-events: none; }
+.pm-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; flex-wrap: wrap; }
+.pm-bar .seg { background: rgba(255,255,255,.12); }
+.pm-bar .seg button { color: #ddd; }
+.pm-bar .seg button.on { background: #fff; color: #111; }
+.pm-z { display: flex; gap: 6px; }
+.pm-hint { margin: 0 10px 8px; font-size: 12px; color: #bbb; }
 .planbox { margin-top: 10px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 12px; display: grid; gap: 6px; }
 .ie-cropbar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; color: #ffeb3b; }
 .ie-cropbar[hidden], .ie-selbar[hidden] { display: none; }
@@ -1231,7 +1242,7 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
  * 設定：事業（公園など）に合わせて変更できます
  * ===================================================================== */
 window.APP_CONFIG = {
-  version: "1.10.0（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
+  version: "1.11.0（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
   appTitle: "樹木点検",              // アプリの名前（画面・ブラウザのタブ）
   reportTitle: "樹木点検",           // 速報・一覧表のタイトル（「〇〇の速報」「〇〇結果一覧」）
   filePrefix: "樹木点検",            // 書き出すファイル名の先頭
@@ -1333,7 +1344,7 @@ window.APP_CONFIG = {
       workEvery: 50,           // 特記仕様書 14(2) 外観診断 50本に1本程度
       workType: "外観診断",
       minPhotos: 0,            // カルテ：全景写真（診断概要図）＋問題箇所の局部写真（必須にしない）
-      photoGuide: "全景（診断概要図に使用）＋問題箇所の局部写真（説明を必ず記入）。「立地平面図」のコメントを付けた写真は立地平面図の欄に入ります",
+      photoGuide: "問題箇所の局部写真など（説明を必ず記入）",
       captionPresets: ["全景", "立地平面図", "根元", "幹", "大枝", "枯枝", "スタブカット", "キノコ（子実体）", "開口空洞", "樹皮枯死・欠損", "巻き根", "露出根"],
       judges: [
         { v: "A", label: "健全か健全に近い", color: "#2e7d32", desc: "樹勢・樹形が1〜2で異常なし" },
@@ -2464,10 +2475,11 @@ window.WorkStore = window.NoteStore.work;
   // 写真を縮小し、下部に日時・点検員・樹木の情報を書き込む
   // ---------- 立地平面図：地図や図面を切り取り、方位・周辺の状況を書き込んでカルテの枠へ ----------
   // 立地平面図・診断概要図（1枚ずつ。カルテの決まった枠に入る）
-  async function setRolePhoto(role, data, tool) {
+  async function setRolePhoto(role, data, tool, ann) {
     const c = INSP.cur; if (!c) return;
     const lbl = role === "plan" ? "立地平面図" : "診断概要図";
     const date = localDate(), ph = { data, cap: lbl, role, date, at: new Date().toISOString(), stage: stageOf(c) };
+    if (ann) ph.ann = ann;
     ph.name = photoName(c, date, new Set(c.photos.map((x) => x.name)));
     const ok = await imageEditor(ph, { title: `${lbl}（${role === "plan" ? "切り取り・方位・撮影方向・書き込み" : "書き込み・写真番号"}）`, tool, color: role === "plan" ? "#111111" : undefined, photos: genPhotos(c) });
     if (!ok) { toast(`${lbl}は入れませんでした`); return; }  // 編集画面で「キャンセル」したときは入れない
@@ -2486,23 +2498,62 @@ window.WorkStore = window.NoteStore.work;
     if (!(await imageEditor(ph, { title: "スケッチ", tool: "free", color: "#111111", photos: genPhotos(c) }))) return;
     c.photos.push(ph); markDirty(); renderIPhotos(); refreshFormState();
   }
+  // 立地平面図の最初の書き込み：方位（左上）と縮尺（左下）。どちらもあとで動かせる
+  function planShapes(W, H, mpp) {
+    const out = [{ t: "north", c: "#111111", w: 1, fs: "1", p: [[Math.round(W * 0.075), Math.round(H * 0.13)]], rot: 0 }];
+    if (mpp > 0) {
+      // 写真の幅の2割前後になる切りのよい長さ
+      const want = W * 0.2 * mpp, nice = [1, 2, 5, 10, 20, 25, 50, 100, 200, 500, 1000].reduce((b, v) => (Math.abs(v - want) < Math.abs(b - want) ? v : b), 1);
+      out.push({ t: "scale", c: "#111111", w: 1, fs: "1", p: [[Math.round(W * 0.05), Math.round(H * 0.92)]], len: Math.round(nice / mpp), s: nice >= 1000 ? `${nice / 1000}km` : `${nice}m` });
+    }
+    return out;
+  }
   async function makePlanFromImage(file) {
     let data; try { data = await stampPhoto(file, [], 2400, 0.9); } catch { toast("画像を読み込めませんでした"); return; }
-    await addPlanPhoto(data, "crop");
+    const im = await loadImg(data);
+    await setRolePhoto("plan", data, "crop", planShapes(im.naturalWidth, im.naturalHeight, 0));
   }
-  async function makePlanFromMap() {
+  // 地図から作成：専用の地図画面で背景地図・拡大縮小・範囲を決めて切り取る
+  function makePlanFromMap() {
     const c = INSP.cur; if (!c || !isFinite(c.lon)) { toast("位置がわかりません"); return; }
-    toast("地図を切り取っています…", 2500);
-    map.jumpTo({ center: [c.lon, c.lat], zoom: Math.max(map.getZoom(), 19), bearing: 0, pitch: 0 });
-    await new Promise((r) => { let done = false; const fin = () => { if (!done) { done = true; r(); } }; map.once("idle", fin); setTimeout(fin, 4000); });
-    const shot = await new Promise((r) => { map.once("render", () => { try { r(map.getCanvas().toDataURL("image/png")); } catch { r(null); } }); map.triggerRepaint(); });
-    if (!shot) { toast("地図を画像にできませんでした（背景地図を切り替えて試してください）", 4500); return; }
-    // 木を中心に、横4：縦3の範囲を切り取る
-    const img = await loadImg(shot), cvs = map.getCanvas(), k = cvs.width / cvs.clientWidth, pt0 = map.project([c.lon, c.lat]);
-    const w = Math.min(img.width, img.height * 4 / 3) * 0.9, h = w * 3 / 4, x0 = Math.max(0, Math.min(img.width - w, pt0.x * k - w / 2)), y0 = Math.max(0, Math.min(img.height - h, pt0.y * k - h / 2));
-    const o = document.createElement("canvas"); o.width = Math.round(w); o.height = Math.round(h); const g = o.getContext("2d");
-    g.fillStyle = "#fff"; g.fillRect(0, 0, o.width, o.height); g.drawImage(img, x0, y0, w, h, 0, 0, o.width, o.height);
-    await addPlanPhoto(o.toDataURL("image/jpeg", 0.9), "north");
+    const d = document.createElement("div"); d.className = "planmap";
+    d.innerHTML = `<div class="pm-top"><button class="ie-btn" data-pm="cancel">やめる</button><b>立地平面図：地図の範囲</b><button class="ie-btn main" data-pm="ok">この範囲で作成</button></div>
+      <div class="pm-stage"><div id="pmMap"></div><div class="pm-frame"></div></div>
+      <div class="pm-bar"><span class="seg" id="pmBase">${[["pale", "淡色"], ["std", "標準"], ["photo", "航空写真"], ["osm", "OSM"]].map(([k, l]) => `<button data-pb="${k}"${k === baseKind ? ' class="on"' : ""}>${l}</button>`).join("")}</span>
+        <span class="pm-z"><button class="ie-btn" data-pm="zout">－</button><button class="ie-btn" data-pm="zin">＋</button></span></div>
+      <p class="pm-hint">2本指で拡大・縮小、1本指で移動。枠の中が立地平面図になります（方位は左上、縮尺は左下に自動で入り、あとで動かせます）。</p>`;
+    document.body.appendChild(d);
+    let base = baseKind;
+    const pm = new maplibregl.Map({ container: d.querySelector("#pmMap"), style: rasterStyle(base), center: [c.lon, c.lat], zoom: Math.max(18, Math.min(19, map.getZoom())), maxZoom: 20, minZoom: 12, preserveDrawingBuffer: true, dragRotate: false, attributionControl: false });
+    pm.touchZoomRotate.disableRotation();
+    pm.on("load", () => {
+      const near = T.filter((t) => Math.abs(t.lat - c.lat) < 0.004 && Math.abs(t.lon - c.lon) < 0.005).map((t) => ({ type: "Feature", geometry: { type: "Point", coordinates: [t.lon, t.lat] }, properties: { me: t.tno === c.tno ? 1 : 0 } }));
+      if (c.tree == null) near.push({ type: "Feature", geometry: { type: "Point", coordinates: [c.lon, c.lat] }, properties: { me: 1 } });
+      pm.addSource("pts", { type: "geojson", data: { type: "FeatureCollection", features: near } });
+      pm.addLayer({ id: "pts", type: "circle", source: "pts", paint: { "circle-radius": ["case", ["==", ["get", "me"], 1], 9, 5], "circle-color": ["case", ["==", ["get", "me"], 1], "#e53935", "#2e7d32"], "circle-stroke-color": "#fff", "circle-stroke-width": 2 } });
+    });
+    const close = () => { pm.remove(); d.remove(); };
+    d.onclick = async (e) => {
+      const pb = e.target.closest("[data-pb]"); if (pb) { base = pb.dataset.pb; RASTER_KEYS.forEach((k) => pm.setLayoutProperty("base-" + k, "visibility", k === base ? "visible" : "none")); d.querySelectorAll("[data-pb]").forEach((x) => x.classList.toggle("on", x === pb)); return; }
+      const b = e.target.closest("[data-pm]"); if (!b) return;
+      if (b.dataset.pm === "cancel") close();
+      if (b.dataset.pm === "zin") pm.zoomIn();
+      if (b.dataset.pm === "zout") pm.zoomOut();
+      if (b.dataset.pm === "ok") {
+        b.disabled = true; toast("地図を切り取っています…", 2500);
+        await new Promise((r) => { if (pm.loaded() && pm.areTilesLoaded()) r(); else { pm.once("idle", r); setTimeout(r, 5000); } });
+        let shot; try { shot = pm.getCanvas().toDataURL("image/png"); } catch { shot = null; }
+        if (!shot) { toast("地図を画像にできませんでした（背景地図を切り替えて試してください）", 4500); b.disabled = false; return; }
+        const cvs = pm.getCanvas(), k = cvs.width / cvs.clientWidth, fr = d.querySelector(".pm-frame").getBoundingClientRect(), mr = cvs.getBoundingClientRect();
+        const img = await loadImg(shot), x0 = (fr.left - mr.left) * k, y0 = (fr.top - mr.top) * k, w = fr.width * k, h = fr.height * k;
+        const o = document.createElement("canvas"); o.width = Math.round(w); o.height = Math.round(h); const g = o.getContext("2d");
+        g.fillStyle = "#fff"; g.fillRect(0, 0, o.width, o.height); g.drawImage(img, x0, y0, w, h, 0, 0, o.width, o.height);
+        // 1ピクセルあたりのメートル（地図の縮尺から）
+        const lat = pm.getCenter().lat, mpp = 40075016.686 * Math.cos(lat * Math.PI / 180) / (512 * Math.pow(2, pm.getZoom())) / k;
+        close();
+        await setRolePhoto("plan", o.toDataURL("image/jpeg", 0.9), "select", planShapes(o.width, o.height, mpp));
+      }
+    };
   }
   function stampPhoto(file, lines, maxSide = 1600, q = 0.8) {
     return new Promise((res, rej) => {
@@ -2586,7 +2637,7 @@ window.WorkStore = window.NoteStore.work;
       if (a === "next") nextUninspected();
       if (a === "karte") showKarte(INSP.cur);
       if (a === "planmap") makePlanFromMap();
-      if (a === "planblank") setRolePhoto("plan", blankPaper(1600, 1200), "free");
+      if (a === "planblank") setRolePhoto("plan", blankPaper(1600, 1200), "free", planShapes(1600, 1200, 0));
       if (a === "sketchblank") setRolePhoto("sketch", blankPaper(1200, 1600), "free");
       if (a === "photoblank") addSketchPhoto();
       if (a === "delete") deleteRec();
@@ -4395,6 +4446,14 @@ window.WorkStore = window.NoteStore.work;
       head((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, a[0], a[1]); head((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, b[0], b[1]);
       const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, side = nx > 0 || (nx === 0 && ny < 0) ? 1 : -1;
       oldLabel(mx + nx * u * 7 * side, my + ny * u * 7 * side, Math.abs(nx) > 0.7 ? (side > 0 ? "left" : "right") : "center");
+    } else if (sh.t === "scale") {
+      // 縮尺：白地に目盛りの付いた棒と長さ
+      const [x, y] = a, L = sh.len || u * 40, hh = u * 2.6, f2 = u0 * 6 * (+sh.fs || 1);
+      g.font = edFont(f2); const tw = g.measureText(sh.s || "").width;
+      g.fillStyle = "rgba(255,255,255,.88)"; g.fillRect(x - u * 2, y - hh - f2 * 1.4, Math.max(L, tw) + u * 4, hh + f2 * 1.4 + u * 2.5);
+      g.fillStyle = col; g.fillRect(x, y - hh, L / 2, hh); g.lineWidth = u * 0.8; g.strokeStyle = col; g.strokeRect(x, y - hh, L, hh);
+      g.textAlign = "left"; g.textBaseline = "bottom"; g.fillText("0", x - f2 * 0.2, y - hh - u * 0.6); g.textAlign = "right"; g.fillText(sh.s || "", x + L + f2 * 0.2, y - hh - u * 0.6);
+      box = [x - u * 2, y - hh - f2 * 1.4, x + Math.max(L, tw) + u * 2, y + u * 2.5];
     } else if (sh.t === "shot") {
       // 撮影方向：丸で囲んだ S から撮影した向きへ矢印
       const r0 = u * 4.2, ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
@@ -4418,13 +4477,13 @@ window.WorkStore = window.NoteStore.work;
   function shapeBounds(sh, W, H) {
     edScratch.canvas.width = 1; edScratch.canvas.height = 1;
     const tb = drawShape(edScratch, sh, W, H), xs = sh.p.map((p) => p[0]), ys = sh.p.map((p) => p[1]);
-    let b = sh.t === "text" || sh.t === "north" ? tb : [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    let b = sh.t === "text" || sh.t === "north" || sh.t === "scale" ? tb : [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
     if (tb && b !== tb) b = [Math.min(b[0], tb[0]), Math.min(b[1], tb[1]), Math.max(b[2], tb[2]), Math.max(b[3], tb[3])];
     return b || [xs[0], ys[0], xs[0], ys[0]];
   }
   function shapeHit(sh, W, H, x, y, tol) {
     const bx = shapeBounds(sh, W, H);
-    if (["text", "north", "circle", "rect"].includes(sh.t)) return x >= bx[0] - tol && x <= bx[2] + tol && y >= bx[1] - tol && y <= bx[3] + tol;
+    if (["text", "north", "scale", "circle", "rect"].includes(sh.t)) return x >= bx[0] - tol && x <= bx[2] + tol && y >= bx[1] - tol && y <= bx[3] + tol;
     const seg = (p, q) => { const dx = q[0] - p[0], dy = q[1] - p[1], L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - p[0]) * dx + (y - p[1]) * dy) / L2)); return Math.hypot(x - p[0] - t * dx, y - p[1] - t * dy); };
     const P = sh.p;
     if (sh.t === "free") return P.some((p, k) => k && seg(P[k - 1], p) < tol);
@@ -4488,7 +4547,7 @@ window.WorkStore = window.NoteStore.work;
       const zoomAt = (nz, cx, cy) => { nz = Math.max(1, Math.min(8, nz)); const k = nz / z; tx = cx - (cx - tx) * k; ty = cy - (cy - ty) * k; z = nz; if (z === 1) { tx = (stage.clientWidth - W * fitK) / 2; ty = (stage.clientHeight - H * fitK) / 2; } applyView(); };
       const draw = () => {
         g.clearRect(0, 0, W, H); g.drawImage(base, 0, 0, W, H);
-        shapes.forEach((s) => drawShape(g, s, W, H)); if (cur) drawShape(g, cur, W, H);
+        shapes.forEach((s) => drawShape(g, s, W, H)); if (cur && !cur.erase) drawShape(g, cur, W, H);
         const m = Math.min(W, H) / 100;
         for (const k of sel) { if (!shapes[k]) continue; const b = shapeBounds(shapes[k], W, H); g.save(); g.setLineDash([m * 1.6, m]); g.lineWidth = Math.max(2, m * 0.5); g.strokeStyle = "#00e5ff"; g.strokeRect(b[0] - m, b[1] - m, b[2] - b[0] + m * 2, b[3] - b[1] + m * 2); g.restore(); }
         const rr = marq || crop; if (rr) { g.save(); g.setLineDash([m * 2, m]); g.lineWidth = Math.max(2, m * 0.6); g.strokeStyle = crop ? "#ffeb3b" : "#00e5ff"; const [p, q] = rr; g.strokeRect(Math.min(p[0], q[0]), Math.min(p[1], q[1]), Math.abs(q[0] - p[0]), Math.abs(q[1] - p[1]));

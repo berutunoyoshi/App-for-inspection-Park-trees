@@ -598,6 +598,21 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .ie-opts .seg { background: rgba(255,255,255,.12); }
 .ie-opts .seg button { color: #ccc; }
 .ie-opts .seg button.on { background: #fff; color: #111; }
+.ie-sub { display: flex; align-items: center; gap: 6px; padding: 0 10px 6px; }
+.ie-sub .ie-sp { flex: 1; }
+.ie-btn:disabled { opacity: .35; }
+.ie-btn.danger { background: #c62828; }
+.ie-zv { font-size: 12px; color: #bbb; min-width: 3.4em; text-align: right; }
+.ie-stage { display: block; }
+.ie-stage canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.ie-selbar { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 12px; color: #9fe8f5; flex-wrap: wrap; }
+.ie-lbl { font-size: 11.5px; color: #aaa; font-weight: 700; }
+.ie-tools button { flex: 1 0 64px; }
+.ie-r { display: inline-grid; place-items: center; width: 22px; height: 22px; border: 2px solid currentColor; font-weight: 900; font-size: 13px; line-height: 1; }
+.ie-hatch { display: inline-block; width: 12px; height: 22px; border: 2px solid currentColor; background: repeating-linear-gradient(135deg, transparent 0 3px, currentColor 3px 5px); }
+.ie-sq { display: inline-block; width: 20px; height: 16px; border: 2px solid currentColor; margin: 3px 0; }
+.tpkeys { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin-top: 8px; }
+.tpkeys button { border: 0; border-radius: 8px; background: var(--surface-2); color: var(--fg); font-weight: 800; font-size: 15px; min-height: 38px; padding: 0; }
 
 /* ===== オフライン ===== */
 .offpill { position: fixed; z-index: 9; right: 12px; top: calc(var(--safe-t) + 112px); display: inline-flex; align-items: center; gap: 5px; background: #455a64; color: #fff; padding: 6px 12px; border-radius: 16px; font-size: 12.5px; font-weight: 700; pointer-events: none; }
@@ -1214,9 +1229,11 @@ window.APP_CONFIG = {
     allowDraft: true,          // 下書き保存を使う
     // 写真のコメント・書き込みの候補（ボタンで入力できる言葉）
     captionPresets: ["全景", "根元", "幹", "枝", "腐朽部", "空洞部", "亀裂", "キノコ（子実体）", "根上がり", "支柱"],
-    textPresets: ["腐朽", "空洞", "亀裂", "樹皮の剥離", "キノコ", "枯れ枝", "折れ枝", "根上がり", "高さ 1.0m", "幅 30cm", "深さ 10cm"],
-    dimPresets: ["0.3m", "0.5m", "1.0m", "1.5m", "2.0m", "3.0m", "高さ 1.2m", "幅 30cm", "地上 0〜1.5m"],
-    rodPresets: ["貫入 5cm", "貫入 10cm", "貫入 20cm", "空洞あり", "腐朽あり", "異常なし"],
+    textPresets: ["根元・キノコ（ ）", "幹・空洞（芯達）", "幹・樹皮欠損", "大枝・腐朽（剪定痕）", "枯枝 φ cm L= m", "要剪定", "要切除", "大枝・スタブカット", "巻き根", "露出根被害", "亀裂", "入り皮", "ガードパイプ接触", "×", "2ヶ所"],
+    dimPresets: ["G.L.0m", "G.L.1.2m", "1.2-1.6m", "0.3m", "0.5m", "1.0m", "1.5m", "2.0m", "幅 cm", "地上 0〜1.5m"],
+    rodPresets: ["鋼棒貫入異常（芯達）", "鋼棒貫入異常 cm/ cm", "鋼棒貫入異常（芯達） cm/ cm"],
+    kikiPresets: ["G.L.0m", "G.L.1.2m", "根株", "1.2m"],
+    dashinPresets: ["打音(大)", "打音(小)", "打音(大) G.L.0〜1.8m", "極大"],
   },
   // 業務の情報（作業写真のデジタル黒板・帳票に使います。スタート画面の「アプリの設定 → 業務の情報」で変更できます）
   project: {
@@ -4047,119 +4064,232 @@ window.WorkStore = window.NoteStore.work;
   }
 
   // 文字の入力（候補ボタン・音声入力つき）
-  function textPrompt({ title, value = "", presets = [], placeholder = "", ok = "決定" }) {
+  function textPrompt({ title, value = "", presets = [], placeholder = "", ok = "決定", keys = [] }) {
     return new Promise((res) => {
       const d = document.createElement("div"); d.className = "modal-wrap"; d.style.zIndex = 95;
       d.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>${esc(title)}</h3>
         <div class="voicebox"><textarea class="inp" rows="2" id="tpIn" placeholder="${esc(placeholder)}">${esc(value)}</textarea><button type="button" class="mic" id="tpMic" aria-label="音声入力">${ic("mic")}</button></div>
+        ${keys.length ? `<div class="tpkeys">${keys.map((k) => `<button type="button" data-key="${esc(k)}">${esc(k)}</button>`).join("")}</div>` : ""}
         <div class="chips phpre" style="margin-top:8px">${presets.map((t) => `<button type="button" class="chip" data-pre="${esc(t)}">${esc(t)}</button>`).join("")}</div>
         <div class="modal-btns"><button class="btn sub" data-r="0">やめる</button><button class="btn main" data-r="1">${ok}</button></div></div>`;
       document.body.appendChild(d);
       const ta = d.querySelector("#tpIn"); setTimeout(() => ta.focus(), 50);
       d.querySelector("#tpMic").onclick = () => startVoice(ta, d.querySelector("#tpMic"));
-      d.querySelector(".phpre").onclick = (e) => { const b = e.target.closest("[data-pre]"); if (b) ta.value = b.dataset.pre; };
+      // 定型文：空欄なら入れる、入力中なら続けて足す
+      d.querySelector(".phpre").onclick = (e) => { const b = e.target.closest("[data-pre]"); if (!b) return; ta.value = keys.length && ta.value.trim() ? ta.value.replace(/\s*$/, "") + "\n" + b.dataset.pre : b.dataset.pre; ta.focus(); };
+      // 記号・単位：カーソルの位置に入れる
+      const kb = d.querySelector(".tpkeys");
+      if (kb) { kb.addEventListener("pointerdown", (e) => { if (e.target.closest("[data-key]")) e.preventDefault(); }); kb.onclick = (e) => { const b = e.target.closest("[data-key]"); if (!b) return; const k = b.dataset.key, st = ta.selectionStart ?? ta.value.length, en = ta.selectionEnd ?? st; ta.value = ta.value.slice(0, st) + k + ta.value.slice(en); const p = st + k.length; ta.focus(); try { ta.setSelectionRange(p, p); } catch { } }; }
       const close = (v) => { if (INSP.voice) { try { INSP.voice.stop(); } catch { } } d.remove(); res(v); };
       d.querySelector('[data-r="0"]').onclick = () => close(null);
       d.querySelector('[data-r="1"]').onclick = () => close(ta.value.trim());
     });
   }
 
-  // ---------- 画像の書き込み編集 ----------
-  const ED_TOOLS = [["arrow", "矢印", "arw"], ["darrow", "両矢印", "darw"], ["circle", "丸", "circ"], ["free", "自由線", "pen"], ["text", "文字", "txt"], ["rod", "鋼棒", "rod"], ["dim", "寸法・高さ", "dim"]];
-  const ED_COLORS = ["#e53935", "#ffeb3b", "#ffffff", "#1e88e5", "#111111"];
+  // ---------- 画像の書き込み編集（診断概要図など） ----------
+  // 図形は ph.ann に {t:種類, c:色, w:太さ, p:[[x,y]…], s:文字, fs:文字サイズ, bg:文字の背景} で保存し、元の写真（ph.orig）に重ねて描く
+  const ED_TOOLS = [["select", "選択・移動", "pin"], ["arrow", "矢印", "arw"], ["darrow", "両矢印", "darw"], ["line", "線・剪定位置", "pen"], ["circle", "丸", "circ"], ["rect", "四角", "circ"], ["free", "自由線", "pen"], ["text", "文字", "txt"], ["dim", "寸法・高さ", "dim"],
+    ["kiki", "機器診断位置 R←", "arw"], ["dashin", "打診音異常", "dim"], ["rod", "鋼棒貫入（T字）", "rod"]];
+  const ED_COLORS = ["#e53935", "#1e88e5", "#111111", "#ffffff", "#ffeb3b", "#43a047"];
+  const ED_FS = [["0.75", "小"], ["1", "中"], ["1.4", "大"], ["2", "特大"]];
+  const ED_BG = [["halo", "白の縁取り"], ["box", "白い背景"], ["none", "なし"]];
+  const ED_KEYS = ["φ", "×", "mm", "cm", "m", "（", "）", "(", ")", "／", "～", "＝", "L=", "G.L.", "・", "、"];
   const loadImg = (src) => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; });
+  const edFont = (size) => `bold ${size}px -apple-system, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif`;
+  // 文字（複数行）。bg：halo=白の縁取り / box=白い背景 / none=なし。描いた範囲を返す
+  function edLabel(g, txt, x, y, size, col, bg = "halo", align = "left") {
+    if (!txt) return null;
+    g.save(); g.font = edFont(size); g.textAlign = "left"; g.textBaseline = "middle";
+    const lines = String(txt).split("\n"), lh = size * 1.22, wMax = Math.max(...lines.map((t) => g.measureText(t).width)), h = lh * lines.length;
+    const x0 = align === "center" ? x - wMax / 2 : align === "right" ? x - wMax : x, y0 = y - h / 2, pad = size * 0.25;
+    const light = col === "#ffffff" || col === "#ffeb3b";
+    if (bg === "box") { g.fillStyle = light ? "rgba(0,0,0,.78)" : "rgba(255,255,255,.92)"; g.fillRect(x0 - pad, y0 - pad, wMax + pad * 2, h + pad * 2); }
+    lines.forEach((t, k) => { const yy = y0 + lh * (k + 0.5);
+      if (bg === "halo") { g.lineJoin = "round"; g.lineWidth = Math.max(3, size / 3.2); g.strokeStyle = light ? "rgba(0,0,0,.9)" : "#ffffff"; g.strokeText(t, x0, yy); }
+      g.fillStyle = col; g.fillText(t, x0, yy); });
+    g.restore();
+    return [x0 - pad, y0 - pad, x0 + wMax + pad, y0 + h + pad];
+  }
+  // 図形を描き、文字の範囲（選択用）を返す
   function drawShape(g, sh, W, H) {
-    const u = Math.min(W, H) / 220 * sh.w, col = sh.c;
+    const u0 = Math.min(W, H) / 220, u = u0 * (sh.w || 1), col = sh.c, fs = u0 * 6.5 * (+sh.fs || 1), bg = sh.bg || "halo";
+    let box = null;
     g.save(); g.lineCap = "round"; g.lineJoin = "round"; g.strokeStyle = col; g.fillStyle = col; g.lineWidth = u;
-    const head = (x1, y1, x2, y2) => { const a = Math.atan2(y2 - y1, x2 - x1), L = u * 4.5; g.beginPath(); g.moveTo(x2, y2); g.lineTo(x2 - L * Math.cos(a - 0.45), y2 - L * Math.sin(a - 0.45)); g.lineTo(x2 - L * Math.cos(a + 0.45), y2 - L * Math.sin(a + 0.45)); g.closePath(); g.fill(); };
-    const label = (txt, x, y, size, align = "left") => {
-      if (!txt) return; g.font = `bold ${size}px -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif`; g.textAlign = align; g.textBaseline = "middle";
-      const lines = String(txt).split("\n"); g.lineWidth = Math.max(2, size / 5); g.strokeStyle = col === "#ffffff" || col === "#ffeb3b" ? "rgba(0,0,0,.85)" : "#ffffff";
-      lines.forEach((t, k) => { const yy = y + (k - (lines.length - 1) / 2) * size * 1.2; g.strokeText(t, x, yy); g.fillStyle = col; g.fillText(t, x, yy); });
-    };
+    const head = (x1, y1, x2, y2, L = u * 4.5) => { const a = Math.atan2(y2 - y1, x2 - x1); g.beginPath(); g.moveTo(x2, y2); g.lineTo(x2 - L * Math.cos(a - 0.45), y2 - L * Math.sin(a - 0.45)); g.lineTo(x2 - L * Math.cos(a + 0.45), y2 - L * Math.sin(a + 0.45)); g.closePath(); g.fill(); };
+    const halo = (fn, w) => { g.save(); g.strokeStyle = col === "#ffffff" ? "rgba(0,0,0,.55)" : "rgba(255,255,255,.85)"; g.lineWidth = w; fn(); g.stroke(); g.restore(); };
+    const [a, b] = sh.p;
     if (sh.t === "arrow" || sh.t === "darrow") {
-      const [a, b] = sh.p; const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), L = u * 3.2;
+      const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), L = u * 3.2;
       g.beginPath(); g.moveTo(a[0] + (sh.t === "darrow" ? L * Math.cos(ang) : 0), a[1] + (sh.t === "darrow" ? L * Math.sin(ang) : 0)); g.lineTo(b[0] - L * Math.cos(ang), b[1] - L * Math.sin(ang)); g.stroke();
       head(a[0], a[1], b[0], b[1]); if (sh.t === "darrow") head(b[0], b[1], a[0], a[1]);
+      if (sh.s) box = edLabel(g, sh.s, a[0] + (a[0] <= b[0] ? -u * 2 : u * 2), a[1], fs, col, bg, a[0] <= b[0] ? "right" : "left");
+    } else if (sh.t === "line") {
+      g.lineWidth = u * 1.6; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
+      if (sh.s) box = edLabel(g, sh.s, b[0] + u * 2, b[1], fs, col, bg);
     } else if (sh.t === "circle") {
-      const [a, b] = sh.p; g.beginPath(); g.ellipse((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, Math.max(2, Math.abs(b[0] - a[0]) / 2), Math.max(2, Math.abs(b[1] - a[1]) / 2), 0, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.ellipse((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, Math.max(2, Math.abs(b[0] - a[0]) / 2), Math.max(2, Math.abs(b[1] - a[1]) / 2), 0, 0, Math.PI * 2); g.stroke();
+    } else if (sh.t === "rect") {
+      g.strokeRect(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
     } else if (sh.t === "free") {
       g.beginPath(); sh.p.forEach(([x, y], k) => k ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
     } else if (sh.t === "text") {
-      label(sh.s, sh.p[0][0], sh.p[0][1], u * 7, "left");
+      box = edLabel(g, sh.s, a[0], a[1], fs, col, bg, "left");
+    } else if (sh.t === "kiki") {
+      // 機器診断の位置：四角で囲んだ R と、測定位置を指す矢印（左に高さなど）
+      const s = u * 7, ang = Math.atan2(b[1] - a[1], b[0] - a[0]), bx = a[0] - s / 2, by = a[1] - s / 2;
+      g.fillStyle = "#ffffff"; g.fillRect(bx, by, s, s); g.lineWidth = u * 0.9; g.strokeRect(bx, by, s, s);
+      g.fillStyle = col; g.font = edFont(s * 0.78); g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("R", a[0], a[1] + s * 0.04);
+      const sx = a[0] + Math.cos(ang) * s * 0.6, sy = a[1] + Math.sin(ang) * s * 0.6;
+      g.lineWidth = u * 1.2; g.beginPath(); g.moveTo(sx, sy); g.lineTo(b[0] - u * 3 * Math.cos(ang), b[1] - u * 3 * Math.sin(ang)); g.stroke(); head(sx, sy, b[0], b[1]);
+      if (sh.s) { const left = Math.cos(ang) >= 0; box = edLabel(g, sh.s, left ? bx - u * 1.5 : bx + s + u * 1.5, a[1], fs, col, bg, left ? "right" : "left"); }
+    } else if (sh.t === "dashin") {
+      // 打診音異常：範囲を示す箱型のスケール（中に斜線）
+      const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), len = Math.hypot(b[0] - a[0], b[1] - a[1]), wd = u * 4.2;
+      g.translate(a[0], a[1]); g.rotate(ang);
+      g.fillStyle = "rgba(255,255,255,.85)"; g.fillRect(0, -wd / 2, len, wd);
+      g.save(); g.beginPath(); g.rect(0, -wd / 2, len, wd); g.clip(); g.lineWidth = u * 0.7;
+      for (let x = -wd; x < len + wd; x += wd * 0.55) { g.beginPath(); g.moveTo(x, wd / 2); g.lineTo(x + wd, -wd / 2); g.stroke(); }
+      g.restore(); g.lineWidth = u * 0.9; g.strokeRect(0, -wd / 2, len, wd);
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      if (sh.s) { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, nx = -Math.sin(ang), ny = Math.cos(ang), side = nx >= 0 ? -1 : 1; box = edLabel(g, sh.s, mx + nx * side * (wd + u * 2), my + ny * side * (wd + u * 2), fs, col, bg, side * nx < 0 ? "right" : "left"); }
     } else if (sh.t === "rod") {
-      // 鋼棒：差し込んだ位置（×印の輪）＋棒（T字の持ち手）＋番号
-      const [x, y] = sh.p[0], L = u * 13;
-      g.strokeStyle = "#ffffff"; g.lineWidth = u * 2.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x - L * 0.55, y - L); g.stroke();
-      g.strokeStyle = col; g.lineWidth = u * 1.3; g.beginPath(); g.moveTo(x, y); g.lineTo(x - L * 0.55, y - L); g.stroke();
-      g.beginPath(); g.moveTo(x - L * 0.55 - u * 3, y - L + u * 1.6); g.lineTo(x - L * 0.55 + u * 3, y - L - u * 1.6); g.stroke();
-      g.lineWidth = u; g.beginPath(); g.arc(x, y, u * 2.6, 0, Math.PI * 2); g.stroke();
-      g.beginPath(); g.moveTo(x - u * 1.6, y - u * 1.6); g.lineTo(x + u * 1.6, y + u * 1.6); g.moveTo(x + u * 1.6, y - u * 1.6); g.lineTo(x - u * 1.6, y + u * 1.6); g.stroke();
-      const cx = x + u * 6, cy = y - u * 4, r = u * 3.6;
-      g.fillStyle = "#ffffff"; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill(); g.lineWidth = u * 0.9; g.strokeStyle = col; g.stroke();
-      g.fillStyle = col === "#ffffff" ? "#111" : col; g.font = `bold ${r * 1.3}px sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(String(sh.n), cx, cy + r * 0.05);
-      if (sh.s) label(sh.s, cx + r + u * 1.5, cy, u * 5.5, "left");
+      // 鋼棒貫入異常：T字（先端＝差し込んだ位置、横棒＝持ち手）
+      const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), nx = -Math.sin(ang), ny = Math.cos(ang), T = u * 4.5;
+      const path = () => { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.moveTo(b[0] - nx * T, b[1] - ny * T); g.lineTo(b[0] + nx * T, b[1] + ny * T); };
+      halo(path, u * 3.4); g.lineWidth = u * 1.9; g.lineCap = "butt"; path(); g.stroke();
+      if (sh.s) box = edLabel(g, sh.s, b[0] + (b[0] >= a[0] ? u * 3 : -u * 3), b[1] - T - fs * 0.6, fs, col, bg, b[0] >= a[0] ? "left" : "right");
     } else if (sh.t === "dim") {
-      // 寸法線（縮尺表記のような両端に止めのある線）＋数値
-      const [a, b] = sh.p, ang = Math.atan2(b[1] - a[1], b[0] - a[0]), nx = -Math.sin(ang), ny = Math.cos(ang), T = u * 4.5;
-      g.strokeStyle = col === "#ffffff" ? "rgba(0,0,0,.6)" : "#ffffff"; g.lineWidth = u * 2.6;
-      const path = () => { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); for (const p of [a, b]) { g.moveTo(p[0] - nx * T, p[1] - ny * T); g.lineTo(p[0] + nx * T, p[1] + ny * T); } };
-      path(); g.stroke(); g.strokeStyle = col; g.lineWidth = u * 1.1; path(); g.stroke();
+      const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), nx = -Math.sin(ang), ny = Math.cos(ang), T = u * 4.5;
+      const path = () => { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); for (const q of [a, b]) { g.moveTo(q[0] - nx * T, q[1] - ny * T); g.lineTo(q[0] + nx * T, q[1] + ny * T); } };
+      halo(path, u * 2.6); g.lineWidth = u * 1.1; path(); g.stroke();
       head((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, a[0], a[1]); head((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, b[0], b[1]);
       const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, off = u * 7, side = nx > 0 || (nx === 0 && ny < 0) ? 1 : -1;
-      label(sh.s, mx + nx * off * side * (Math.abs(nx) > 0.7 ? 1 : 1), my + ny * off * side, u * 6, Math.abs(nx) > 0.7 ? (side > 0 ? "left" : "right") : "center");
+      box = edLabel(g, sh.s, mx + nx * off * side, my + ny * off * side, fs, col, bg, Math.abs(nx) > 0.7 ? (side > 0 ? "left" : "right") : "center");
     }
     g.restore();
+    return box;
+  }
+  // 選択の当たり判定：図形の線の近く、または文字の範囲
+  function shapeHit(g, sh, W, H, x, y, tol) {
+    const box = (() => { const c = document.createElement("canvas").getContext("2d"); return drawShapeBox(c, sh, W, H); })();
+    if (box && x >= box[0] - tol && x <= box[2] + tol && y >= box[1] - tol && y <= box[3] + tol) return true;
+    const seg = (p, q) => { const dx = q[0] - p[0], dy = q[1] - p[1], L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - p[0]) * dx + (y - p[1]) * dy) / L2)); return Math.hypot(x - p[0] - t * dx, y - p[1] - t * dy); };
+    const P = sh.p;
+    if (sh.t === "free") return P.some((p, k) => k && seg(P[k - 1], p) < tol);
+    if (sh.t === "text") return false;
+    if (sh.t === "circle" || sh.t === "rect") { const [a, b] = P; return x >= Math.min(a[0], b[0]) - tol && x <= Math.max(a[0], b[0]) + tol && y >= Math.min(a[1], b[1]) - tol && y <= Math.max(a[1], b[1]) + tol; }
+    return P.length >= 2 ? seg(P[0], P[1]) < tol * 1.4 : Math.hypot(x - P[0][0], y - P[0][1]) < tol * 2;
+  }
+  function drawShapeBox(c, sh, W, H) { c.canvas.width = 1; c.canvas.height = 1; return drawShape(c, sh, W, H); }
+  function shapeBounds(sh, W, H) {
+    const c = document.createElement("canvas").getContext("2d"), tb = drawShapeBox(c, sh, W, H);
+    const xs = sh.p.map((p) => p[0]), ys = sh.p.map((p) => p[1]);
+    let b = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    if (tb) b = [Math.min(b[0], tb[0]), Math.min(b[1], tb[1]), Math.max(b[2], tb[2]), Math.max(b[3], tb[3])];
+    return b;
   }
   async function imageEditor(ph) {
     const base = await loadImg(ph.orig || ph.data);
     const W = base.naturalWidth, H = base.naturalHeight;
-    let shapes = JSON.parse(JSON.stringify(ph.ann || [])), tool = "arrow", color = ED_COLORS[0], width = 1, cur = null;
+    let shapes = JSON.parse(JSON.stringify(ph.ann || [])), tool = "arrow", color = ED_COLORS[0], width = 1, fsz = "1", bgm = "halo", cur = null, sel = -1;
+    const hist = [JSON.stringify(shapes)]; let hi = 0, syncUI = () => { };
+    const commit = () => { const j = JSON.stringify(shapes); if (j === hist[hi]) return; hist.splice(hi + 1); hist.push(j); hi = hist.length - 1; syncUI(); };
     return new Promise((res) => {
       const d = document.createElement("div"); d.className = "imged";
       d.innerHTML = `<div class="ie-top"><button class="ie-btn" data-e="cancel">キャンセル</button><b>写真に書き込み</b><button class="ie-btn main" data-e="save">保存</button></div>
+        <div class="ie-sub"><button class="ie-btn" data-e="undo" title="元に戻す">↶ 戻る</button><button class="ie-btn" data-e="redo" title="やり直す">↷ 進む</button><span class="ie-sp"></span>
+          <button class="ie-btn" data-e="zin" aria-label="拡大">＋</button><button class="ie-btn" data-e="zout" aria-label="縮小">－</button><button class="ie-btn" data-e="zfit">全体</button><span class="ie-zv" id="ieZ">100%</span></div>
         <div class="ie-stage"><canvas width="${W}" height="${H}"></canvas><div class="ie-hint" id="ieHint"></div></div>
         <div class="ie-bar">
-          <div class="ie-tools">${ED_TOOLS.map(([k, l, icn]) => `<button data-tool="${k}"${k === tool ? ' class="on"' : ""}>${ic(icn)}<span>${l}</span></button>`).join("")}</div>
+          <div class="ie-selbar" id="ieSel" hidden><span>選んだ図形：</span><button class="ie-btn" data-e="edittext">文字を直す</button><button class="ie-btn" data-e="front">前面へ</button><button class="ie-btn danger" data-e="del">削除</button><button class="ie-btn" data-e="desel">選択解除</button></div>
+          <div class="ie-tools">${ED_TOOLS.map(([k, l, icn]) => `<button data-tool="${k}"${k === tool ? ' class="on"' : ""}>${k === "kiki" ? '<span class="ie-r">R</span>' : k === "dashin" ? '<span class="ie-hatch"></span>' : k === "rect" ? '<span class="ie-sq"></span>' : ic(icn)}<span>${l}</span></button>`).join("")}</div>
           <div class="ie-opts"><span class="ie-colors">${ED_COLORS.map((c) => `<button data-col="${c}" style="--c:${c}"${c === color ? ' class="on"' : ""} aria-label="色"></button>`).join("")}</span>
-            <span class="seg mini2" id="ieW"><button data-w="0.7">細</button><button data-w="1" class="on">中</button><button data-w="1.5">太</button></span>
-            <button class="ie-btn" data-e="undo">1つ戻す</button><button class="ie-btn" data-e="clear">全消去</button></div>
+            <span class="ie-lbl">線</span><span class="seg mini2" id="ieW"><button data-w="0.7">細</button><button data-w="1" class="on">中</button><button data-w="1.5">太</button></span></div>
+          <div class="ie-opts"><span class="ie-lbl">文字</span><span class="seg mini2" id="ieFs">${ED_FS.map(([v, l]) => `<button data-fs="${v}"${v === fsz ? ' class="on"' : ""}>${l}</button>`).join("")}</span>
+            <span class="seg mini2" id="ieBg">${ED_BG.map(([v, l]) => `<button data-bg="${v}"${v === bgm ? ' class="on"' : ""}>${l}</button>`).join("")}</span></div>
         </div>`;
       document.body.appendChild(d);
-      const cv = d.querySelector("canvas"), g = cv.getContext("2d");
-      const hints = { arrow: "矢印の根元から先端へなぞってください", darrow: "両端をつなぐようになぞってください", circle: "囲む範囲を斜めになぞってください（中は透明の丸）", free: "指で自由に線を描きます", text: "文字を置く位置をタップしてください", rod: "鋼棒を差し込んだ位置をタップしてください（番号は自動）", dim: "測る範囲の端から端へなぞり、数値を入力します（高さは上下に）" };
+      const cv = d.querySelector("canvas"), g = cv.getContext("2d"), stage = d.querySelector(".ie-stage");
+      const hints = { select: "図形や文字をタップして選び、ドラッグで移動します（2本指で拡大・移動）", arrow: "矢印の根元から先端へなぞってください", darrow: "両端をつなぐようになぞってください", line: "線を引きます（剪定位置は赤で枝を横切るように）", circle: "囲む範囲を斜めになぞってください", rect: "囲む範囲を斜めになぞってください", free: "指で自由に線を描きます",
+        text: "文字を置く位置をタップしてください", dim: "測る範囲の端から端へなぞり、数値を入力します", kiki: "R の位置から、機器診断の測定位置へなぞってください（矢印の先＝測定位置）", dashin: "打診音異常の範囲を端から端へなぞってください（箱型の斜線スケール）", rod: "鋼棒を差し込んだ位置から外側へなぞってください（T字）" };
       const setHint = () => { d.querySelector("#ieHint").textContent = hints[tool]; };
-      const draw = () => { g.clearRect(0, 0, W, H); g.drawImage(base, 0, 0, W, H); for (const s of shapes) drawShape(g, s, W, H); if (cur) drawShape(g, cur, W, H); };
-      const pt = (e) => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * W / r.width), Math.round((e.clientY - r.top) * H / r.height)]; };
-      // 画面に収まるように表示サイズを合わせる
-      const stage = d.querySelector(".ie-stage");
-      const fit = () => { const sw = stage.clientWidth - 8, sh = stage.clientHeight - 8, k = Math.min(sw / W, sh / H); cv.style.width = Math.floor(W * k) + "px"; cv.style.height = Math.floor(H * k) + "px"; };
-      fit(); const ro = new ResizeObserver(fit); ro.observe(stage);
-      draw(); setHint();
-      let down = false;
-      cv.addEventListener("pointerdown", (e) => { e.preventDefault(); cv.setPointerCapture(e.pointerId); down = true; const p = pt(e); cur = { t: tool, c: color, w: width, p: tool === "free" ? [p] : [p, p] }; if (tool === "text" || tool === "rod") cur.p = [p]; draw(); });
-      cv.addEventListener("pointermove", (e) => { if (!down || !cur) return; const p = pt(e); if (cur.t === "free") cur.p.push(p); else if (cur.p.length === 2) cur.p[1] = p; draw(); });
-      const up = async () => {
-        if (!down || !cur) return; down = false; const s = cur; cur = null;
-        const len = s.p.length === 2 ? Math.hypot(s.p[1][0] - s.p[0][0], s.p[1][1] - s.p[0][1]) : 0, min = Math.min(W, H) / 40;
-        if (["arrow", "darrow", "circle", "dim"].includes(s.t) && len < min) { draw(); toast("もう少し長くなぞってください"); return; }
-        if (s.t === "free" && s.p.length < 2) { draw(); return; }
-        if (s.t === "text") { const t = await textPrompt({ title: "書き込む文字", presets: CFG.inspect.textPresets, placeholder: "異常の内容、範囲・高さなど" }); if (!t) { draw(); return; } s.s = t; }
-        if (s.t === "dim") { const t = await textPrompt({ title: "寸法・高さ（数値）", presets: CFG.inspect.dimPresets, placeholder: "例：高さ 1.2m" }); if (t == null) { draw(); return; } s.s = t; }
-        if (s.t === "rod") { s.n = shapes.filter((x) => x.t === "rod").length + 1; const t = await textPrompt({ title: `鋼棒 ${s.n}（メモ・任意）`, presets: CFG.inspect.rodPresets, placeholder: "貫入の深さ・結果など（空欄でも可）", ok: "置く" }); if (t == null) { draw(); return; } s.s = t; }
-        shapes.push(s); draw();
+      // 表示の拡大・移動（z：倍率、tx・ty：ずらし）
+      let fitK = 1, z = 1, tx = 0, ty = 0;
+      const applyView = () => { cv.style.width = Math.floor(W * fitK) + "px"; cv.style.height = Math.floor(H * fitK) + "px"; cv.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`; d.querySelector("#ieZ").textContent = Math.round(z * 100) + "%"; };
+      const fit = () => { const sw = stage.clientWidth - 8, sh = stage.clientHeight - 8; fitK = Math.min(sw / W, sh / H); z = 1; tx = (stage.clientWidth - W * fitK) / 2; ty = (stage.clientHeight - H * fitK) / 2; applyView(); };
+      const zoomAt = (nz, cx, cy) => { nz = Math.max(1, Math.min(8, nz)); const k = nz / z; tx = cx - (cx - tx) * k; ty = cy - (cy - ty) * k; z = nz; if (z === 1) { tx = (stage.clientWidth - W * fitK) / 2; ty = (stage.clientHeight - H * fitK) / 2; } applyView(); };
+      const draw = () => {
+        g.clearRect(0, 0, W, H); g.drawImage(base, 0, 0, W, H);
+        shapes.forEach((s) => drawShape(g, s, W, H)); if (cur) drawShape(g, cur, W, H);
+        if (sel >= 0 && shapes[sel]) { const b = shapeBounds(shapes[sel], W, H), m = Math.min(W, H) / 100; g.save(); g.setLineDash([m * 1.6, m]); g.lineWidth = Math.max(2, m * 0.5); g.strokeStyle = "#00e5ff"; g.strokeRect(b[0] - m, b[1] - m, b[2] - b[0] + m * 2, b[3] - b[1] + m * 2); g.restore(); }
       };
-      cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", () => { down = false; cur = null; draw(); });
+      syncUI = () => {
+        d.querySelector('[data-e="undo"]').disabled = hi <= 0; d.querySelector('[data-e="redo"]').disabled = hi >= hist.length - 1;
+        const s = shapes[sel]; d.querySelector("#ieSel").hidden = !s; if (s) d.querySelector('[data-e="edittext"]').hidden = !["text", "dim", "rod", "kiki", "dashin", "arrow", "line"].includes(s.t);
+      };
+      const pt = (e) => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * W / r.width), Math.round((e.clientY - r.top) * H / r.height)]; };
+      fit(); const ro = new ResizeObserver(fit); ro.observe(stage);
+      draw(); setHint(); syncUI();
+      // 指の操作：1本＝描く・選ぶ・動かす、2本＝拡大縮小と移動
+      const ptrs = new Map(); let pinch = null, drag = null, down = false;
+      const sr = () => stage.getBoundingClientRect();
+      cv.addEventListener("pointerdown", (e) => {
+        e.preventDefault(); cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+        if (ptrs.size === 2) { cur = null; drag = null; down = false; const [p1, p2] = [...ptrs.values()], r = sr(); pinch = { d0: Math.hypot(p1[0] - p2[0], p1[1] - p2[1]), z0: z, m0: [(p1[0] + p2[0]) / 2 - r.left, (p1[1] + p2[1]) / 2 - r.top], tx0: tx, ty0: ty }; draw(); return; }
+        const p = pt(e);
+        if (tool === "select") {
+          const tol = Math.min(W, H) / 45 / z; let hit = -1;
+          for (let k = shapes.length - 1; k >= 0; k--) if (shapeHit(g, shapes[k], W, H, p[0], p[1], tol)) { hit = k; break; }
+          sel = hit; syncUI(); draw();
+          if (hit >= 0) drag = { k: hit, p0: p, orig: JSON.parse(JSON.stringify(shapes[hit].p)) };
+          else { const r = sr(); drag = { pan: true, c0: [e.clientX, e.clientY], tx0: tx, ty0: ty }; void r; }
+          return;
+        }
+        down = true; cur = { t: tool, c: color, w: width, fs: fsz, bg: bgm, p: tool === "free" ? [p] : [p, p] }; if (tool === "text") cur.p = [p]; draw();
+      });
+      cv.addEventListener("pointermove", (e) => {
+        if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+        if (pinch && ptrs.size >= 2) { const [p1, p2] = [...ptrs.values()], r = sr(), m = [(p1[0] + p2[0]) / 2 - r.left, (p1[1] + p2[1]) / 2 - r.top], nz = Math.max(1, Math.min(8, pinch.z0 * Math.hypot(p1[0] - p2[0], p1[1] - p2[1]) / pinch.d0)), k = nz / pinch.z0;
+          z = nz; tx = m[0] - (pinch.m0[0] - pinch.tx0) * k; ty = m[1] - (pinch.m0[1] - pinch.ty0) * k; applyView(); return; }
+        if (drag && drag.pan) { if (z > 1) { tx = drag.tx0 + e.clientX - drag.c0[0]; ty = drag.ty0 + e.clientY - drag.c0[1]; applyView(); } return; }
+        if (drag) { const p = pt(e), dx = p[0] - drag.p0[0], dy = p[1] - drag.p0[1]; shapes[drag.k].p = drag.orig.map(([x, y]) => [x + dx, y + dy]); draw(); return; }
+        if (!down || !cur) return; const p = pt(e); if (cur.t === "free") cur.p.push(p); else if (cur.p.length === 2) cur.p[1] = p; draw();
+      });
+      const PROMPT = { text: ["書き込む文字", "textPresets", "異常の内容、範囲・高さなど"], dim: ["寸法・高さ（数値）", "dimPresets", "例：高さ 1.2m"], rod: ["鋼棒貫入異常（任意）", "rodPresets", "例：鋼棒貫入異常（芯達）32/60cm"], kiki: ["機器診断の位置（任意）", "kikiPresets", "例：G.L.1.2m、根株"], dashin: ["打診音異常（任意）", "dashinPresets", "例：打音(大) G.L.0〜1.8m"] };
+      const up = async (e) => {
+        ptrs.delete(e.pointerId);
+        if (pinch) { if (ptrs.size < 2) pinch = null; return; }
+        if (drag) { const moved = !drag.pan; drag = null; if (moved) commit(); return; }
+        if (!down || !cur) return; down = false; const s = cur; cur = null;
+        const len = s.p.length === 2 ? Math.hypot(s.p[1][0] - s.p[0][0], s.p[1][1] - s.p[0][1]) : 0, min = Math.min(W, H) / 40 / z;
+        if (!["text", "free"].includes(s.t) && len < min) { draw(); toast("もう少し長くなぞってください"); return; }
+        if (s.t === "free" && s.p.length < 2) { draw(); return; }
+        if (PROMPT[s.t]) { const [ttl, pk, phd] = PROMPT[s.t]; const t = await textPrompt({ title: ttl, presets: CFG.inspect[pk] || [], placeholder: phd, keys: ED_KEYS, ok: "置く" }); if (t == null || (s.t === "text" && !t)) { draw(); return; } s.s = t; }
+        shapes.push(s); sel = -1; commit(); draw();
+      };
+      cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", (e) => { ptrs.delete(e.pointerId); pinch = null; drag = null; down = false; cur = null; draw(); });
+      stage.addEventListener("wheel", (e) => { e.preventDefault(); const r = sr(); zoomAt(z * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+      const restyle = (k, v) => { if (tool === "select" && sel >= 0 && shapes[sel]) { shapes[sel][k] = v; commit(); draw(); } };
       d.addEventListener("click", async (e) => {
-        const tb = e.target.closest("[data-tool]"); if (tb) { tool = tb.dataset.tool; d.querySelectorAll("[data-tool]").forEach((b) => b.classList.toggle("on", b === tb)); setHint(); return; }
-        const cb = e.target.closest("[data-col]"); if (cb) { color = cb.dataset.col; d.querySelectorAll("[data-col]").forEach((b) => b.classList.toggle("on", b === cb)); return; }
-        const wb = e.target.closest("#ieW button"); if (wb) { width = +wb.dataset.w; d.querySelectorAll("#ieW button").forEach((b) => b.classList.toggle("on", b === wb)); return; }
+        const tb = e.target.closest("[data-tool]"); if (tb) { tool = tb.dataset.tool; if (tool !== "select") { sel = -1; syncUI(); draw(); } d.querySelectorAll("[data-tool]").forEach((b) => b.classList.toggle("on", b === tb)); setHint(); return; }
+        const cb = e.target.closest("[data-col]"); if (cb) { color = cb.dataset.col; d.querySelectorAll("[data-col]").forEach((b) => b.classList.toggle("on", b === cb)); restyle("c", color); return; }
+        const wb = e.target.closest("#ieW button"); if (wb) { width = +wb.dataset.w; d.querySelectorAll("#ieW button").forEach((b) => b.classList.toggle("on", b === wb)); restyle("w", width); return; }
+        const fb = e.target.closest("#ieFs button"); if (fb) { fsz = fb.dataset.fs; d.querySelectorAll("#ieFs button").forEach((b) => b.classList.toggle("on", b === fb)); restyle("fs", fsz); return; }
+        const bb = e.target.closest("#ieBg button"); if (bb) { bgm = bb.dataset.bg; d.querySelectorAll("#ieBg button").forEach((b) => b.classList.toggle("on", b === bb)); restyle("bg", bgm); return; }
         const b = e.target.closest("[data-e]"); if (!b) return;
-        if (b.dataset.e === "undo") { shapes.pop(); draw(); }
-        if (b.dataset.e === "clear") { if (shapes.length && confirm("書き込みをすべて消しますか？")) { shapes = []; draw(); } }
+        const r = sr();
+        if (b.dataset.e === "undo" && hi > 0) { hi--; shapes = JSON.parse(hist[hi]); sel = -1; syncUI(); draw(); }
+        if (b.dataset.e === "redo" && hi < hist.length - 1) { hi++; shapes = JSON.parse(hist[hi]); sel = -1; syncUI(); draw(); }
+        if (b.dataset.e === "zin") zoomAt(z * 1.4, r.width / 2, r.height / 2);
+        if (b.dataset.e === "zout") zoomAt(z / 1.4, r.width / 2, r.height / 2);
+        if (b.dataset.e === "zfit") fit();
+        if (b.dataset.e === "del" && sel >= 0) { shapes.splice(sel, 1); sel = -1; commit(); draw(); }
+        if (b.dataset.e === "desel") { sel = -1; syncUI(); draw(); }
+        if (b.dataset.e === "front" && sel >= 0) { const [s] = shapes.splice(sel, 1); shapes.push(s); sel = shapes.length - 1; commit(); draw(); }
+        if (b.dataset.e === "edittext" && sel >= 0) { const s = shapes[sel], P = PROMPT[s.t] || ["文字", "textPresets", ""]; const t = await textPrompt({ title: P[0], value: s.s || "", presets: CFG.inspect[P[1]] || [], placeholder: P[2], keys: ED_KEYS }); if (t != null) { if (!t && s.t === "text") shapes.splice(sel, 1), sel = -1; else s.s = t; commit(); draw(); } }
         if (b.dataset.e === "cancel") { if (JSON.stringify(shapes) !== JSON.stringify(ph.ann || []) && !confirm("書き込みを保存せずに閉じますか？")) return; ro.disconnect(); d.remove(); res(false); }
         if (b.dataset.e === "save") {
-          cur = null; draw();
+          cur = null; sel = -1; draw();
           if (!ph.orig) ph.orig = ph.data;
           ph.ann = shapes; ph.data = shapes.length ? cv.toDataURL("image/jpeg", 0.85) : ph.orig;
           if (!shapes.length) { delete ph.orig; ph.ann = []; }

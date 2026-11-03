@@ -3,7 +3,7 @@
  * - 樹木データは公開せず、各端末のアプリ内（IndexedDB）に読み込みます。ここでは事前保存しません
  * - 地図タイル（地理院タイル）は「オフライン用の地図を保存」で保存した範囲と、表示したことのある範囲を使います
  * アプリを更新したときは VERSION を変えると、古い保存データが入れ替わります。 */
-const VERSION = "1.11.1";
+const VERSION = "1.13.0";
 const APP = "app-" + VERSION, DATA = "data-v2", LIB = "lib-v1", TILES = "tiles-saved", AUTO = "tiles-auto";
 const APP_FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 const LIBS = [

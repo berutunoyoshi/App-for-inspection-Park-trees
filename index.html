@@ -362,7 +362,7 @@ body:has(#inspLogin:not([hidden])) .modal-wrap, body:has(#appSet:not([hidden])) 
 
 /* ===== 点検モード ===== */
 body.insp .chiprow, body.insp #selBtn, body.insp #measBtn, body.insp #stepBar, body.insp #selBar, body.insp #planBar,
-body.insp #layerPop .colormodes:not(#inspCm), body.insp #layerPop .cmh, body.insp #layerPop .layer-opt, body.insp .view-only { display: none !important; }
+body.insp #layerPop .colormodes:not(#inspCm):not(#lblModes), body.insp #layerPop .cmh, body.insp #layerPop .layer-opt, body.insp .view-only { display: none !important; }
 body.insp #layerPop #opt3d.layer-opt { display: flex !important; }
 .lgsep { font-weight: 700; color: var(--muted); }
 body.insp .searchbar { box-shadow: var(--shadow-2), inset 0 0 0 2px #f5b041; }
@@ -377,6 +377,14 @@ body.insp .searchbar { box-shadow: var(--shadow-2), inset 0 0 0 2px #f5b041; }
 body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .bottomnav .cnt.err { background: #c62828; color: #fff; }
 .fab.next { background: #f5b041; color: #3a2400; }
+.fab.add { background: #1f6b43; color: #fff; }
+.legend-all { position: static; display: flex; flex-wrap: wrap; gap: 4px 10px; background: none; box-shadow: none; padding: 6px 0; max-width: none; }
+.mailsteps { text-align: left; margin-top: 10px; }
+.mailsteps .btn.done::after { content: " ✓"; }
+.treelabels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.treelabels span { position: absolute; white-space: nowrap; font-weight: 700; color: #1b1b1b; text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 4px #fff; line-height: 1.1; }
+.treelabels span.sel { color: #c62828; }
+body.dark-map .treelabels span, .bm-photo .treelabels span { color: #fff; text-shadow: 0 0 2px #000, 0 0 3px #000, 0 0 4px #000; }
 
 .isec { margin: 22px -18px 12px; padding: 8px 18px; background: var(--surface-2); font-size: 12.5px; font-weight: 800; letter-spacing: .04em; color: var(--muted); }
 .ifield .lbl { display: flex; align-items: center; gap: 6px; font-size: 13px !important; color: var(--fg) !important; }
@@ -651,6 +659,8 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .ie-line { display: inline-block; width: 22px; border-top: 2.5px solid currentColor; transform: rotate(-35deg); margin: 10px 0; }
 #ieSk button, #ieDash button { min-width: 4.6em; white-space: nowrap; }
 #ieBg button { white-space: nowrap; }
+.ie-cpl { font-size: 12px; color: #9fe8f5; min-width: 4.5em; text-align: center; }
+.ie-cpl[hidden] { display: none; }
 .ie-pno { font-size: 18px; font-weight: 900; line-height: 22px; }
 .ie-pnobar { flex-wrap: wrap; }
 .ie-pnobar .ie-btn { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15; }
@@ -736,6 +746,7 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 
 <div class="fabs">
   <button id="layerBtn" class="fab" aria-label="地図の表示設定"><i data-ic="layers"></i></button>
+  <button id="addTreeBtn" class="fab add" aria-label="新しい点検木を追加"><i data-ic="plus"></i></button>
   <button id="nextBtn" class="fab next" aria-label="次の未点検の木へ"><i data-ic="next"></i></button>
   <button id="locBtn" class="fab loc" aria-label="現在地を表示"><i data-ic="locate"></i></button>
 </div>
@@ -749,6 +760,8 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
     <button class="bm" data-bm="std"><i style="background:linear-gradient(135deg,#fbf6e9 40%,#f7c873 40% 50%,#cde7c4 50%)"></i>標準</button>
     <button class="bm" data-bm="osm"><i style="background:linear-gradient(135deg,#f2efe9 40%,#fcd6a4 40% 50%,#aad3df 50%)"></i>OSM</button>
   </div>
+  <h3>地図の文字</h3>
+  <div class="colormodes" id="lblModes" style="margin-bottom:10px"><button class="cm" data-lbl="none">なし</button><button class="cm" data-lbl="sp">樹種名</button><button class="cm" data-lbl="tno">樹木番号</button><button class="cm" data-lbl="insNo">点検番号</button></div>
   <h3>点の色分け</h3>
   <div class="colormodes" id="inspCm" style="margin-bottom:4px"><button class="cm on" data-icm="status">点検状況</button><button class="cm" data-icm="sp">樹種</button></div>
   <label class="layer-opt" id="opt3d"><span>樹高を立体表示（3D）<small>拡大時に表示・2本指で傾き/回転</small></span><span class="switch"><input id="toggle3d" type="checkbox"><span></span></span></label>
@@ -796,7 +809,8 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 </section>
 <datalist id="spList"></datalist>
 
-<div id="inspAddBar" class="addbar" hidden><span>地図を動かして <b>＋</b> を点検する木の位置に合わせてください</span><button id="inspAddOk">ここで点検</button><button id="inspAddCancel">やめる</button></div>
+<div id="movBar" class="addbar" hidden><span>地図を動かして <b>＋</b> を木の正しい位置に合わせてください</span><button id="movHere">現在地</button><button id="movOk">この位置にする</button><button id="movCancel">やめる</button></div>
+<div id="inspAddBar" class="addbar" hidden><span>地図を動かして <b>＋</b> を新しい木の位置に合わせてください</span><button id="inspAddHere">現在地</button><button id="inspAddOk">この位置に追加</button><button id="inspAddCancel">やめる</button></div>
 <svg id="crosshair" class="crosshair" viewBox="0 0 44 44" hidden aria-hidden="true"><circle cx="22" cy="22" r="9" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M22 2v12M22 30v12M2 22h12M30 22h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
 <div id="toast" class="toast" hidden role="status"></div>
 
@@ -1242,7 +1256,7 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
  * 設定：事業（公園など）に合わせて変更できます
  * ===================================================================== */
 window.APP_CONFIG = {
-  version: "1.11.1（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
+  version: "1.13.0（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
   appTitle: "樹木点検",              // アプリの名前（画面・ブラウザのタブ）
   reportTitle: "樹木点検",           // 速報・一覧表のタイトル（「〇〇の速報」「〇〇結果一覧」）
   filePrefix: "樹木点検",            // 書き出すファイル名の先頭
@@ -1280,7 +1294,7 @@ window.APP_CONFIG = {
     captionPresets: ["全景", "根元", "幹", "枝", "腐朽部", "空洞部", "亀裂", "キノコ（子実体）", "根上がり", "支柱"],
     textPresets: ["根元・キノコ（ ）", "幹・空洞（芯達）", "幹・樹皮欠損", "大枝・腐朽（剪定痕）", "枯枝 φ cm L= m", "要剪定", "要切除", "大枝・スタブカット", "巻き根", "露出根被害", "亀裂", "入り皮", "ガードパイプ接触", "×", "2ヶ所"],
     dimPresets: ["G.L.0m", "G.L.1.2m", "1.2-1.6m", "0.3m", "0.5m", "1.0m", "1.5m", "2.0m", "幅 cm", "地上 0〜1.5m"],
-    rodPresets: ["鋼棒貫入異常（芯達）", "鋼棒貫入異常 cm/ cm", "鋼棒貫入異常（芯達） cm/ cm", "鋼棒貫入異常"],
+    rodPresets: ["貫入異常(芯達)", "貫入異常 cm/ cm", "貫入異常(芯達) cm/ cm", "貫入異常"],
     kikiPresets: ["根株", "0.3m", "0.5m", "1.0m", "1.2m", "1.5m", "2.0m"],
     dashinPresets: ["打音(大)", "打音(小)", "打音(大) G.L.0〜1.8m", "極大"],
   },
@@ -1584,6 +1598,9 @@ window.WorkStore = window.NoteStore.work;
       if (TIDX.has(t.tno)) continue;  // 同じ樹木番号は先に読み込んだもの（共有データ）を優先
       TIDX.set(t.tno, T.length); T.push(t);
     }
+    // 現地で直した位置（この端末に保存）
+    const fixes = (await NoteStore.kv.get("posfix")) || {};
+    for (const t of T) { const f = fixes[t.tno]; if (f) { t.orig = t.orig || [t.lon, t.lat]; t.lon = f.lon; t.lat = f.lat; t.posFixed = f; } }
     N = T.length; baseCount = T.filter((t) => t.src === "base").length;
     mask = new Uint8Array(N).fill(1); matchCount = N;
     const cnt = new Map(); T.forEach((t) => cnt.set(t.std, (cnt.get(t.std) || 0) + 1));
@@ -1604,13 +1621,14 @@ window.WorkStore = window.NoteStore.work;
   let baseKind = CFG.basemap || "pale";
   function rasterStyle(visible) {
     const GSI = "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>";
-    const raster = (url, max, attr) => ({ type: "raster", tiles: [url], tileSize: 256, maxzoom: max, attribution: attr });
+    // 高精細な画面では1段細かいタイルを使う（航空写真をくっきり表示）
+    const raster = (url, max, attr, fine) => ({ type: "raster", tiles: [url], tileSize: fine && (window.devicePixelRatio || 1) > 1.4 ? 128 : 256, maxzoom: max, attribution: attr });
     return {
       version: 8,
       sources: {
         pale: raster("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", 18, GSI),
         std: raster("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", 18, GSI),
-        photo: raster("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", 18, GSI),
+        photo: raster("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", 18, GSI, true),
         osm: raster("https://tile.openstreetmap.org/{z}/{x}/{y}.png", 19, "© <a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap</a>"),
       },
       layers: [
@@ -1621,7 +1639,7 @@ window.WorkStore = window.NoteStore.work;
   }
   function switchBasemap(key) {
     if (!RASTER_KEYS.includes(key)) return;
-    baseKind = key; ls.set("basemap", key);
+    baseKind = key; ls.set("basemap", key); document.body.classList.toggle("bm-photo", key === "photo");
     RASTER_KEYS.forEach((k) => map.setLayoutProperty("base-" + k, "visibility", k === key ? "visible" : "none"));
     $$(".bm").forEach((x) => x.classList.toggle("on", x.dataset.bm === key));
   }
@@ -1799,7 +1817,33 @@ window.WorkStore = window.NoteStore.work;
   const safeName = (s) => String(s || "data").replace(/[\\/:*?"<>|\s]+/g, "_").slice(0, 40);
 
   // ---------- 凡例 ----------
-  function renderLegend() { $("#legend").innerHTML = inspLegendHTML(); }
+  // ---------- 地図の文字（樹種名・樹木番号・点検番号）：拡大すると表示し、重なる文字は間引く ----------
+  const LBLS = { mode: null, el: null, raf: 0 };
+  function labelMode() { if (LBLS.mode == null) LBLS.mode = ls.get("map-label", "sp"); return LBLS.mode; }
+  function setLabelMode(m) { LBLS.mode = m; ls.set("map-label", m); $$("#lblModes [data-lbl]").forEach((b) => b.classList.toggle("on", b.dataset.lbl === m)); drawLabels(); }
+  function drawLabels() {
+    if (!map) return;
+    if (!LBLS.el) { LBLS.el = document.createElement("div"); LBLS.el.className = "treelabels"; map.getContainer().appendChild(LBLS.el); }
+    const mode = labelMode(), z = map.getZoom(), el = LBLS.el;
+    if (mode === "none" || z < 16.5 || !N || document.body.classList.contains("adding")) { el.innerHTML = ""; return; }
+    const fs = Math.max(9, Math.min(15, 9 + (z - 16.5) * 2.2)), W = el.clientWidth, H = el.clientHeight, c = map.getCenter();
+    const b = map.getBounds(), cand = [];
+    for (let i = 0; i < N; i++) { if (!mask[i]) continue; const t = T[i]; if (t.lon < b.getWest() || t.lon > b.getEast() || t.lat < b.getSouth() || t.lat > b.getNorth()) continue;
+      const txt = mode === "sp" ? t.sp : mode === "insNo" ? t.insNo : t.tno; if (!txt) continue; cand.push([i, String(txt)]); if (cand.length > 1500) break; }
+    const sel = typeof selected === "number" ? selected : -1;
+    cand.sort((p, q) => (p[0] === sel ? -1 : q[0] === sel ? 1 : 0) || distM(c.lng, c.lat, T[p[0]].lon, T[p[0]].lat) - distM(c.lng, c.lat, T[q[0]].lon, T[q[0]].lat));
+    const placed = [], out = [];
+    for (const [i, txt] of cand) {
+      const pt = map.project([T[i].lon, T[i].lat]), w = [...txt].reduce((n, ch) => n + (ch.charCodeAt(0) > 0xff ? 1 : 0.6), 0) * fs + 6, h = fs + 4, x = pt.x - w / 2, y = pt.y + 7;
+      if (x < -w || y < -h || x > W || y > H) continue;
+      if (placed.some((r) => x < r[2] && x + w > r[0] && y < r[3] && y + h > r[1])) continue;   // 重なる文字は出さない
+      placed.push([x, y, x + w, y + h]); out.push(`<span style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;font-size:${fs.toFixed(1)}px"${i === sel ? ' class="sel"' : ""}>${esc(txt)}</span>`);
+      if (out.length >= 300) break;
+    }
+    el.innerHTML = out.join("");
+  }
+  const queueLabels = () => { if (LBLS.raf) return; LBLS.raf = requestAnimationFrame(() => { LBLS.raf = 0; drawLabels(); }); };
+  function renderLegend() { const h = inspLegendHTML(); $("#legend").innerHTML = h; $("#legend").hidden = !h; }
 
   // ---------- 現在地 ----------
   function initLocate() {
@@ -1917,6 +1961,7 @@ window.WorkStore = window.NoteStore.work;
       map.easeTo({ pitch: 0, bearing: 0, duration: 800 });
     }
     renderLegend();
+    map.on("move", queueLabels); map.on("moveend", queueLabels); setLabelMode(labelMode());
   }
 
   // ---------- この端末で追加した樹木 ----------
@@ -2103,15 +2148,25 @@ window.WorkStore = window.NoteStore.work;
     const ids = new Set(); for (const r of INSP.recs.values()) if (r.tree != null && r.tree < N) ids.add(r.tree);
     for (const i of ids) { map.setFeatureState({ source: "trees", id: i }, { ij: recCode(dispRec(i)) }); INSP.stateIds.push(i); }
     map.getSource("insp-new")?.setData(inspNewGeo());
-    refresh3D();
+    refresh3D(); renderLegend(); queueLabels();
   }
-  function inspLegendHTML() {
+  // 地図の凡例：今の地図（選んだ公園）にあるものだけ出す。すべての凡例は「アプリの設定 → 地図の見方」
+  function legendPresent() {
+    const has = new Set(); let uninsp = false, draft = false, spCount = new Map();
+    for (let i = 0; i < N; i++) { if (!mask[i]) continue; const r = dispRec(i), cd = recCode(r);
+      if (cd === 0) uninsp = true; else if (cd === 1) draft = true; else if (r && r.judge) has.add(r.judge);
+      if (INSP.color === "sp") spCount.set(spRank(i), 1); }
+    for (const r of INSP.recs.values()) if (r.tree == null && r.status !== "new") { if (r.status === "draft") draft = true; else if (r.judge) has.add(r.judge); }
+    return { has, uninsp, draft, spCount };
+  }
+  function inspLegendHTML(all = false) {
     const it = (c, t, b) => `<span class="lg"><i style="background:${c};${b ? "border:2.5px solid " + b : ""}"></i>${esc(t)}</span>`;
-    const d3 = $("#toggle3d")?.checked;
-    if (INSP.color === "sp") return topSpecies.slice(0, 10).map((s, k) => it(PALETTE[k], s)).join("") + it("#9e9e9e", "その他")
-      + `<span class="lg lgsep">${d3 ? "根元の円" : "輪"}の色：</span>` + it("#fff", "下書き", "#ef6c00") + ALLJ.map((j) => it("#fff", j.v, j.color)).join("") + it("#fff", "欠株", NOJ.color);
-    const grp = (k) => `<span class="lg lgsep">${STAGES[k].short}：</span>` + STAGES[k].judges.map((j) => it(j.color, k === "gaikan" ? j.v : j.label)).join("");
-    return it(d3 ? UNINSP3D : "#7d8f84", "未点検") + (d3 ? it(DRAFT3D, "下書き") : it("#fff", "下書き", "#ef6c00")) + grp("tenken") + grp("gaikan");
+    const d3 = $("#toggle3d")?.checked, P = all ? null : legendPresent();
+    const show = (v) => all || P.has.has(v);
+    if (INSP.color === "sp" && !all) { const ks = topSpecies.slice(0, 10).map((s2, k) => [s2, k]).filter(([, k]) => P.spCount.has(k));
+      return ks.map(([s2, k]) => it(PALETTE[k], s2)).join("") + (P.spCount.has(-1) ? it("#9e9e9e", "その他") : "") + (P.draft || P.has.size ? `<span class="lg lgsep">${d3 ? "根元の円" : "輪"}の色：</span>` + (P.draft ? it("#fff", "下書き", "#ef6c00") : "") + ALLJ.filter((j) => show(j.v)).map((j) => it("#fff", j.v, j.color)).join("") : ""); }
+    const grp = (k) => { const js = STAGES[k].judges.filter((j) => show(j.v)); return js.length ? `<span class="lg lgsep">${STAGES[k].short}：</span>` + js.map((j) => it(j.color, k === "gaikan" ? j.v : j.label)).join("") : ""; };
+    return (all || P.uninsp ? it(d3 ? UNINSP3D : "#7d8f84", "未点検") : "") + (all || P.draft ? (d3 ? it(DRAFT3D, "下書き") : it("#fff", "下書き", "#ef6c00")) : "") + grp("tenken") + grp("gaikan");
   }
   // その点検員が完了した、ある段階の記録（全期間・完了順）。作業状況写真の「◯本目」に使う
   function stageDone(name, st) { return [...INSP.recs.values()].filter((r) => isDone(r) && r.inspector === name && stageOf(r) === st).sort((a, b) => (a.doneAt || "").localeCompare(b.doneAt || "")); }
@@ -2222,7 +2277,7 @@ window.WorkStore = window.NoteStore.work;
   function openInspectRec(r) {
     if (r.tree != null) { selectTree(r.tree, true); if (stageOf(r) !== stageOf(INSP.cur)) switchStage(stageOf(r), true); return; }
     if (INSP.dirty && !confirm("入力中の点検内容は保存されていません。破棄して移動しますか？")) return;
-    openSheet("detail", `${STG(r).label}（台帳にない木）`); clearSelection(); renderInspForm(r); flyToTree(r.lon, r.lat);
+    openSheet("detail", `${STG(r).label}（樹木データにない木）`); clearSelection(); renderInspForm(r); flyToTree(r.lon, r.lat);
   }
   // 段階の切り替え（樹木点検 ⇔ 外観診断）
   function switchStage(st, force) {
@@ -2235,7 +2290,7 @@ window.WorkStore = window.NoteStore.work;
       if (c.tree != null) r = newRecFor(c.tree, st);
       else { r = { ...JSON.parse(JSON.stringify(c)), id, stage: st, ans: {}, photos: [], status: "new", mark: false, inspector: INSP.name }; delete r.doneAt; delete r.doneDate; delete r.reportedAt; delete r.diagNow; prefill(r); }
     }
-    $("#sheetTitle") && ($("#sheetTitle").textContent = STG(st).label + (r.tree == null ? "（台帳にない木）" : ""));
+    $("#sheetTitle") && ($("#sheetTitle").textContent = STG(st).label + (r.tree == null ? "（樹木データにない木）" : ""));
     renderInspForm(r);
   }
 
@@ -2246,7 +2301,7 @@ window.WorkStore = window.NoteStore.work;
     else if (it.type === "select") ctl = `<select class="inp" data-sel="${it.id}"><option value="">選択してください</option>${it.options.map((o) => `<option${v === o ? " selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
     else if (it.type === "multi" && it.check) ctl = `<div class="checks" data-multi="${it.id}">${it.options.map((o) => `<label class="${o === "該当なし" ? "none" : ""}"><input type="checkbox" value="${esc(o)}"${(v || []).includes(o) ? " checked" : ""}><span>${esc(o === "該当なし" && it.noneLabel ? it.noneLabel : o)}</span></label>`).join("")}</div><div class="yn" data-yn="${it.id}"></div>`;
     else if (it.type === "multi") ctl = `<div class="pills" data-multi="${it.id}">${it.options.map((o) => `<label><input type="checkbox" value="${esc(o)}"${(v || []).includes(o) ? " checked" : ""}><span>${esc(o)}</span></label>`).join("")}</div>`;
-    else if (it.type === "number") ctl = `<div class="numrow"><input class="inp" type="number" inputmode="decimal" step="${it.step || 1}" min="0" data-num="${it.id}" value="${v ?? ""}" placeholder="${it.ref && c[it.ref] != null ? "台帳 " + c[it.ref] : ""}"><span>${esc(it.unit || "")}</span></div>`;
+    else if (it.type === "number") ctl = `<div class="numrow"><input class="inp" type="number" inputmode="decimal" step="${it.step || 1}" min="0" data-num="${it.id}" value="${v ?? ""}" placeholder="${it.ref && c[it.ref] != null ? "元の値 " + c[it.ref] : ""}"><span>${esc(it.unit || "")}</span></div>`;
     else if (it.type === "nums") ctl = `<div class="numsrow">${it.fields.map((f) => `<label><small>${esc(f.label)}</small><span class="numrow"><input class="inp" type="number" inputmode="decimal" step="any" min="0" data-num="${f.id}" value="${c.ans[f.id] ?? ""}" placeholder="${f.ref && c[f.ref] != null ? c[f.ref] : ""}"><span>${esc(f.unit || "")}</span></span></label>`).join("")}</div>${it.id === "dmg" ? '<div class="small muted" id="dmgRatio"></div>' : ""}`;
     else if (it.type === "line") ctl = `<input class="inp" data-text="${it.id}" value="${esc(v ?? "")}" placeholder="${esc(it.placeholder || "")}"${it.max ? ` maxlength="${it.max}"` : ""}>${it.max ? cntHTML(it.id, v, it.max) : ""}`;
     else if (it.type === "text") ctl = `<div class="voicebox"><textarea class="inp" rows="3" data-text="${it.id}" placeholder="${esc(it.placeholder || "")}"${it.max ? ` maxlength="${it.max}"` : ""}>${esc(v || "")}</textarea>${it.voice ? `<button type="button" class="mic" data-mic="${it.id}" aria-label="音声入力">${ic("mic")}</button>` : ""}</div>${it.max ? cntHTML(it.id, v, it.max) : ""}`;
@@ -2312,13 +2367,13 @@ window.WorkStore = window.NoteStore.work;
       ? `<div class="ibanner done" style="--bc:${recColor(c)}">${ic("check")}<span><b>${esc(S.label)}完了</b>（${dtOf(c.doneAt)}・${esc(c.inspector)}）${c.reportedAt ? ' <span class="tag">速報済</span>' : ""}<br><small>内容を直して「変更を保存」で更新できます</small></span></div>`
       : c.status === "draft" ? `<div class="ibanner draft">${ic("bookmark")}<span><b>下書き</b>（${dtOf(c.updated)}・${esc(c.inspector)}）<br><small>判定まで入力して「完了・保存」を押してください</small></span></div>` : "";
     const head = unreg
-      ? `<div class="hero"><span class="avatar" style="background:#607d8b">${ic("plus")}</span><div><div class="hero-title">台帳にない木</div><div class="hero-sub">${esc(placeOf(c) || "位置指定")}・${(+c.lat).toFixed(6)}, ${(+c.lon).toFixed(6)}${dist}</div></div></div>
+      ? `<div class="hero"><span class="avatar" style="background:#607d8b">${ic("plus")}</span><div><div class="hero-title">樹木データにない木</div><div class="hero-sub">${esc(placeOf(c) || "位置指定")}・${(+c.lat).toFixed(6)}, ${(+c.lon).toFixed(6)}${dist}</div></div></div>
         <div class="field ifield" data-f="sp"><span class="lbl">樹種<b class="req">必須</b></span><input id="uSp" class="inp" list="spList" value="${esc(c.sp || "")}" placeholder="樹種名（例：ケヤキ）"><div class="ferr" hidden></div></div>
         <div class="field ifield" data-f="__tno"><span class="lbl">樹木番号（仮番号）</span><input id="uTno" class="inp" value="${esc(c.tno || "")}" placeholder="例：仮-1"><div class="ferr" hidden></div></div>
         <div class="field ifield" data-f="__cat"><span class="lbl">区分<b class="req">必須</b></span><div class="ibtns" data-single="__cat">${["高木", "中木", "低木"].map((o) => `<button type="button" data-v="${o}"${c.cat === o ? ' class="on"' : ""}>${o}</button>`).join("")}</div><div class="ferr" hidden></div></div>`
       : `<div class="hero"><span class="avatar" style="background:${treeColor(c.tree)}">${esc((c.sp || "？")[0])}</span><div><div class="hero-title">${esc(c.sp)}</div><div class="hero-sub">${esc(c.cat)}・${esc(placeOf(c))}${dist}</div></div></div>
         <div class="tiles">${tile("樹高", c.h, "m")}${tile("幹周", c.g, "cm")}${tile("枝張", c.w, "m")}</div>
-        <p class="imeta"><b>樹木番号 ${esc(c.tno)}</b>${c.insNo ? `・点検番号 ${esc(c.insNo)}` : ""}${c.zone ? `・${esc(LBL.zone)} ${esc(c.zone)}` : ""}${c.tmemo ? `<br>備考：${esc(c.tmemo)}` : ""}</p>`;
+        <p class="imeta">${T[c.tree]?.posFixed ? `<span class="tag">位置を修正済み（元の位置から${fmtDist(distM(T[c.tree].orig[0], T[c.tree].orig[1], T[c.tree].lon, T[c.tree].lat))}）</span><br>` : ""}<b>樹木番号 ${esc(c.tno)}</b>${c.insNo ? `・点検番号 ${esc(c.insNo)}` : ""}${c.zone ? `・${esc(LBL.zone)} ${esc(c.zone)}` : ""}${c.tmemo ? `<br>備考：${esc(c.tmemo)}` : ""}</p>`;
     $("#pane-detail").innerHTML = `${stageTabsHTML(c)}${head}${banner}
       <div id="inspForm" class="inspform">
         ${S.items.map((it) => fieldHTML(it, c)).join("")}
@@ -2333,6 +2388,7 @@ window.WorkStore = window.NoteStore.work;
           <label class="toggle">テープの対応をした<span class="switch"><input type="checkbox" id="markDone"${c.mark ? " checked" : ""}><span></span></span></label><div class="ferr" hidden></div></div>
       </div>
       <div class="sticky-foot">${c.status !== "done" && IC.allowDraft ? `<button class="btn sub" data-ia="draft">下書き保存</button>` : ""}<button class="btn main" data-ia="done">${ic("check")}${c.status === "done" ? "変更を保存" : `${S.short}完了・保存`}</button></div>
+      <button class="btn line block" data-ia="movepos" style="margin-top:10px"${unreg ? " hidden" : ""}>${ic("pin")}この木の位置を修正</button>
       ${st === "gaikan" ? `<button class="btn line block" data-ia="karte" style="margin-top:10px">${ic("clip")}カルテを確認（Excelで出力も可）</button>` : ""}
       <div class="btnrow"><button class="btn line" data-ia="next">${ic("next")}次の未点検の木へ</button>
         <a class="btn sub" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lon}">${ic("pin")}地図アプリ</a></div>
@@ -2447,7 +2503,7 @@ window.WorkStore = window.NoteStore.work;
       + (ph.length < IC.maxPhotos ? `<label class="addph" aria-label="カメラで撮影">${ic("camera")}<input id="iPhotoIn" type="file" accept="image/*" capture="environment"></label><label class="addph lib" aria-label="写真を選ぶ">${ic("plus")}選ぶ<input id="iPhotoLib" type="file" accept="image/*" multiple></label><button type="button" class="addph lib" data-ia="photoblank" aria-label="白紙にスケッチ">${ic("pen")}スケッチ</button>` : "");
   }
   const inspStampLines = (c) => [`${dtOf(new Date().toISOString())}　${STG(c).label}　${stageOf(c) === "gaikan" ? "樹木医" : "点検員"} ${INSP.name}`, `${c.sp || "樹種未入力"}${c.cat ? "（" + c.cat + "）" : ""}　${placeOf(c)}`,
-    c.tno ? `樹木番号 ${c.tno}${c.zone ? "・" + LBL.zone + " " + c.zone : ""}` : `台帳にない木　${(+c.lat).toFixed(6)}, ${(+c.lon).toFixed(6)}`];
+    c.tno ? `樹木番号 ${c.tno}${c.zone ? "・" + LBL.zone + " " + c.zone : ""}` : `樹木データにない木　${(+c.lat).toFixed(6)}, ${(+c.lon).toFixed(6)}`];
   async function addPhotos(files) {
     const c = INSP.cur;
     for (const f of [...files]) {
@@ -2636,6 +2692,7 @@ window.WorkStore = window.NoteStore.work;
       if (a === "done") completeInsp();
       if (a === "next") nextUninspected();
       if (a === "karte") showKarte(INSP.cur);
+      if (a === "movepos") startMovePos();
       if (a === "planmap") makePlanFromMap();
       if (a === "planblank") setRolePhoto("plan", blankPaper(1600, 1200), "free", planShapes(1600, 1200, 0));
       if (a === "sketchblank") setRolePhoto("sketch", blankPaper(1200, 1600), "free");
@@ -2887,7 +2944,7 @@ window.WorkStore = window.NoteStore.work;
     const j = judgeOf(r.judge), draft = r.status !== "done", S = STG(r);
     const tags = [`<span class="tag" style="background:${S.theme};color:#fff">${S.short}</span>`, draft ? '<span class="tag gray">下書き</span>' : j ? `<span class="tag" style="background:${j.color};color:#fff">${stageOf(r) === "gaikan" ? j.v : esc(j.label)}</span>` : `<span class="tag gray">${NOJ.label}</span>`,
       r.markReq ? (r.mark ? '<span class="tag">テープ済</span>' : '<span class="tag red">テープ未</span>') : "",
-      r.reportedAt ? '<span class="tag">速報済</span>' : "", (r.photos || []).length ? `<span class="tag gray">写真${r.photos.length}</span>` : "", r.tree == null ? '<span class="tag gray">台帳外</span>' : ""].join(" ");
+      r.reportedAt ? '<span class="tag">速報済</span>' : "", (r.photos || []).length ? `<span class="tag gray">写真${r.photos.length}</span>` : "", r.tree == null ? '<span class="tag gray">データ外</span>' : ""].join(" ");
     return `<span class="avatar${draft ? " ring" : ""}" style="background:${draft ? "#fff" : recColor(r)}">${draft ? "下" : esc(j ? j.v.slice(0, 2) : "－")}</span>
       <span class="item-txt"><span class="item-main">${esc(r.sp || "樹種未入力")} ${tags}</span>
       <span class="item-sub">${esc(placeOf(r))}${r.tno ? `・${esc(r.tno)}` : ""}　${draft ? dtOf(r.updated) : timeOf(r.doneAt)}・${esc(r.inspector || "")}${extra}</span></span>`;
@@ -2937,7 +2994,7 @@ window.WorkStore = window.NoteStore.work;
   function rowItem(x) {
     const s = rowState(x), t = x.t, disp = x.dg || x.tr, j = disp && isDone(disp) ? judgeOf(disp.judge) : null;
     const tag = (bg, txt) => `<span class="tag" style="background:${bg};color:#fff">${esc(txt)}</span>`;
-    const tags = [t.tno ? `<span class="tag gray">${esc(t.tno)}</span>` : "", x.unreg ? '<span class="tag gray">台帳外</span>' : "",
+    const tags = [t.tno ? `<span class="tag gray">${esc(t.tno)}</span>` : "", x.unreg ? '<span class="tag gray">データ外</span>' : "",
       s === "todo" ? '<span class="tag gray">未点検</span>' : "", s === "draft" ? '<span class="tag">下書き</span>' : "",
       isDone(x.tr) ? tag(STAGES.tenken.theme, `点検：${judgeOf(x.tr.judge)?.label || "－"}`) : "",
       s === "wait" ? tag(STAGES.gaikan.theme, "外観診断待ち") : "", x.dg && x.dg.status === "draft" ? '<span class="tag">診断下書き</span>' : "",
@@ -3028,10 +3085,10 @@ window.WorkStore = window.NoteStore.work;
     return out.join("\n");
   }
   function inspRows(list) {
-    const head = ["No", "段階", "判定", "判定区分", "樹木番号", "点検番号", "樹種", "区分", LBL.area, LBL.zone, LBL.place, "入力内容", "台帳の樹高(m)", "台帳の幹周(cm)", "台帳の枝張(m)", "テープ", "テープ対応", "写真枚数", "完了日時", "点検員・樹木医", "速報", "緯度", "経度", "地図",
+    const head = ["No", "段階", "判定", "判定区分", "樹木番号", "点検番号", "樹種", "区分", LBL.area, LBL.zone, LBL.place, "入力内容", "樹木データの樹高(m)", "樹木データの幹周(cm)", "樹木データの枝張(m)", "テープ", "テープ対応", "写真枚数", "完了日時", "点検員・樹木医", "速報", "緯度", "経度", "地図",
       ...Array.from({ length: IC.maxPhotos }, (_, k) => [`写真${k + 1}（保存先）`, `写真${k + 1} コメント`]).flat()];
     return [head, ...list.map((r, k) => { const j = judgeOf(r.judge), ph = r.photos || [];
-      return [k + 1, STG(r).label, r.status !== "done" ? "下書き" : j ? j.v : "－", r.status !== "done" ? "" : j ? j.label : NOJ.label, r.tno || "台帳外", insNoOf(r), r.sp, r.cat, r.area, r.zone, r.place, ansSummary(r),
+      return [k + 1, STG(r).label, r.status !== "done" ? "下書き" : j ? j.v : "－", r.status !== "done" ? "" : j ? j.label : NOJ.label, r.tno || "データ外", insNoOf(r), r.sp, r.cat, r.area, r.zone, r.place, ansSummary(r),
         r.h ?? "", r.g ?? "", r.w ?? "", (r.tapes || []).join("・"), r.markReq ? (r.mark ? "済" : "未") : "", ph.length, dtOf(r.doneAt || r.updated), r.inspector, r.reportedAt ? "済" : "", r.lat, r.lon, `https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lon}`,
         ...Array.from({ length: IC.maxPhotos }, (_, m) => ph[m] ? [phPath(ph[m]), ph[m].cap || ""] : ["", ""]).flat()]; })];
   }
@@ -3082,7 +3139,9 @@ window.WorkStore = window.NoteStore.work;
     return "mail";
   }
   function openMailto(to, subject, body) {
-    const a = document.createElement("a"); a.href = `mailto:${encodeURIComponent(to || "").replace(/%40/g, "@")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const url = `mailto:${encodeURIComponent(to || "").replace(/%40/g, "@")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    if (isMobileDev()) { location.href = url; return; }  // スマホはメールアプリを直接開く
+    const a = document.createElement("a"); a.href = url;
     a.target = "_blank"; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove();
   }
 
@@ -3358,14 +3417,14 @@ window.WorkStore = window.NoteStore.work;
   function sokuho1Row(r, k) {
     const a = r.ans;
     const cut = hasYes(a.cut);
-    return [k + 1, r.inspector, insNoOf(r), r.tno || "台帳外", maru(cut), maru(!cut && hasYes(a.deadBr)), maru(!cut && hasYes(a.regular)), maru(!cut && hasYes(a.regular) && (a.diag || []).includes(DIAG_C)), maru(!cut && hasYes(a.regular) && (a.diag || []).includes(DIAG_K)), tenkenReason(a)];
+    return [k + 1, r.inspector, insNoOf(r), r.tno || "データ外", maru(cut), maru(!cut && hasYes(a.deadBr)), maru(!cut && hasYes(a.regular)), maru(!cut && hasYes(a.regular) && (a.diag || []).includes(DIAG_C)), maru(!cut && hasYes(a.regular) && (a.diag || []).includes(DIAG_K)), tenkenReason(a)];
   }
   // 外観診断速報表（別紙2）の1行
   function sokuho2Row(r, k) {
     const a = r.ans, kp = kikiParts(a);
     const kiki = kp.length ? `〇　${kp.map((p) => PART_NAME[p]).join("+")}${a.kikiPart ? `（${a.kikiPart}）` : ""}` : "";
     const txt = [a.sReason || a.jReason || a.pNote || "", a.judge === "C" && r.cSafe ? "※支柱・コブラロープ等の設置等により安全が確保できると判断し、緑色のテープをさらに1周巻き2段にしております。" : ""].filter(Boolean).join("\n");
-    return [k + 1, r.inspector, insNoOf(r), r.tno || "台帳外", maru(a.judge === "C"), maru(a.urgent === "あり"), kiki, txt];
+    return [k + 1, r.inspector, insNoOf(r), r.tno || "データ外", maru(a.judge === "C"), maru(a.urgent === "あり"), kiki, txt];
   }
   // 速報表：日付・公園ごとに1シート
   async function sokuhoBlob(list, st) {
@@ -3397,7 +3456,7 @@ window.WorkStore = window.NoteStore.work;
     const pj = (p) => a[`pj_judge_${p}`] || "", one = (b) => (b ? 1 : ""), kp = kikiParts(a), ph = (r.photos || []).filter((x) => !/立地平面図/.test(x.cap || ""));
     const nw = a.next || [], yr = nextYear(r);
     const R = [];
-    R.push("", k + 1, r.area || "", r.inspector, ymdSlash(r.doneDate), r.tno || "台帳外", numOr(a.hReal, r.h), numOr(a.gReal, r.g), numOr(a.wReal, r.w), r.sp, a.plant || "", a.stake || "", vNum(a.vSei), vNum(a.vKei), a.vNote || "", VJ(a.vJudge));
+    R.push("", k + 1, r.area || "", r.inspector, ymdSlash(r.doneDate), r.tno || "データ外", numOr(a.hReal, r.h), numOr(a.gReal, r.g), numOr(a.wReal, r.w), r.sp, a.plant || "", a.stake || "", vNum(a.vSei), vNum(a.vKei), a.vNote || "", VJ(a.vJudge));
     // 根元
     R.push(g("bark", "R"), g("cav1", "R"), g("cav2", "R"), numOr(a.dmgWR), numOr(a.dmgCR), g("kinoko", "R"), n("kinoko", "R"), g("dashin", "R"), n("dashin", "R"), g("bunki", "R"), n("bunki", "R"), g("dogare", "R"), n("dogare", "R"), g("mushi", "R"), n("mushi", "R"),
       g("yuragi", "R"), n("yuragi", "R"), g("kobo", "R"), "", "", n("kobo", "R"), g("makine", "R"), n("makine", "R"), g("rootc", "R"), n("rootc", "R"), g("roshutsu", "R"), n("roshutsu", "R"), g("keisha", "R"), n("keisha", "R"),
@@ -3428,7 +3487,7 @@ window.WorkStore = window.NoteStore.work;
     list = [...list].sort(byDone);
     const one = (b) => (b ? "〇" : "");
     const sum = list.map((r) => { const a = r.ans, kp = kikiParts(a);
-      return [r.tno || "台帳外", r.sp, numOr(a.hReal, r.h), numOr(a.gReal, r.g), numOr(a.wReal, r.w), ymdSlash(r.doneDate), a.vJudge || "", a.gJudge || "", kp.length ? "要" : "不要", a.judge || "",
+      return [r.tno || "データ外", r.sp, numOr(a.hReal, r.h), numOr(a.gReal, r.g), numOr(a.wReal, r.w), ymdSlash(r.doneDate), a.vJudge || "", a.gJudge || "", kp.length ? "要" : "不要", a.judge || "",
         one(a.urgent === "あり"), one((a.prune || []).length), one(a.tProtect), one(a.tSoil), one(a.tRoot), one(a.tPest), one(a.tRenew), one(a.tOther), ""]; });
     return fillXlsx(tpl("gaikan_sokatsu"), { sheets: [
       { from: "外観_点検結果", rows: { start: 6, data: list.length ? list.map(gaikanRow) : [[]], lineHt: 12, maxLines: 8 } },
@@ -3444,7 +3503,7 @@ window.WorkStore = window.NoteStore.work;
     const kp = kikiParts(a), pr = a.prune || [], nw = a.next || [], yr = nextYear(r);
     const vj = itemOf("vJudge", r).options, pjo = vj;
     const cells = {
-      D2: "", AX2: "", AI2: setting("office") || "", G3: r.area || INSP.park || "", X3: r.inspector || "", AL3: ymdSlash(r.doneDate), G4: r.tno || "台帳外",
+      D2: "", AX2: "", AI2: setting("office") || "", G3: r.area || INSP.park || "", X3: r.inspector || "", AL3: ymdSlash(r.doneDate), G4: r.tno || "データ外",
       Y4: numOr(a.hReal, r.h), AF4: numOr(a.gReal, r.g), AN4: numOr(a.wReal, r.w), E5: r.sp || "", Q5: chk(["単独桝", "植栽帯", "緑地内", "その他"], a.plant, " \u3000"), AK5: ["良好", "なし", "破損"].map((o) => `${o === a.stake ? CK : NO} ${o}`).join(""),
       AF7: " " + ["１", "２", "３", "４", "５"].map((x, i) => (String(i + 1) === a.vSei ? CK : NO) + x).join("\u3000\u3000"), AF8: " " + ["１", "２", "３", "４", "５"].map((x, i) => (String(i + 1) === a.vKei ? CK : NO) + x).join("\u3000\u3000"),
       G9: a.vNote || "", H11: vj.map((o) => (o === a.vJudge ? CK : NO) + o).join("\u3000\u3000\u3000\u3000\u3000"),
@@ -3534,19 +3593,19 @@ window.WorkStore = window.NoteStore.work;
       if (b.dataset.kp === "close") d.remove();
       if (b.dataset.kp === "zin") zoom(k * 1.25);
       if (b.dataset.kp === "zout") zoom(k / 1.25);
-      if (b.dataset.kp === "xlsx" && blob) saveBlob(blob, `外観診断カルテ_${fsName(r.tno || "台帳外")}_${r.doneDate}.xlsx`); };
+      if (b.dataset.kp === "xlsx" && blob) saveBlob(blob, `外観診断カルテ_${fsName(r.tno || "データ外")}_${r.doneDate}.xlsx`); };
   }
   async function karteBlob(list) {
     list = [...list].sort(byDone);
     const sheets = list.flatMap((r) => { const cells = karteCells(r), P2 = kartePhotos(r), boxes = ["AW37:BI53", "BK37:BW53", "BY37:CK53"], caps = ["AW54", "BK54", "BY54"];
       P2.loc.forEach((x, k) => { cells[caps[k]] = `写真${CIRC(k + 1)}${x.cap ? "　" + x.cap : ""}`; });
       const images = [P2.plan && { data: P2.plan.data, box: "AW15:BK27", name: "立地平面図" }, P2.zen && { data: P2.zen.data, box: "BM13:CK35", name: "診断概要図" }, ...P2.loc.map((x, k) => ({ data: x.data, box: boxes[k], name: x.cap || `写真${k + 1}` }))].filter(Boolean);
-      const out = [{ from: "カルテ", name: r.tno || "台帳外", cells, images }];
+      const out = [{ from: "カルテ", name: r.tno || "データ外", cells, images }];
       // カルテに収まらない写真は写真帳のページ（1ページ6枚）
       for (let k = 0; k < P2.extra.length; k += 6) {
-        const pg = P2.extra.slice(k, k + 6), cl = { A2: `樹木番号：${r.tno || "台帳外"}　樹種：${r.sp || ""}　${r.area || ""}${r.place ? "　" + r.place : ""}　診断日：${ymdSlash(r.doneDate)}`, A1: `写　真　帳${P2.extra.length > 6 ? `（${k / 6 + 1}/${Math.ceil(P2.extra.length / 6)}）` : ""}` }, im = [];
+        const pg = P2.extra.slice(k, k + 6), cl = { A2: `樹木番号：${r.tno || "データ外"}　樹種：${r.sp || ""}　${r.area || ""}${r.place ? "　" + r.place : ""}　診断日：${ymdSlash(r.doneDate)}`, A1: `写　真　帳${P2.extra.length > 6 ? `（${k / 6 + 1}/${Math.ceil(P2.extra.length / 6)}）` : ""}` }, im = [];
         pg.forEach((x, n) => { const row = 3 + Math.floor(n / 2) * 14, col = n % 2 ? "G" : "A", col2 = n % 2 ? "L" : "F"; im.push({ data: x.data, box: `${col}${row}:${col2}${row + 12}`, name: `写真${CIRC(k + n + 4)}` }); cl[`${col}${row + 13}`] = `写真${CIRC(k + n + 4)}${x.cap ? "　" + x.cap : ""}`; });
-        out.push({ from: "写真帳", name: `${r.tno || "台帳外"}_写真${k / 6 + 1}`, cells: cl, images: im });
+        out.push({ from: "写真帳", name: `${r.tno || "データ外"}_写真${k / 6 + 1}`, cells: cl, images: im });
       }
       return out; }).flat();
     return fillXlsx(tpl("karte"), { sheets });
@@ -3609,7 +3668,7 @@ window.WorkStore = window.NoteStore.work;
     const S = STAGES[RP.stage], tape = list.filter((r) => r.markReq);
     const lines = [`${S.label}速報表（${RP.stage === "gaikan" ? "別紙2" : "別紙1"}）を送付します。`, "", `実施日：${meta.dateLabel}`, `公園名：${meta.parks}`, `実施者：${meta.who}`, `本数：${list.length}本（${countsText(list, RP.stage)}）`, `テープ：${tape.length}本（対応済 ${tape.filter((r) => r.mark).length}本）`];
     const imp = RP.stage === "gaikan" ? list.filter((r) => r.judge === "C" || r.ans.urgent === "あり" || kikiParts(r.ans).length) : list.filter((r) => ["伐採", "外観", "枯枝"].includes(r.judge));
-    if (imp.length) { lines.push("", RP.stage === "gaikan" ? "■ C判定・緊急対応・機器診断" : "■ 伐採・外観診断・枯枝処理"); imp.forEach((r, k) => lines.push(`${k + 1}. ${judgeOf(r.judge)?.[RP.stage === "gaikan" ? "v" : "label"] || ""}｜${r.tno || "台帳外"}｜${r.sp}｜${((RP.stage === "gaikan" ? r.ans.jReason : tenkenReason(r.ans)) || "").replace(/\s+/g, " ").slice(0, 80)}`)); }
+    if (imp.length) { lines.push("", RP.stage === "gaikan" ? "■ C判定・緊急対応・機器診断" : "■ 伐採・外観診断・枯枝処理"); imp.forEach((r, k) => lines.push(`${k + 1}. ${judgeOf(r.judge)?.[RP.stage === "gaikan" ? "v" : "label"] || ""}｜${r.tno || "データ外"}｜${r.sp}｜${((RP.stage === "gaikan" ? r.ans.jReason : tenkenReason(r.ans)) || "").replace(/\s+/g, " ").slice(0, 80)}`)); }
     lines.push("", "詳細は添付の速報表をご確認ください。");
     return lines.join("\n");
   }
@@ -3642,15 +3701,24 @@ window.WorkStore = window.NoteStore.work;
   // メールを作成：スマホ＝共有メニュー（件名・本文・添付入り。宛先はコピー）／パソコン＝宛先・件名・本文・添付入りのメールファイル（.eml）
   async function composeMail(files, subject, body, to) {
     const sum = `<div class="card small" style="text-align:left"><b>宛先</b>：${esc(to || "（未入力）")}<br><b>件名</b>：${esc(subject)}<br><b>添付</b>：${files.map((f) => esc(f.name)).join("<br>")}</div>`;
-    if (isMobileDev() && navigator.share && navigator.canShare && navigator.canShare({ files })) {
-      let shared = null;
-      // 共有はボタンを押した直後に呼ぶ必要があるため、ダイアログのボタンから直接開く
-      const ok = await dialog({ icon: "send", title: "メールの準備ができました", body: `${sum}<p class="small">「メールアプリを開く」→ 共有メニューで<b>メール</b>を選ぶと、件名・本文・添付ファイル入りのメールが作成されます。${to ? "<b>宛先はコピー済み</b>なので、宛先欄を長押しして貼り付けてください。" : ""}</p>`,
-        ok: "メールアプリを開く", cancel: "やめる",
-        onOk: () => { if (to) { try { navigator.clipboard.writeText(to); } catch { } } shared = navigator.share({ files, title: subject, text: body }); } });
+    // スマホ：メールアプリによって共有メニューでは件名・宛先が入らないため、
+    // ①添付ファイルを保存 → ②宛先・件名・本文入りのメールを作成（どのメールアプリでも同じ）の2段階にする
+    if (isMobileDev()) {
+      const canShare = navigator.share && navigator.canShare && navigator.canShare({ files });
+      const ok = await dialog({ icon: "send", title: "速報メールの作成", body: `${sum}
+        <div class="mailsteps"><button type="button" class="btn line block" id="mStep1">① 添付ファイルを保存</button>
+          <p class="small muted">「ファイル」アプリ（Androidは「ダウンロード」など）に保存します。</p>
+          <button type="button" class="btn block" id="mStep2">② メールを作成（宛先・件名・本文入り）</button>
+          <p class="small muted">メールアプリが開いたら、添付ボタンから①で保存したファイルを添付して送信してください。</p>
+          ${canShare ? `<button type="button" class="btn sub block" id="mShare" style="margin-top:6px">共有メニューで送る（添付付き。件名・宛先が入らないメールアプリあり）</button>` : ""}</div>`,
+        ok: "送信した（速報済にする）", cancel: "閉じる",
+        onMount: (d) => {
+          d.querySelector("#mStep1").onclick = () => { if (canShare) navigator.share({ files, title: subject }).catch(() => { }); else { for (const f of files) saveBlob(f, f.name); toast("添付ファイルを保存しました"); } d.querySelector("#mStep1").classList.add("done"); };
+          d.querySelector("#mStep2").onclick = () => { openMailto(to, subject, body + `\n\n添付：${files.map((f) => f.name).join("、")}`); d.querySelector("#mStep2").classList.add("done"); };
+          const sh = d.querySelector("#mShare"); if (sh) sh.onclick = () => { if (to) { try { navigator.clipboard.writeText(to); } catch { } } navigator.share({ files, title: subject, text: `件名：${subject}\n\n${body}` }).catch(() => { }); };
+        } });
       if (!ok) return false;
-      try { await shared; } catch (e) { if (e && e.name === "AbortError") return false; toast("共有メニューを開けませんでした。パソコンでの送信をお試しください", 4500); return false; }
-      toast(to ? "送信後、「速報済」になります。宛先は貼り付けてください" : "メールアプリに渡しました", 4000);
+      toast("「速報済」にしました", 3000);
       return true;
     }
     // パソコン：宛先・件名・本文・添付ファイル入りの下書きメール（.eml）
@@ -3714,7 +3782,7 @@ window.WorkStore = window.NoteStore.work;
         <div class="mlist">
           ${rowHTML({ attr: 'data-imp="save"', icon: "share", title: "データを保存・提出", sub: `点検結果（Excel）と写真をまとめたZIP・本日 ${today}本` })}
           ${rowHTML({ attr: 'data-imp="backup"', icon: "check", title: "バックアップ", sub: lb ? `最後：${esc(dtOf(lb))}` : "まだしていません", badge: u.n ? `未 ${u.n}件` : "済", tone: u.n ? "red" : "" })}
-          ${rowHTML({ attr: 'data-im="addtree"', icon: "plus", title: "台帳にない木を点検", sub: "地図で位置を指定して点検します" })}
+          ${rowHTML({ attr: 'data-im="addtree"', icon: "plus", title: "新しい点検木を追加", sub: "現地で見つけた木を登録して点検します（地図の緑の＋ボタンからも）" })}
         </div>
         <div class="sec-title">準備・とりまとめ</div>
         <div class="mlist">
@@ -3779,7 +3847,7 @@ window.WorkStore = window.NoteStore.work;
   // スタート画面：準備の状況とアプリの設定
   // =====================================================================
   const AS = { page: "", ready: false };
-  const AS_PAGES = { trees: "樹木データ", project: "カルテの事務所名", mail: "速報の送信先", every: "作業状況写真の撮影頻度", device: "この端末の情報" };
+  const AS_PAGES = { maplegend: "地図の見方（凡例）", trees: "樹木データ", project: "カルテの事務所名", mail: "速報の送信先", every: "作業状況写真の撮影頻度", device: "この端末の情報" };
   const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
   function treesInfo() { return baseCount ? `${fmt(baseCount)}本${dataInfo.title ? "（" + esc(dataInfo.title) + "）" : ""}` : ""; }
   function renderPrep() {
@@ -3807,6 +3875,7 @@ window.WorkStore = window.NoteStore.work;
           ${rowHTML({ attr: 'data-as="trees"', icon: "tree", title: "樹木データ", sub: N ? treesInfo() || fmt(N) + "本" : "読み込まれていません", badge: N ? "" : "要対応", tone: "red" })}
           ${rowHTML({ attr: 'data-as="project"', icon: "clip", title: "カルテの事務所名", sub: setting("office") ? esc(setting("office")) : "未設定（カルテの「事務所名」欄）" })}
           ${rowHTML({ attr: 'data-as="mail"', icon: "send", title: "速報の送信先", sub: mail ? esc(mail) : "未設定", badge: mail ? "" : "未設定", tone: "gray" })}
+          ${rowHTML({ attr: 'data-as="maplegend"', icon: "info", title: "地図の見方（凡例）", sub: "点の色・輪・文字の意味（地図には、その地図にあるものだけ表示）" })}
           ${rowHTML({ attr: 'data-as="every"', icon: "camera", title: "作業状況写真の撮影頻度", sub: `樹木点検 ${everyOf("tenken") || "-"}本・外観診断 ${everyOf("gaikan") || "-"}本に1本` })}
           ${rowHTML({ attr: 'data-as="device"', icon: "info", title: "この端末の情報", sub: `端末ID ${esc(INSP.device || "")}・使用量・オフラインの状態` })}
         </div>`;
@@ -3839,6 +3908,14 @@ window.WorkStore = window.NoteStore.work;
         <label class="field"><span class="lbl">外観診断（◯本に1本・0で案内なし）</span><input id="asEveryG" class="inp" type="number" inputmode="numeric" min="0" max="500" value="${everyOf("gaikan")}"></label>
         <button class="btn block" data-asa="everysave">保存</button>
         <p class="small muted">初期値は樹木点検100本に1本・外観診断50本に1本です。点検員ごとに、完了した本数がこの数になるたびにカメラを起動します。</p>`;
+    }
+    if (page === "maplegend") {
+      const c0 = INSP.color; INSP.color = "status"; const all = inspLegendHTML(true); INSP.color = c0;
+      body.innerHTML = `<div class="card"><b>点の色（点検状況）</b><div class="legend legend-all">${all}</div>
+        <p class="small muted">外観診断を行った木は外観診断の判定、行っていない木は樹木点検の判定の色になります。地図の下の凡例には、今の地図にある色だけを出します。</p></div>
+        <div class="card"><b>樹種で色分け</b><p class="small" style="margin:4px 0 0">「地図の表示設定 → 点の色分け → 樹種」で、本数の多い樹種から10種類を色分けします（11種類目以降は灰色）。点の周りの輪の色が点検状況です。</p></div>
+        <div class="card"><b>地図の文字</b><p class="small" style="margin:4px 0 0">「地図の表示設定 → 地図の文字」で、樹種名・樹木番号・点検番号を表示できます。拡大すると表示され、重なる文字は自動で間引きます。</p></div>
+        <div class="card"><b>そのほかの印</b><p class="small" style="margin:4px 0 0">黄色の光：選んでいる木／緑の＋ボタン：新しい点検木を追加／オレンジの矢印ボタン：次の未点検の木へ</p></div>`;
     }
     if (page === "project") {
       body.innerHTML = `<label class="field"><span class="lbl">事務所名（カルテ）</span><input id="asOffice" class="inp" value="${esc(setting("office") || "")}" placeholder="例：〇〇サービスセンター"></label>
@@ -4065,7 +4142,7 @@ window.WorkStore = window.NoteStore.work;
         const aid = `c:${r.id}:${loser.updated || ""}:${loser.inspector || ""}`;
         if (!arcIds.has(aid)) { await archive("conflict", loser, { id: aid, key: r.id, src: newer ? "この端末の記録" : src }); arcIds.add(aid); }
         if (newer) { await InspStore.put(r, true); INSP.recs.set(r.id, r); upd++; } else kept++;
-        if (isDone(cur) && isDone(r) && cur.inspector !== r.inspector) conflicts.push(`${r.tno || "台帳外"} ${r.sp || ""}（${cur.inspector}／${r.inspector}）`);
+        if (isDone(cur) && isDone(r) && cur.inspector !== r.inspector) conflicts.push(`${r.tno || "データ外"} ${r.sp || ""}（${cur.inspector}／${r.inspector}）`);
       }
       for (const w of doc.work || []) if (w && w.id && !INSP.work.some((x) => x.id === w.id)) { normWork(w); await WorkStore.put(w, true); INSP.work.push(w); wadd++; }
       for (const a of doc.archive || []) if (a && a.id && !arcIds.has(a.id)) { await NoteStore.archive.put(a); arcIds.add(a.id); aadd++; }
@@ -4163,18 +4240,76 @@ window.WorkStore = window.NoteStore.work;
   // 台帳にない木：画面中央の十字で位置を指定
   function startInspAdd() { closeSheet(); document.body.classList.add("adding"); $("#inspAddBar").hidden = false; $("#crosshair").removeAttribute("hidden"); }
   function stopInspAdd() { document.body.classList.remove("adding"); $("#inspAddBar").hidden = true; $("#crosshair").setAttribute("hidden", ""); }
-  function confirmInspAdd() {
-    const c = map.getCenter(); stopInspAdd();
-    const near = nearestInfo(c.lng, c.lat);
-    const r = { id: "u-" + uid(), tree: null, tno: "", lon: c.lng, lat: c.lat, sp: "", cat: "", h: null, g: null, w: null, area: near.area, zone: near.zone, place: near.place, ans: {}, photos: [], status: "new", mark: false, inspector: INSP.name };
-    openSheet("detail", "点検入力（台帳にない木）"); clearSelection(); renderInspForm(r);
+  // 現地で見つけた新しい点検木：位置 → 樹木の情報 → この端末の樹木として登録 → 樹木点検の画面
+  async function confirmInspAdd(useGps) {
+    const c = useGps && userLoc ? { lng: userLoc[0], lat: userLoc[1] } : map.getCenter(); stopInspAdd();
+    const near = nearestInfo(c.lng, c.lat), auto = await nextLocalNo();
+    const tpl = (id, lbl, v = "", ph = "", type = "text", extra = "") => `<label class="field" style="text-align:left;margin-bottom:8px"><span class="lbl">${lbl}</span><input class="inp" id="${id}" type="${type}" value="${esc(v)}" placeholder="${esc(ph)}" ${extra}></label>`;
+    let vals = null;
+    const ok = await dialog({ icon: "tree", title: "新しい点検木を追加",
+      body: `<p class="small" style="text-align:left">この端末の樹木として登録し、続けて樹木点検を入力します（「設定・データ」の「この端末の樹木をExcelに書き出し」で一覧にできます）。</p>
+        ${tpl("ntSp", "樹種（必須）", "", "例：ケヤキ", "text", 'list="spList"')}
+        <div class="field" style="text-align:left;margin-bottom:8px"><span class="lbl">区分</span><div class="seg" id="ntCat">${["高木", "中木", "低木"].map((x, k) => `<button type="button" data-v="${x}"${k === 0 ? ' class="on"' : ""}>${x}</button>`).join("")}</div></div>
+        <div class="grid2">${tpl("ntTno", "樹木番号", "", `空欄なら ${auto}`)}${tpl("ntIns", "点検番号", "", "任意")}</div>
+        <div class="grid3">${tpl("ntH", "樹高（m）", "", "", "number", 'inputmode="decimal" step="0.1"')}${tpl("ntG", "幹周（cm）", "", "", "number", 'inputmode="decimal"')}${tpl("ntW", "枝張（m）", "", "", "number", 'inputmode="decimal" step="0.1"')}</div>
+        <div class="grid2">${tpl("ntZone", LBL.zone, near.zone || "")}${tpl("ntPlace", LBL.place, near.place || "")}</div>
+        ${tpl("ntMemo", "備考", "現地で追加")}
+        <p class="small muted" style="text-align:left">位置：${c.lat.toFixed(6)}, ${c.lng.toFixed(6)}（${esc(INSP.park || near.area || "")}）</p>`,
+      ok: "追加して点検する", cancel: "やめる",
+      onMount: (d) => {
+        d.querySelector("#ntCat").onclick = (e) => { const b = e.target.closest("[data-v]"); if (b) d.querySelectorAll("#ntCat button").forEach((x) => x.classList.toggle("on", x === b)); };
+        d.querySelector('[data-r="1"]').addEventListener("click", (e) => {
+          const g = (id) => d.querySelector("#" + id).value.trim(), sp = g("ntSp");
+          if (!sp) { e.stopImmediatePropagation(); d.querySelector("#ntSp").classList.add("err"); toast("樹種を入力してください"); return; }
+          const tno = g("ntTno") || auto;
+          if (TIDX.has(tno)) { e.stopImmediatePropagation(); d.querySelector("#ntTno").classList.add("err"); toast(`樹木番号「${tno}」はすでにあります`); return; }
+          const num = (x) => (x === "" || !isFinite(+x) ? null : +x);
+          vals = { tno, insNo: g("ntIns") || undefined, sp: toKata(sp), cat: d.querySelector("#ntCat .on").dataset.v, h: num(g("ntH")), g: num(g("ntG")), w: num(g("ntW")), lat: +c.lat.toFixed(7), lon: +c.lng.toFixed(7),
+            area: INSP.park || near.area || "", zone: g("ntZone"), place: g("ntPlace"), memo: g("ntMemo"), added: new Date().toISOString(), addedBy: INSP.name };
+        }, { capture: true });
+      } });
+    if (!ok || !vals) return;
+    await addLocalTrees([vals]);
+    const i = TIDX.get(vals.tno);
+    if (i == null) { toast("追加できませんでした"); return; }
+    toast(`${vals.sp}（${vals.tno}）を追加しました`, 3000);
+    selectTree(i, true);
   }
-
+  // 現地で木の位置を直す：地図の＋を正しい位置に合わせる
+  let MOV = null;
+  function startMovePos() {
+    const c = INSP.cur; if (!c || c.tree == null) return;
+    if (INSP.dirty && !confirm("入力中の内容は保存されていません。破棄して位置の修正に進みますか？")) return;
+    MOV = { i: c.tree, tno: c.tno, rec: c };
+    closeSheet(); document.body.classList.add("adding"); $("#movBar").hidden = false; $("#crosshair").removeAttribute("hidden");
+    map.jumpTo({ center: [T[c.tree].lon, T[c.tree].lat], zoom: Math.max(map.getZoom(), 19) });
+  }
+  function stopMovePos() { document.body.classList.remove("adding"); $("#movBar").hidden = true; $("#crosshair").setAttribute("hidden", ""); }
+  async function confirmMovePos(useGps) {
+    if (!MOV) return; const m = MOV; MOV = null;
+    const c = useGps && userLoc ? { lng: userLoc[0], lat: userLoc[1] } : map.getCenter(); stopMovePos();
+    const t = T[m.i], from = t.orig || [t.lon, t.lat], d0 = distM(t.lon, t.lat, c.lng, c.lat);
+    if (!(await dialog({ icon: "pin", title: "位置を修正しますか？", body: `<p>${esc(t.sp)}（${esc(t.tno)}）の位置を、今の位置から約${fmtDist(d0)}動かします。</p><p class="small muted">この端末の樹木データの位置を直し、この木の点検記録の位置も合わせます。元の位置は記録に残ります。</p>`, ok: "修正する", cancel: "やめる" }))) { selectTree(m.i, true); return; }
+    const fixes = (await NoteStore.kv.get("posfix")) || {};
+    fixes[t.tno] = { lon: +c.lng.toFixed(7), lat: +c.lat.toFixed(7), at: new Date().toISOString(), by: INSP.name, from };
+    await NoteStore.kv.put("posfix", fixes);
+    // 点検記録の位置も合わせる（樹木点検・外観診断）
+    for (const id of ["t:" + t.tno, "g:" + t.tno]) { const r = INSP.recs.get(id); if (r) { r.lon = fixes[t.tno].lon; r.lat = fixes[t.tno].lat; r.posFixed = { from, at: fixes[t.tno].at, by: INSP.name }; await InspStore.put(r, true); } }
+    await reloadTrees(); toast("位置を修正しました", 2500);
+    const i = TIDX.get(t.tno); if (i != null) selectTree(i, true);
+  }
+  // 端末で追加する木の番号：L-端末ID-001…
+  async function nextLocalNo() { let k = 1, n; do { n = `L-${INSP.device}-${String(k++).padStart(3, "0")}`; } while (TIDX.has(n)); return n; }
   function initInsp() {
     $("#inspHead").onclick = (e) => { if (e.target.closest("#inspWarn")) openSheet("worklog"); else if (e.target.closest("#inspWho")) openSheet("inspmenu"); else openSheet("insplist"); };
     $("#nextBtn").onclick = () => { $("#layerPop").hidden = true; nextUninspected(); };
     $$("#inspCm button").forEach((b) => b.onclick = () => setInspColor(b.dataset.icm));
-    $("#inspAddOk").onclick = confirmInspAdd; $("#inspAddCancel").onclick = stopInspAdd;
+    $$("#lblModes [data-lbl]").forEach((b) => b.onclick = () => setLabelMode(b.dataset.lbl));
+    $("#inspAddOk").onclick = () => confirmInspAdd(false); $("#inspAddCancel").onclick = stopInspAdd;
+    $("#movOk").onclick = () => confirmMovePos(false); $("#movCancel").onclick = () => { const m = MOV; MOV = null; stopMovePos(); if (m) selectTree(m.i, true); };
+    $("#movHere").onclick = () => { if (!userLoc) { toast("現在地がわかりません（右下の現在地ボタンを押してください）", 3500); return; } confirmMovePos(true); };
+    $("#inspAddHere").onclick = () => { if (!userLoc) { toast("現在地がわかりません（右下の現在地ボタンを押してください）", 3500); return; } confirmInspAdd(true); };
+    $("#addTreeBtn").onclick = () => { $("#layerPop").hidden = true; startInspAdd(); if (userLoc) map.easeTo({ center: userLoc, zoom: Math.max(map.getZoom(), 19) }); };
     $("#onlyUninsp").onchange = (e) => { F.uninsp = e.target.checked; applyFilters(); };
     const il = $("#pane-insplist");
     il.onchange = (e) => { if (e.target.id === "ilDate") { IL.date = e.target.value; IL.lim = 300; renderInspList(); } if (e.target.id === "ilWho") { IL.who = e.target.value; IL.lim = 300; renderInspList(); } };
@@ -4242,7 +4377,7 @@ window.WorkStore = window.NoteStore.work;
   // 写真（コメント・ファイル名・書き込み編集）
   // =====================================================================
   const fsName = (s) => String(s ?? "").replace(/[\\/:*?"<>|\s　]+/g, "").replace(/^\.+/, "").slice(0, 40) || "-";
-  const treeNoOf = (r) => r.tno || (r.tree != null ? String(r.tree) : "台帳外" + String(r.id || "").slice(-4));
+  const treeNoOf = (r) => r.tno || (r.tree != null ? String(r.tree) : "データ外" + String(r.id || "").slice(-4));
   // 写真のファイル名：日付_点検場所_樹木ナンバー_樹種名_連番.jpg（日付ごとのフォルダに保存）
   function photoName(r, date, used) {
     const base = `${date}_${fsName(r.place || r.zone || r.area)}_${fsName(treeNoOf(r))}_${fsName(r.sp || "樹種未入力")}`;
@@ -4353,6 +4488,7 @@ window.WorkStore = window.NoteStore.work;
     const out = [];
     for (const para of String(txt).split("\n")) {
       if (!bw) { out.push(para); continue; }
+      if (bw < 0) { const ch = [...para]; for (let k = 0; k < ch.length; k += -bw) out.push(ch.slice(k, k - bw).join("")); if (!ch.length) out.push(""); continue; }  // 1行の文字数で折り返す
       let cur = "";
       for (const ch of para) { if (cur && g.measureText(cur + ch).width > bw) { out.push(cur); cur = ch; } else cur += ch; }
       out.push(cur);
@@ -4406,7 +4542,7 @@ window.WorkStore = window.NoteStore.work;
     } else if (sh.t === "free") {
       dash(); g.beginPath(); sh.p.forEach(([x, y], k) => k ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
     } else if (sh.t === "text") {
-      box = edLabel(g, sh.s, a[0], a[1], fs, col, bg, "left", sh.bw || 0, sh.rot || 0);
+      box = edLabel(g, sh.s, a[0], a[1], fs, col, bg, "left", sh.cpl ? -sh.cpl : sh.bw || 0, sh.rot || 0);
     } else if (sh.t === "kiki") {
       // 機器診断の位置：四角で囲んだ R と、測定位置を指す矢印
       const s = u * 7, ang = Math.atan2(b[1] - a[1], b[0] - a[0]), bx = a[0] - s / 2, by = a[1] - s / 2;
@@ -4524,7 +4660,7 @@ window.WorkStore = window.NoteStore.work;
           <button class="ie-btn" data-e="zin" aria-label="拡大">＋</button><button class="ie-btn" data-e="zout" aria-label="縮小">－</button><button class="ie-btn" data-e="zfit">全体</button><span class="ie-zv" id="ieZ">100%</span></div>
         <div class="ie-stage"><canvas width="${W}" height="${H}"></canvas><div class="ie-hint" id="ieHint"></div></div>
         <div class="ie-bar">
-          <div class="ie-selbar" id="ieSel" hidden><span id="ieSelN"></span><button class="ie-btn" data-e="edittext">文字を直す</button><button class="ie-btn" data-e="bwm">文字の幅－</button><button class="ie-btn" data-e="bwp">文字の幅＋</button><button class="ie-btn" data-e="front">前面へ</button><button class="ie-btn" data-e="desel">選択解除</button></div>
+          <div class="ie-selbar" id="ieSel" hidden><span id="ieSelN"></span><button class="ie-btn" data-e="edittext">文字を直す</button><button class="ie-btn" data-e="bwm">1行の文字数－</button><b class="ie-cpl" id="ieCpl"></b><button class="ie-btn" data-e="bwp">1行の文字数＋</button><button class="ie-btn" data-e="front">前面へ</button><button class="ie-btn" data-e="desel">選択解除</button></div>
           <div class="ie-cropbar" id="ieCrop" hidden><span>切り取る範囲を囲んでください</span><button class="ie-btn main" data-e="docrop">この範囲で切り取る</button></div>
           <div class="ie-cropbar" id="ieSketch" hidden><span>スケッチ：</span><span class="seg mini2" id="ieSk"><button data-sk="pen" class="on">ペン</button><button data-sk="erase">消しゴム</button></span></div>
           <div class="ie-cropbar ie-pnobar" id="iePno" hidden>${(opt.photos || []).length ? (opt.photos || []).map((x, i) => `<button class="ie-btn${i === 0 ? " on" : ""}" data-pno="${i + 1}">写真${CIRC(i + 1)}${x.cap ? `<small>${esc(x.cap.slice(0, 8))}</small>` : ""}</button>`).join("") : `<span>その他の写真がまだありません（番号は ① から付けます）</span>`}</div>
@@ -4559,7 +4695,8 @@ window.WorkStore = window.NoteStore.work;
         d.querySelector('[data-e="del"]').disabled = !n; d.querySelector('[data-e="rotl"]').disabled = !n; d.querySelector('[data-e="rotr"]').disabled = !n;
         d.querySelector("#ieSel").hidden = !n; d.querySelector("#ieSelN").textContent = n ? `${n}個を選択中：` : "";
         const one = n === 1 ? shapes[sel[0]] : null;
-        d.querySelector('[data-e="edittext"]').hidden = !(one && one.t === "text"); d.querySelector('[data-e="bwm"]').hidden = d.querySelector('[data-e="bwp"]').hidden = !(one && one.t === "text");
+        d.querySelector('[data-e="edittext"]').hidden = !(one && one.t === "text"); d.querySelector('[data-e="bwm"]').hidden = d.querySelector('[data-e="bwp"]').hidden = d.querySelector("#ieCpl").hidden = !(one && one.t === "text");
+        if (one && one.t === "text") d.querySelector("#ieCpl").textContent = `1行 ${curCpl(one)}文字`;
       };
       const pt = (e) => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * W / r.width), Math.round((e.clientY - r.top) * H / r.height)]; };
       fit(); const ro = new ResizeObserver(fit); ro.observe(stage);
@@ -4569,6 +4706,8 @@ window.WorkStore = window.NoteStore.work;
       // 選んだ図形の中心
       const selCenter = () => { const bs = sel.map((k) => shapeBounds(shapes[k], W, H)); return [(Math.min(...bs.map((b) => b[0])) + Math.max(...bs.map((b) => b[2]))) / 2, (Math.min(...bs.map((b) => b[1])) + Math.max(...bs.map((b) => b[3]))) / 2]; };
       const textWidth = () => Math.round(Math.max(W, H) * 0.34);
+      // 今の1行の文字数（いちばん長い行）
+      const curCpl = (s) => { if (s.cpl) return s.cpl; const fs = edUnit(W, H) * 6.5 * (+s.fs || 1); edScratch.font = edFont(fs); return Math.max(1, ...edWrap(edScratch, s.s || "", s.bw || 0).map((x) => [...x].length)); };
       const measure = (t, fs) => { edScratch.font = edFont(fs); return Math.max(...String(t).split("\n").map((x) => edScratch.measureText(x).width)); };
       cv.addEventListener("pointerdown", (e) => {
         e.preventDefault(); cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
@@ -4634,10 +4773,10 @@ window.WorkStore = window.NoteStore.work;
           commit(); draw(); return;
         }
         if (s.t === "rod") {
-          const v = await fieldsPrompt({ title: "鋼棒貫入異常", fields: [{ label: "（　）内（任意）", value: "芯達", presets: ["芯達"] }, { label: "貫入長（cm）", placeholder: "例：32" }, { label: "直径（cm）", placeholder: "例：60" }], ok: "置く" });
+          const v = await fieldsPrompt({ title: "鋼棒貫入異常（「貫入異常」と表示）", fields: [{ label: "（　）内（任意）", value: "芯達", presets: ["芯達"] }, { label: "貫入長（cm）", placeholder: "例：32" }, { label: "直径（cm）", placeholder: "例：60" }], ok: "置く" });
           if (!v) { draw(); return; }
           shapes.push(s);
-          const n = (x) => String(x || "").replace(/cm$/, ""), txt = `鋼棒貫入異常${v[0] ? `(${v[0]})` : ""}${v[1] && v[2] ? `${n(v[1])}/${n(v[2])}cm` : v[1] ? `${n(v[1])}cm` : ""}`;
+          const n = (x) => String(x || "").replace(/cm$/, ""), txt = `貫入異常${v[0] ? `(${v[0]})` : ""}${v[1] && v[2] ? `${n(v[1])}/${n(v[2])}cm` : v[1] ? `${n(v[1])}cm` : ""}`;
           addText(txt, b[0] + u0 * 4, b[1] - u0 * 6.5 * (+fsz || 1) * 1.2);
           commit(); draw(); return;
         }
@@ -4700,7 +4839,7 @@ window.WorkStore = window.NoteStore.work;
         if (act === "del" && sel.length) { shapes = shapes.filter((_, k) => !sel.includes(k)); sel = []; commit(); draw(); }
         if (act === "desel") { sel = []; syncUI(); draw(); }
         if (act === "front" && sel.length) { const mv = sel.map((k) => shapes[k]); shapes = shapes.filter((_, k) => !sel.includes(k)).concat(mv); sel = mv.map((_, i) => shapes.length - mv.length + i); commit(); draw(); }
-        if ((act === "bwm" || act === "bwp") && sel.length === 1) { const s = shapes[sel[0]]; s.bw = Math.max(Math.round(Math.max(W, H) * 0.08), Math.round((s.bw || textWidth()) * (act === "bwp" ? 1.25 : 0.8))); commit(); draw(); }
+        if ((act === "bwm" || act === "bwp") && sel.length === 1) { const s = shapes[sel[0]]; s.cpl = Math.max(1, curCpl(s) + (act === "bwp" ? 1 : -1)); delete s.bw; commit(); draw(); }
         if (act === "edittext" && sel.length === 1) { const s = shapes[sel[0]]; const t = await textPrompt({ title: "文字を直す", value: s.s || "", presets: CFG.inspect.textPresets || [], keys: ED_KEYS }); if (t != null) { if (!t) { shapes.splice(sel[0], 1); sel = []; } else s.s = t; commit(); draw(); } }
         if (act === "cancel") { if ((hist.length > 1 || hi > 0) && !confirm("書き込みを保存せずに閉じますか？")) return; ro.disconnect(); d.remove(); res(false); }
         if (act === "save") {
@@ -4787,7 +4926,7 @@ window.WorkStore = window.NoteStore.work;
     const go = await dialog({ icon: trees.length ? "tree" : "warn", tone: trees.length ? "" : "warn", title: "樹木データをすべて更新（データ入れ替え）",
       body: `<p>読み込める木：<b>${trees.length}本</b>${errs.length ? `／読み込めない${unit === "行目" ? "行" : "木"}：<b style="color:#c62828">${errs.length}</b>` : ""}</p>
         ${errs.length ? `<ul class="misslist small" style="max-height:30vh;overflow:auto">${errs.slice(0, 100).map(([l, n, m]) => `<li>${l}${unit} ${esc(n)}：${esc(m)}</li>`).join("")}</ul>` : ""}
-        ${trees.length ? `<p class="small muted">${prev ? `今の樹木データ（${fmt((prev.trees || []).length)}本）と置き換えます。前のデータは保管庫に残ります。` : "この端末に保存します。"}点検記録は消えません。</p>${lost ? `<p class="small"><b>${lost}本</b>の点検記録は、新しいデータに同じ樹木番号がないため「台帳にない木」として表示されます。</p>` : ""}` : ""}`,
+        ${trees.length ? `<p class="small muted">${prev ? `今の樹木データ（${fmt((prev.trees || []).length)}本）と置き換えます。前のデータは保管庫に残ります。` : "この端末に保存します。"}点検記録は消えません。</p>${lost ? `<p class="small"><b>${lost}本</b>の点検記録は、新しいデータに同じ樹木番号がないため「樹木データにない木」として表示されます。</p>` : ""}` : ""}`,
       ok: trees.length ? (prev ? `${trees.length}本に入れ替える` : `${trees.length}本を読み込む`) : "閉じる", cancel: trees.length ? "やめる" : null });
     if (!go || !trees.length) return;
     if (prev) await archive("ledger", prev);

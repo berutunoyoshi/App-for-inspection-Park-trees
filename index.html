@@ -1256,7 +1256,7 @@ body.dark-map .treelabels span, .bm-photo .treelabels span { color: #fff; text-s
  * 設定：事業（公園など）に合わせて変更できます
  * ===================================================================== */
 window.APP_CONFIG = {
-  version: "1.14.0（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
+  version: "1.14.1（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
   appTitle: "樹木点検",              // アプリの名前（画面・ブラウザのタブ）
   reportTitle: "樹木点検",           // 速報・一覧表のタイトル（「〇〇の速報」「〇〇結果一覧」）
   filePrefix: "樹木点検",            // 書き出すファイル名の先頭
@@ -2884,7 +2884,8 @@ window.WorkStore = window.NoteStore.work;
     const f = await dialog({ icon: "camera", title,
       body: `<p class="small" style="text-align:left">${cp.seq ? `${every}本に1本の<b>作業状況写真</b>を撮影してください。` : ""}黒板の内容を確認・修正してから撮影します。</p>
         <div class="bdwrap">${boardFormHTML(b, WK.kind)}</div>
-        <button type="button" class="btn line block" id="wkFull" style="margin-top:8px">黒板を全画面で確認</button>`,
+        <button type="button" class="btn line block" id="wkFull" style="margin-top:8px">黒板を全画面で確認</button>
+        <label class="btn line block file-btn" style="margin-top:8px">${ic("plus")}撮影済みの写真に黒板を入れる<input type="file" accept="image/*" id="wkPick"></label>`,
       ok: "カメラを起動", cancel: late ? "やめる" : "あとで撮影", camera: true,
       onMount: (d) => { const sync = bindBoardForm(d, cp, b); d.querySelector("#wkFull").onclick = () => { sync(); boardFullscreen(b); }; } });
     if (!f) { if (!late) toast("撮影していない分は「作業記録」に撮り忘れとして表示されます（作業状況写真）", 4500); updateInspHead(); return; }
@@ -2933,7 +2934,7 @@ window.WorkStore = window.NoteStore.work;
       d.querySelector('[data-r="0"]')?.addEventListener("click", () => close(false));
       d.querySelector('[data-r="alt"]')?.addEventListener("click", () => close("alt"));
       d.querySelector('[data-r="1"]')?.addEventListener("click", () => { if (onOk) onOk(); close(true); });
-      const fi = d.querySelector("input[type=file]"); if (fi) fi.onchange = () => close(fi.files[0] || false);
+      d.querySelectorAll("input[type=file]").forEach((fi) => { fi.onchange = () => close(fi.files[0] || false); });
     });
   }
 

@@ -379,6 +379,8 @@ body.insp .countpill { top: calc(var(--safe-t) + 112px); }
 .fab.next { background: #f5b041; color: #3a2400; }
 .fab.add { background: #1f6b43; color: #fff; }
 .legend-all { position: static; display: flex; flex-wrap: wrap; gap: 4px 10px; background: none; box-shadow: none; padding: 6px 0; max-width: none; }
+.docbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.docbtns .btn { font-size: 13px; padding: 9px 6px; }
 .mailsteps { text-align: left; margin-top: 10px; }
 .mailsteps .btn.done::after { content: " ✓"; }
 .treelabels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
@@ -1256,7 +1258,7 @@ body.dark-map .treelabels span, .bm-photo .treelabels span { color: #fff; text-s
  * 設定：事業（公園など）に合わせて変更できます
  * ===================================================================== */
 window.APP_CONFIG = {
-  version: "1.14.1（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
+  version: "1.15.0（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
   appTitle: "樹木点検",              // アプリの名前（画面・ブラウザのタブ）
   reportTitle: "樹木点検",           // 速報・一覧表のタイトル（「〇〇の速報」「〇〇結果一覧」）
   filePrefix: "樹木点検",            // 書き出すファイル名の先頭
@@ -3126,6 +3128,18 @@ window.WorkStore = window.NoteStore.work;
   }
   const recPhotoItems = (list) => list.flatMap((r) => (r.photos || []).map((ph) => [phPath(ph), ph.data]));
   function saveBlob(blob, name) {
+    // スマホ・タブレット（とくにホーム画面のアプリ）はダウンロードが動かないことがあるため、共有メニューで保存する
+    if (isMobileDev() && navigator.share && navigator.canShare) {
+      const f = new File([blob], name, { type: blob.type || "application/octet-stream" });
+      if (navigator.canShare({ files: [f] })) {
+        dialog({ icon: "check", title: "ファイルを作成しました", body: `<p><b>${esc(name)}</b>（約${(blob.size / 1048576).toFixed(1)}MB）</p><p class="small">「保存する」を押し、共有メニューで<b>「"ファイル"に保存」</b>（Androidは「ドライブ」「ダウンロード」など）を選んでください。メールやLINE WORKSなどで送ることもできます。</p>`, ok: "保存する", cancel: "閉じる",
+          onOk: () => { navigator.share({ files: [f], title: name }).catch((e) => { if (!e || e.name !== "AbortError") saveBlobDl(blob, name); }); } });
+        return;
+      }
+    }
+    saveBlobDl(blob, name);
+  }
+  function saveBlobDl(blob, name) {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
@@ -3807,9 +3821,11 @@ window.WorkStore = window.NoteStore.work;
       const sc = (v, l) => `<button data-v="${v}"${IM.scope === v ? ' class="on"' : ""}>${l}</button>`;
       el.innerHTML = `${head}
         <div class="field"><span class="lbl">範囲</span><div class="seg" id="imScope">${sc("today", "自分の本日分")}${sc("mine", "自分の全期間")}${sc("all", "端末の全データ")}</div></div>
+        <div class="field"><span class="lbl">提出書類（Excel）だけを作る</span><div class="docbtns">${[["t-sum", "樹木点検 総括表"], ["g-sum", "外観診断 総括表"], ["karte", "外観診断 カルテ"], ["t-soku", "樹木点検 速報表"], ["g-soku", "外観診断 速報表"]].map(([k, l]) => `<button class="btn line" data-doc="${k}">${ic("clip")}${l}</button>`).join("")}</div><p class="small muted">範囲で選んだ記録から作ります。点検一覧の「提出書類」からも作れます。</p></div>
+        <div class="lbl" style="margin:10px 0 6px">点検データ一式（ZIP）</div>
         ${canPickDir() ? `<div class="btnrow"><button class="btn" data-im="savedir">${ic("check")}フォルダに保存</button><button class="btn sub" data-im="savezip">ZIPで保存</button></div><button class="btn line block" data-im="pickdir" style="margin-top:8px">保存先フォルダを選び直す（今：${esc(INSP.dirName || "未選択")}）</button>`
           : `<button class="btn block" data-im="saveshare">${ic("share")}保存先・送り先を選ぶ</button><button class="btn sub block" data-im="savezip" style="margin-top:8px">この端末にダウンロード</button>`}
-        <div class="notebox"><b>保存される内容（ZIPファイル1つ）</b><br>・点検データ／点検結果_〇〇.xlsx … 点検結果の一覧。とりまとめ担当がそのまま取り込めます<br>・写真／樹木点検・外観診断／日付／ … 日付_点検場所_樹木番号_樹種名_連番.jpg<br>・作業記録／日付／ … 作業記録の写真<br>
+        <div class="notebox"><b>保存される内容（ZIPファイル1つ）</b><br>・提出書類／ … <b>樹木点検総括表・外観診断総括表・外観診断カルテ</b>（様式どおりのExcel）<br>・点検データ／点検結果_〇〇.xlsx … 点検結果の一覧。とりまとめ担当がそのまま取り込めます<br>・写真／樹木点検・外観診断／日付／ … 日付_点検場所_樹木番号_樹種名_連番.jpg<br>・作業記録／日付／ … 作業記録の写真<br>
           ZIPは1つのファイルなので、スマートフォンからもそのままメールに添付したり、共有フォルダにアップロードしたりできます。</div>`;
     }
     if (page === "backup") {
@@ -4047,6 +4063,14 @@ window.WorkStore = window.NoteStore.work;
       } });
     const xname = `点検データ/点検結果_${fsName(who)}_${today}${withArchive ? "_バックアップ" : ""}.xlsx`;
     files.unshift({ path: xname, blob });
+    // 提出書類（様式どおりのExcel）：樹木点検総括表・外観診断総括表・外観診断カルテ
+    if (!withArchive) {
+      const tk = list.filter((r) => isDone(r) && stageOf(r) === "tenken"), gk = list.filter((r) => isDone(r) && stageOf(r) === "gaikan"), tag = `${fsName(INSP.park || "全公園")}_${today}`;
+      try {
+        if (tk.length) files.splice(1, 0, { path: `提出書類/樹木点検総括表_${tag}.xlsx`, blob: await tenkenSokatsuBlob(tk) });
+        if (gk.length) files.splice(1, 0, { path: `提出書類/外観診断総括表_${tag}.xlsx`, blob: await gaikanSokatsuBlob(gk) }, { path: `提出書類/外観診断カルテ_${tag}.xlsx`, blob: await karteBlob(gk) });
+      } catch (e) { console.error(e); toast("提出書類の一部を作れませんでした：" + (e.message || ""), 5000); }
+    }
     return { files, recs: list, work, arc, who, nPh: files.filter((f) => /^写真\/(?!編集前)/.test(f.path)).length, nW: files.filter((f) => f.path.startsWith("作業記録/")).length };
   }
   async function pkgZip(files, root) {
@@ -4378,7 +4402,7 @@ window.WorkStore = window.NoteStore.work;
       const t = e.target;
       if ((t.id === "imImp" || t.id === "imImpDir") && t.files.length) { importInsp(t.files); t.value = ""; }
     };
-    im.onclick = (e) => {
+    im.onclick = (e) => { const dc = e.target.closest("[data-doc]"); if (dc) { const { recs } = exportScope(IM.scope || "today"); outputDocs(dc.dataset.doc, recs); return; }
       const s = e.target.closest("#imScope button"); if (s) { IM.scope = s.dataset.v; $$("#imScope button").forEach((x) => x.classList.toggle("on", x === s)); return; }
       const pg = e.target.closest("[data-imp]"); if (pg) { menuNav(pg.dataset.imp); return; }
       const b = e.target.closest("[data-im]"); if (b) inspMenuAction(b.dataset.im);

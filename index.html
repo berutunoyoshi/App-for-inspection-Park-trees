@@ -1256,7 +1256,7 @@ body.dark-map .treelabels span, .bm-photo .treelabels span { color: #fff; text-s
  * 設定：事業（公園など）に合わせて変更できます
  * ===================================================================== */
 window.APP_CONFIG = {
-  version: "1.13.2（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
+  version: "1.14.0（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
   appTitle: "樹木点検",              // アプリの名前（画面・ブラウザのタブ）
   reportTitle: "樹木点検",           // 速報・一覧表のタイトル（「〇〇の速報」「〇〇結果一覧」）
   filePrefix: "樹木点検",            // 書き出すファイル名の先頭
@@ -2000,7 +2000,7 @@ window.WorkStore = window.NoteStore.work;
   const ALLJ = STG_KEYS.flatMap((k) => STAGES[k].judges.map((j) => ({ ...j, stage: k })));
   const judgeOf = (v) => ALLJ.find((j) => j.v === v);
   const NOJ = { v: "-", label: "欠株・撤去", color: "#455a64" };
-  const DEF_SET = { everyT: STAGES.tenken.workEvery, everyG: STAGES.gaikan.workEvery, mailTo: IC.reportTo, attach: "tape", title: CFG.project.title, contractor: CFG.project.contractor, office: CFG.project.office, board: "full" };
+  const DEF_SET = { everyT: STAGES.tenken.workEvery, everyG: STAGES.gaikan.workEvery, mailTo: IC.reportTo, attach: "tape", mailMax: 10, title: CFG.project.title, contractor: CFG.project.contractor, office: CFG.project.office, board: "full" };
   const setting = (k) => ls.get("insp-" + k, DEF_SET[k]);
   const setSetting = (k, v) => ls.set("insp-" + k, v);
   const isDone = (r) => !!r && r.status === "done";
@@ -3673,10 +3673,18 @@ window.WorkStore = window.NoteStore.work;
     lines.push("", "詳細は添付の速報表をご確認ください。");
     return lines.join("\n");
   }
+  // 速報用に写真を小さくする（長辺1024px）。端末の写真やカルテ用の写真はそのまま
+  function shrinkPhoto(url, max = 1024, q = 0.8) {
+    return new Promise((res) => { const im = new Image(); im.onload = () => { const k = Math.min(1, max / Math.max(im.width, im.height)); if (k >= 1) { res(url); return; }
+      const c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", q)); };
+      im.onerror = () => res(url); im.src = url; });
+  }
+  const fmtMB = (b) => (b >= 1048576 ? (b / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(b / 1024)) + "KB");
   async function reportFiles(list, meta) {
     const files = [new File([await sokuhoBlob(list, RP.stage)], meta.file + ".xlsx", { type: XMIME })];
     const att = setting("attach"), withPh = att === "all" ? list : att === "tape" || att === "cd" ? list.filter((r) => r.markReq) : [];
-    const items = recPhotoItems(withPh);
+    const items = [];
+    for (const [nm, url] of recPhotoItems(withPh)) items.push([nm, await shrinkPhoto(url)]);
     if (items.length) { try { files.push(new File([await photosZip(items)], meta.file + "_写真.zip", { type: "application/zip" })); } catch (e) { toast(e.message + "。写真は添付しません", 4000); } }
     return files;
   }
@@ -3692,6 +3700,11 @@ window.WorkStore = window.NoteStore.work;
     if (!navigator.onLine) { dialog({ tone: "warn", icon: "warn", title: "オフラインのため送信できません", body: "<p>メールの送信は、通信のある場所で行ってください。速報は「Excel保存」や「設定・データ → データの保存」で端末に保存しておけます。</p>" }); return; }
     if (to && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) { toast("送信先のメールアドレスを確認してください", 3500); return; }
     if (!to && !(await dialog({ tone: "warn", icon: "warn", title: "送信先が未入力です", body: "<p>送信先メールアドレスが入力されていません。宛先なしでメールを作成しますか？</p>", ok: "このまま作成", cancel: "戻る" }))) return;
+    // 添付の大きさの確認（メールの上限を超えると送信後にエラーになるため）
+    const total = files.reduce((n, f) => n + f.size, 0), lim = (+setting("mailMax") || 10) * 1048576;
+    if (total > lim && !(await dialog({ tone: "warn", icon: "warn", title: "添付が大きすぎる可能性があります",
+      body: `<p>添付の合計は<b>約${fmtMB(total)}</b>で、設定したメールの上限（${fmtMB(lim)}）を超えています。このまま送ると、送信後にエラーになることがあります。</p><ul class="small">${files.map((f) => `<li>${esc(f.name)}：約${fmtMB(f.size)}</li>`).join("")}</ul><p class="small">「戻る」を押し、「写真の添付」を<b>テープ対象のみ</b>や<b>なし</b>にするか、提出する木を分けて2通に分けてください。</p>`,
+      ok: "このまま作成", cancel: "戻る" }))) return;
     const res = await composeMail(files, meta.subject, reportBody(list, meta), to);
     if (!res) return;
     const now = new Date().toISOString();
@@ -3701,7 +3714,7 @@ window.WorkStore = window.NoteStore.work;
   const isMobileDev = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
   // メールを作成：スマホ＝共有メニュー（件名・本文・添付入り。宛先はコピー）／パソコン＝宛先・件名・本文・添付入りのメールファイル（.eml）
   async function composeMail(files, subject, body, to) {
-    const sum = `<div class="card small" style="text-align:left"><b>宛先</b>：${esc(to || "（未入力）")}<br><b>件名</b>：${esc(subject)}<br><b>添付</b>：${files.map((f) => esc(f.name)).join("<br>")}</div>`;
+    const sum = `<div class="card small" style="text-align:left"><b>宛先</b>：${esc(to || "（未入力）")}<br><b>件名</b>：${esc(subject)}<br><b>添付</b>（合計 約${fmtMB(files.reduce((n, f) => n + f.size, 0))}）：<br>${files.map((f) => `${esc(f.name)}（約${fmtMB(f.size)}）`).join("<br>")}</div>`;
     // スマホ：ワンタップで共有メニューを開き、添付ファイル・本文を入れる。件名・宛先はメールアプリが対応していれば入る（宛先はコピー済み）
     if (isMobileDev() && navigator.share && navigator.canShare && navigator.canShare({ files })) {
       let shared = null;
@@ -3894,7 +3907,9 @@ window.WorkStore = window.NoteStore.work;
     if (page === "mail") {
       body.innerHTML = `<label class="field"><span class="lbl">速報の送信先メールアドレス</span><input id="asMail" class="inp" type="email" inputmode="email" autocomplete="email" value="${esc(setting("mailTo") || "")}" placeholder="例：kanri@example.jp"></label>
         <p id="asMailErr" class="small" style="color:var(--danger)" hidden>メールアドレスの形式を確認してください</p>
+        <label class="field"><span class="lbl">メールの添付の上限（MB）</span><input id="asMailMax" class="inp" type="number" inputmode="decimal" min="1" max="100" step="1" value="${+setting("mailMax") || 10}"></label>
         <button class="btn block" data-asa="mailsave">保存</button>
+        <p class="small muted">添付の合計がこの大きさを超えると、メール作成の前に知らせます。会社のメールは10MB前後、Gmailは25MBが一般的です。速報の写真は送信用に小さくして（長辺1024ピクセル）添付します。</p>
         <p class="small muted">速報の「メールを作成」で使う宛先です。点検中の画面では変更できません。</p>`;
     }
     if (page === "every") {
@@ -3935,7 +3950,8 @@ window.WorkStore = window.NoteStore.work;
     if (a === "mailsave") {
       const v = $("#asMail").value.trim();
       if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { $("#asMailErr").hidden = false; return; }
-      setSetting("mailTo", v); toast(v ? "送信先を保存しました" : "送信先を空欄にしました"); AS.page = ""; renderAppSet(); renderPrep();
+      setSetting("mailTo", v); setSetting("mailMax", Math.max(1, Math.min(100, +$("#asMailMax").value || 10)));
+      toast(v ? "送信先を保存しました" : "送信先を空欄にしました"); AS.page = ""; renderAppSet(); renderPrep();
     }
     if (a === "everysave") {
       const v = (id) => Math.max(0, Math.min(500, Math.round(+$(id).value || 0)));

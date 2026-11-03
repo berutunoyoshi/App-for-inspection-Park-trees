@@ -1256,7 +1256,7 @@ body.dark-map .treelabels span, .bm-photo .treelabels span { color: #fff; text-s
  * 設定：事業（公園など）に合わせて変更できます
  * ===================================================================== */
 window.APP_CONFIG = {
-  version: "1.13.0（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
+  version: "1.13.2（2026-11-03）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
   appTitle: "樹木点検",              // アプリの名前（画面・ブラウザのタブ）
   reportTitle: "樹木点検",           // 速報・一覧表のタイトル（「〇〇の速報」「〇〇結果一覧」）
   filePrefix: "樹木点検",            // 書き出すファイル名の先頭
@@ -1650,6 +1650,8 @@ window.WorkStore = window.NoteStore.work;
       attributionControl: { compact: true }, preserveDrawingBuffer: true, dragRotate: false, pitchWithRotate: true, touchPitch: false, maxPitch: 70,
       style: rasterStyle(baseKind),
     });
+    // 地図の文字は地図の移動・拡大に合わせて描き直す
+    map.on("move", queueLabels); map.on("moveend", queueLabels);
     map.touchZoomRotate.disableRotation();
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
@@ -1961,7 +1963,6 @@ window.WorkStore = window.NoteStore.work;
       map.easeTo({ pitch: 0, bearing: 0, duration: 800 });
     }
     renderLegend();
-    map.on("move", queueLabels); map.on("moveend", queueLabels); setLabelMode(labelMode());
   }
 
   // ---------- この端末で追加した樹木 ----------
@@ -3701,26 +3702,19 @@ window.WorkStore = window.NoteStore.work;
   // メールを作成：スマホ＝共有メニュー（件名・本文・添付入り。宛先はコピー）／パソコン＝宛先・件名・本文・添付入りのメールファイル（.eml）
   async function composeMail(files, subject, body, to) {
     const sum = `<div class="card small" style="text-align:left"><b>宛先</b>：${esc(to || "（未入力）")}<br><b>件名</b>：${esc(subject)}<br><b>添付</b>：${files.map((f) => esc(f.name)).join("<br>")}</div>`;
-    // スマホ：メールアプリによって共有メニューでは件名・宛先が入らないため、
-    // ①添付ファイルを保存 → ②宛先・件名・本文入りのメールを作成（どのメールアプリでも同じ）の2段階にする
-    if (isMobileDev()) {
-      const canShare = navigator.share && navigator.canShare && navigator.canShare({ files });
-      const ok = await dialog({ icon: "send", title: "速報メールの作成", body: `${sum}
-        <div class="mailsteps"><button type="button" class="btn line block" id="mStep1">① 添付ファイルを保存</button>
-          <p class="small muted">「ファイル」アプリ（Androidは「ダウンロード」など）に保存します。</p>
-          <button type="button" class="btn block" id="mStep2">② メールを作成（宛先・件名・本文入り）</button>
-          <p class="small muted">メールアプリが開いたら、添付ボタンから①で保存したファイルを添付して送信してください。</p>
-          ${canShare ? `<button type="button" class="btn sub block" id="mShare" style="margin-top:6px">共有メニューで送る（添付付き。件名・宛先が入らないメールアプリあり）</button>` : ""}</div>`,
-        ok: "送信した（速報済にする）", cancel: "閉じる",
-        onMount: (d) => {
-          d.querySelector("#mStep1").onclick = () => { if (canShare) navigator.share({ files, title: subject }).catch(() => { }); else { for (const f of files) saveBlob(f, f.name); toast("添付ファイルを保存しました"); } d.querySelector("#mStep1").classList.add("done"); };
-          d.querySelector("#mStep2").onclick = () => { openMailto(to, subject, body + `\n\n添付：${files.map((f) => f.name).join("、")}`); d.querySelector("#mStep2").classList.add("done"); };
-          const sh = d.querySelector("#mShare"); if (sh) sh.onclick = () => { if (to) { try { navigator.clipboard.writeText(to); } catch { } } navigator.share({ files, title: subject, text: `件名：${subject}\n\n${body}` }).catch(() => { }); };
-        } });
+    // スマホ：ワンタップで共有メニューを開き、添付ファイル・本文を入れる。件名・宛先はメールアプリが対応していれば入る（宛先はコピー済み）
+    if (isMobileDev() && navigator.share && navigator.canShare && navigator.canShare({ files })) {
+      let shared = null;
+      const ok = await dialog({ icon: "send", title: "速報メール", body: `${sum}<p class="small" style="text-align:left">「メールアプリを開く」→ 共有メニューで<b>メール</b>を選ぶと、<b>添付ファイルと本文</b>が入ります。件名・宛先はメールアプリによって自動で入ります。${to ? "入らない場合、<b>宛先はコピー済み</b>なので宛先欄に貼り付けてください。" : ""}</p>`,
+        ok: "メールアプリを開く", cancel: "やめる",
+        onOk: () => { if (to) { try { navigator.clipboard.writeText(to); } catch { } } shared = navigator.share({ files, title: subject, text: body }); } });
       if (!ok) return false;
-      toast("「速報済」にしました", 3000);
+      try { await shared; } catch (e) { if (e && e.name === "AbortError") return false; toast("共有メニューを開けませんでした", 4000); return false; }
+      toast("送信すると「速報済」になります", 3500);
       return true;
     }
+    // 共有メニューが使えないスマホ：ファイルを保存し、宛先・件名・本文入りのメールを開く
+    if (isMobileDev()) { for (const f of files) saveBlob(f, f.name); openMailto(to, subject, body + `\n\n※保存したファイル（${files.map((f) => f.name).join("、")}）を添付してください。`); return true; }
     // パソコン：宛先・件名・本文・添付ファイル入りの下書きメール（.eml）
     let eml; try { eml = await buildEml(to, subject, body, files); } catch { eml = null; }
     if (!eml) { for (const f of files) saveBlob(f, f.name); openMailto(to, subject, body + "\n\n※保存したファイルを添付してください。"); return true; }
@@ -4305,6 +4299,7 @@ window.WorkStore = window.NoteStore.work;
     $("#nextBtn").onclick = () => { $("#layerPop").hidden = true; nextUninspected(); };
     $$("#inspCm button").forEach((b) => b.onclick = () => setInspColor(b.dataset.icm));
     $$("#lblModes [data-lbl]").forEach((b) => b.onclick = () => setLabelMode(b.dataset.lbl));
+    setLabelMode(labelMode());
     $("#inspAddOk").onclick = () => confirmInspAdd(false); $("#inspAddCancel").onclick = stopInspAdd;
     $("#movOk").onclick = () => confirmMovePos(false); $("#movCancel").onclick = () => { const m = MOV; MOV = null; stopMovePos(); if (m) selectTree(m.i, true); };
     $("#movHere").onclick = () => { if (!userLoc) { toast("現在地がわかりません（右下の現在地ボタンを押してください）", 3500); return; } confirmMovePos(true); };

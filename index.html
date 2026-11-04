@@ -1269,7 +1269,7 @@ body.dark-map .treelabels span, .bm-photo .treelabels span { color: #fff; text-s
  * 設定：事業（公園など）に合わせて変更できます
  * ===================================================================== */
 window.APP_CONFIG = {
-  version: "1.18.0（2026-11-04）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
+  version: "1.18.1（2026-11-04）",  // アプリの版。更新したら sw.js の VERSION も変える（スタート画面に表示）
   appTitle: "樹木点検",              // アプリの名前（画面・ブラウザのタブ）
   reportTitle: "樹木点検",           // 速報・一覧表のタイトル（「〇〇の速報」「〇〇結果一覧」）
   filePrefix: "樹木点検",            // 書き出すファイル名の先頭
@@ -3285,17 +3285,22 @@ window.WorkStore = window.NoteStore.work;
   }
   // 枠（結合セルの範囲）に収まるように写真を置く
   // 列幅（文字数）→ ピクセル：保存されている幅に余白は含まれているので「幅×7」。写真はこれで枠に収める
-  const EMU = 9525, colPx = (w) => Math.floor(w * 7), rowPx = (h) => h * 96 / 72;
-  function anchorFor(S, box, size, pad = 0.05) {
+  // 列幅→ピクセル（Excelの式）。mdw＝標準フォントの数字の幅（游ゴシック11pt＝8、Calibri・MSゴシック11pt＝7）
+  const EMU = 9525, colPx = (w, mdw = 8) => Math.trunc(((256 * w + Math.trunc(128 / mdw)) / 256) * mdw), rowPx = (h) => h * 96 / 72;
+  // 様式の標準フォントから数字の幅を決める
+  const mdwOf = (styles) => { const f = (styles.match(/<font>[\s\S]*?<\/font>|<font\b[^>]*>[\s\S]*?<\/font>/) || [""])[0], name = XL.attr(f.match(/<name\b[^>]*>/)?.[0] || "", "val") || "", sz = +(XL.attr(f.match(/<sz\b[^>]*>/)?.[0] || "", "val") || 11);
+    return Math.max(5, Math.round((/游|Yu |Meiryo|メイリオ/.test(name) ? 8 : 7) * sz / 11)); };
+  function anchorFor(S, box, size, pad = 0.03) {
+    const colPxS = (w) => colPx(w, S.mdw || 8);
     const [a, b] = box.split(":").map(XL.ref);
     let x0 = 0, y0 = 0, w = 0, h = 0;
-    for (let c = 1; c < a.c; c++) x0 += colPx(colWidth(S, c));
-    for (let c = a.c; c <= b.c; c++) w += colPx(colWidth(S, c));
+    for (let c = 1; c < a.c; c++) x0 += colPxS(colWidth(S, c));
+    for (let c = a.c; c <= b.c; c++) w += colPxS(colWidth(S, c));
     for (let r = 1; r < a.r; r++) y0 += rowPx(rowHeight(S, r));
     for (let r = a.r; r <= b.r; r++) h += rowPx(rowHeight(S, r));
     const iw = w * (1 - pad * 2), ih = h * (1 - pad * 2), s = Math.min(iw / size.w, ih / size.h);
     const cw = size.w * s, chh = size.h * s, x = x0 + (w - cw) / 2, y = y0 + (h - chh) / 2;
-    let c = 1, xs = 0; while (xs + colPx(colWidth(S, c)) <= x) { xs += colPx(colWidth(S, c)); c++; }
+    let c = 1, xs = 0; while (xs + colPxS(colWidth(S, c)) <= x) { xs += colPxS(colWidth(S, c)); c++; }
     let r = 1, ys = 0; while (ys + rowPx(rowHeight(S, r)) <= y) { ys += rowPx(rowHeight(S, r)); r++; }
     return { col: c - 1, colOff: Math.round((x - xs) * EMU), row: r - 1, rowOff: Math.round((y - ys) * EMU), cx: Math.round(cw * EMU), cy: Math.round(chh * EMU) };
   }
@@ -3315,12 +3320,13 @@ window.WorkStore = window.NoteStore.work;
     wrels = wrels.replace(/<Relationship\b[^>]*calcChain[^>]*\/>/, "");
     if (!/Extension="jpeg"/.test(ct)) ct = ct.replace("<Default ", '<Default Extension="jpeg" ContentType="image/jpeg"/><Default ');
     if (!/Extension="png"/.test(ct)) ct = ct.replace("<Default ", '<Default Extension="png" ContentType="image/png"/><Default ');
+    const MDW = mdwOf(z.file("xl/styles.xml") ? await z.file("xl/styles.xml").async("string") : "");
     const used = new Set(), sheetsXml = [], names = [];
     let img = 0;
     for (let k = 0; k < spec.sheets.length; k++) {
       const sp = spec.sheets[k], s = src.find((x) => x.name === sp.from) || src[0];
       let nm = String(sp.name || s.name).replace(/[\[\]:*?/\\]/g, "_").slice(0, 31) || `Sheet${k + 1}`; let q = nm, n = 2; while (used.has(q.toLowerCase())) { const suf = `(${n++})`; q = nm.slice(0, 31 - suf.length) + suf; } nm = q; used.add(nm.toLowerCase()); names.push(nm);
-      const S = parseSheet(s.xml);
+      const S = parseSheet(s.xml); S.mdw = MDW;
       for (const [a, v] of Object.entries(sp.cells || {})) setCell(S, a, v);
       let rowShift = null;
       if (sp.rows) rowShift = insertRows(S, sp.rows);
@@ -3398,7 +3404,7 @@ window.WorkStore = window.NoteStore.work;
     // 印刷範囲（なければ使っている範囲）
     const pa = (wb.match(/<definedName name="_xlnm\.Print_Area" localSheetId="(\d+)">[^!]*!\$([A-Z]+)\$(\d+):\$([A-Z]+)\$(\d+)/g) || []).map((m) => m.match(/localSheetId="(\d+)">[^!]*!\$([A-Z]+)\$(\d+):\$([A-Z]+)\$(\d+)/)).find((m) => +m[1] === sheetIndex);
     const C1 = pa ? XL.col2n(pa[2]) : 1, R1 = pa ? +pa[3] : 1, C2 = pa ? XL.col2n(pa[4]) : Math.max(...[...S.rows.values()].flatMap((r) => [...r.cells.keys()])), R2 = pa ? +pa[5] : Math.max(...S.rows.keys());
-    const colW = (c) => colPx(colWidth(S, c)), rowH = (r) => Math.round(rowPx(rowHeight(S, r)));
+    const MDW = mdwOf(st); const colW = (c) => colPx(colWidth(S, c), MDW), rowH = (r) => Math.round(rowPx(rowHeight(S, r)));
     // 結合
     const merges = [...S.tail.matchAll(/<mergeCell ref="([A-Z]+\d+):([A-Z]+\d+)"/g)].map((m) => [XL.ref(m[1]), XL.ref(m[2])]);
     const cover = new Map(), top = new Map();
